@@ -1,0 +1,71 @@
+{
+  "id": "j-pom-intro",
+  "title": "Page Object Model: введение",
+  "summary": "POM отделяет UI-детали от тест-сценариев.",
+  "theoryMarkdown": "# Page Object Model\n\n## Идея\n\nКласс страницы:\n- хранит локаторы\n- предоставляет действия (`login`, `open`)\n- возвращает другую страницу / this для fluent\n\n```java\npublic class LoginPage {\n  private final WebDriver driver;\n  private final By email = By.id(\"email\");\n  private final By pass = By.id(\"password\");\n  private final By submit = By.id(\"submit\");\n\n  public LoginPage(WebDriver driver) { this.driver = driver; }\n\n  public HomePage loginAs(String user, String password) {\n    driver.findElement(email).sendKeys(user);\n    driver.findElement(pass).sendKeys(password);\n    driver.findElement(submit).click();\n    return new HomePage(driver);\n  }\n}\n```\n\n## Тест становится читаемым\n\n```java\nnew LoginPage(driver).loginAs(\"u\", \"p\").assertWelcome(\"u\");\n```\n\n## Правила\n\n- Не храни ассерты только в тесте? Можно assert-методы в page/assert-объекте — команда выбирает стиль\n- Не делай God-page на 2000 строк — дроби компоненты\n\n\n\n## В работе vs лаба\n\nВ лабе — **FakeDriver** (быстрый DOM в памяти). В работе и в `examples/portfolio-starter` — **реальный Chrome** + явные waits.\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### LoginPage POM\n```java\nimport org.openqa.selenium.*;\n\npublic class LoginPage {\n    private final WebDriver driver;\n    private final By email = By.id(\"email\");\n    private final By password = By.id(\"password\");\n    private final By submit = By.id(\"submit\");\n    private final By welcome = By.id(\"welcome\");\n\n    public LoginPage(WebDriver driver) {\n        this.driver = driver;\n    }\n\n    public String loginAs(String user, String pass) {\n        driver.findElement(email).sendKeys(user);\n        driver.findElement(password).sendKeys(pass);\n        driver.findElement(submit).click();\n        return driver.findElement(welcome).getText();\n    }\n}\n```\n",
+  "keyPoints": [
+    "Локаторы внутри page",
+    "Тест говорит бизнес-языком",
+    "Шаблон к заданию «LoginPage POM» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "POM vs Page Factory",
+    "Screenplay pattern vs POM"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Где должны жить CSS/XPath в POM?",
+      "options": [
+        "В @Test методах",
+        "В классе Page/Component",
+        "В README",
+        "В Jenkinsfile"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Инкапсуляция локаторов в page.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Тест с POM должен выглядеть скорее как:",
+      "options": [
+        "Цепочка findElement/css в @Test",
+        "loginPage.loginAs(user, pass)",
+        "Только Thread.sleep",
+        "Прямые SQL в каждом шаге UI"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Бизнес-шаги, детали UI в page.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "LoginPage POM",
+      "description": "Дано:\n- класс / артефакт: LoginPage\n- режим selenium-fake (in-memory FakeDriver)\n- DOM fixture уже подготовлен тренажёром\n\nЗадание:\nСм. теорию «К практике» (LoginPage POM).\nfill email/password, click submit, return welcome text. Edge case: keep method deterministic for given fixture.\n\nРезультат:\n- verifier проверяет действия на FakeDriver",
+      "difficulty": "medium",
+      "mode": "selenium-fake",
+      "className": "LoginPage",
+      "fixtureJson": "{\"elements\":[{\"tag\":\"input\",\"id\":\"email\",\"name\":\"email\",\"value\":\"\"},{\"tag\":\"input\",\"id\":\"password\",\"name\":\"password\",\"value\":\"\"},{\"tag\":\"button\",\"id\":\"submit\",\"text\":\"Go\",\"displayed\":true},{\"tag\":\"div\",\"id\":\"welcome\",\"text\":\"Hello, qa\",\"displayed\":true}]}",
+      "starterCode": "import org.openqa.selenium.*;\n\npublic class LoginPage {\n    private final WebDriver driver;\n    private final By email = By.id(\"email\");\n    private final By password = By.id(\"password\");\n    private final By submit = By.id(\"submit\");\n    private final By welcome = By.id(\"welcome\");\n\n    public LoginPage(WebDriver driver) {\n        this.driver = driver;\n    }\n\n    public String loginAs(String user, String pass) {\n        driver.findElement(email).sendKeys(user);\n        // TODO: password sendKeys, submit click, return welcome getText\n        return null;\n    }\n}\n",
+      "solutionCode": "import org.openqa.selenium.*;\n\npublic class LoginPage {\n    private final WebDriver driver;\n    private final By email = By.id(\"email\");\n    private final By password = By.id(\"password\");\n    private final By submit = By.id(\"submit\");\n    private final By welcome = By.id(\"welcome\");\n\n    public LoginPage(WebDriver driver) {\n        this.driver = driver;\n    }\n\n    public String loginAs(String user, String pass) {\n        driver.findElement(email).sendKeys(user);\n        driver.findElement(password).sendKeys(pass);\n        driver.findElement(submit).click();\n        return driver.findElement(welcome).getText();\n    }\n}\n",
+      "hints": [
+        "Store page locators as By fields",
+        "Perform sendKeys for both inputs before click",
+        "Return text from welcome element"
+      ],
+      "verifierCode": "import java.util.*;\nimport org.openqa.selenium.*;\nimport com.qatrainer.lab.selenium.FakeDriver;\n\npublic class ExerciseVerifier {\n  public List<String> verify(Class<?> cls, WebDriver driver) throws Exception {\n    List<String> fails = new ArrayList<>();\n    Object page = cls.getConstructor(WebDriver.class).newInstance(driver);\n    String welcome = (String) cls.getMethod(\"loginAs\", String.class, String.class).invoke(page, \"qa\", \"secret\");\n    if (!\"Hello, qa\".equals(welcome)) fails.add(\"welcome text: \" + welcome);\n    FakeDriver fake = (FakeDriver) driver;\n    boolean typed = fake.getActionsLog().stream().anyMatch(a -> a.startsWith(\"sendKeys:\"));\n    boolean clicked = fake.getActionsLog().stream().anyMatch(a -> a.startsWith(\"click:\"));\n    if (!typed) fails.add(\"sendKeys не вызван\");\n    if (!clicked) fails.add(\"click не вызван\");\n    return fails;\n  }\n}",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "junior",
+  "moduleId": "selenium"
+}

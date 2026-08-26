@@ -1,0 +1,55 @@
+﻿{
+  "id": "m-ra-filter",
+  "title": "Custom RestAssured Filter",
+  "summary": "Filter: request-id, логирование, общие headers без копипасты.",
+  "theoryMarkdown": "# RestAssured Filter\n\n```java\nFilter filter = (req, resp, ctx) -> {\n  String id = UUID.randomUUID().toString();\n  req.header(\"X-Request-Id\", id); // mutate FilterableRequestSpecification\n  return ctx.next(req, resp);\n};\n\ngiven().filter(filter).when().get(\"/ping\");\n```\n\n`req.header(...)` возвращает `RequestSpecification`, поэтому не передавай результат в `ctx.next` — мутируй `req` и передай его же.\n\n## Зачем\n\n- Correlation id для логов/трассировки\n- Маскирование секретов в логе\n- Метрики latency\n\nНе логируй Authorization plaintext.\n\n\n\n## В работе vs лаба\n\nВ лабе — **MockWebServer**. В работе — стенд/demo API; контракты и негативы гоняй против живого baseUrl (jsonplaceholder в портфолио).\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### RequestId Filter\n```java\nimport java.util.*;\nimport java.util.concurrent.CopyOnWriteArrayList;\nimport io.restassured.filter.Filter;\nimport static io.restassured.RestAssured.*;\n\npublic class PingClient {\n    public static final List<String> IDS = new CopyOnWriteArrayList<>();\n\n    public int ping(String baseUrl) {\n        Filter filter = (req, resp, ctx) -> {\n            String id = UUID.randomUUID().toString();\n            IDS.add(id);\n            req.header(\"X-Request-Id\", id);\n            return ctx.next(req, resp);\n        };\n        return given().filter(filter)\n            .when().get(baseUrl + \"/ping\")\n            .then().extract().statusCode();\n    }\n}\n```\n\n## Filter chain\n\nFilter должен вызвать следующий в цепочке (`filterChain` / `ctx.next()`), иначе цепочка оборвётся.\n",
+  "keyPoints": [
+    "Filter + ctx.next",
+    "X-Request-Id",
+    "Шаблон к заданию «RequestId Filter» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "Чем Filter отличается от Spec?",
+    "Как дебажишь цепочку фильтров?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Filter должен вызвать:",
+      "options": [
+        "только return null",
+        "ctx.next(request, response)",
+        "System.exit",
+        "driver.quit"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Иначе цепочка оборвётся.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "RequestId Filter",
+      "description": "Дано:\n- класс / артефакт: PingClient\n- режим http (RestAssured + MockWebServer)\n- HTTP stub уже подготовлен тренажёром\n\nЗадание:\nСм. теорию «К практике» (RequestId Filter).\ncreate Filter, generate request id, add to IDS, attach X-Request-Id header, continue chain via ctx.next(req, resp).\n\nРезультат:\n- verifier проверяет ответы через MockWebServer",
+      "difficulty": "medium",
+      "mode": "http",
+      "className": "PingClient",
+      "httpStubJson": "{\"stubs\":[{\"status\":200,\"body\":\"{\\\"ok\\\":true}\",\"headers\":{\"Content-Type\":\"application/json\"},\"times\":2}]}",
+      "starterCode": "import java.util.*;\nimport java.util.concurrent.CopyOnWriteArrayList;\nimport io.restassured.filter.Filter;\nimport static io.restassured.RestAssured.*;\n\npublic class PingClient {\n    public static final List<String> IDS = new CopyOnWriteArrayList<>();\n\n    public int ping(String baseUrl) {\n        Filter filter = (req, resp, ctx) -> {\n            String id = UUID.randomUUID().toString();\n            // TODO: IDS.add(id); req.header(\"X-Request-Id\", id); return ctx.next(req, resp);\n            return null;\n        };\n        return given().filter(filter)\n            .when().get(baseUrl + \"/ping\")\n            .then().extract().statusCode();\n    }\n}\n",
+      "solutionCode": "import java.util.*;\nimport java.util.concurrent.CopyOnWriteArrayList;\nimport io.restassured.filter.Filter;\nimport static io.restassured.RestAssured.*;\n\npublic class PingClient {\n    public static final List<String> IDS = new CopyOnWriteArrayList<>();\n\n    public int ping(String baseUrl) {\n        Filter filter = (req, resp, ctx) -> {\n            String id = UUID.randomUUID().toString();\n            IDS.add(id);\n            req.header(\"X-Request-Id\", id);\n            return ctx.next(req, resp);\n        };\n        return given().filter(filter)\n            .when().get(baseUrl + \"/ping\")\n            .then().extract().statusCode();\n    }\n}\n",
+      "hints": [
+        "Filter should mutate req and continue chain",
+        "Collect generated id before ctx.next",
+        "Run GET /ping with given().filter(filter)"
+      ],
+      "verifierCode": "import java.util.*;\nimport java.lang.reflect.Field;\n\npublic class ExerciseVerifier {\n  public List<String> verify(Class<?> cls, String baseUrl) throws Exception {\n    List<String> fails = new ArrayList<>();\n    Object c = cls.getDeclaredConstructor().newInstance();\n    Field ids = cls.getField(\"IDS\");\n    ((List<?>) ids.get(null)).clear();\n    int code = (Integer) cls.getMethod(\"ping\", String.class).invoke(c, baseUrl);\n    if (code != 200) fails.add(\"status expected 200, got \" + code);\n    List<?> list = (List<?>) ids.get(null);\n    if (list == null || list.isEmpty()) fails.add(\"IDS must contain generated request id\");\n    return fails;\n  }\n}",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "api"
+}

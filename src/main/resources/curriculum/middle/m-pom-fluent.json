@@ -1,0 +1,55 @@
+{
+  "id": "m-pom-fluent",
+  "title": "Fluent Page Objects и компоненты",
+  "summary": "Масштабируемый UI-слой: fluent API, компоненты, loadable pages.",
+  "theoryMarkdown": "# Fluent POM & Components\n\n## Fluent\n\nМетоды возвращают `this` или следующую страницу — цепочки шагов.\n\n## Components\n\n`Header`, `Table`, `Modal` — переиспользуемые куски DOM.\n\n## LoadableComponent\n\nСтраница умеет `isLoaded()` / `load()` — меньше «слепых» действий.\n\n## Не смешивай уровни\n\nТест не должен знать CSS. Page не должен знать бизнес-сценарий из 15 страниц — для этого steps/flows.\n\n\n\n## В работе vs лаба\n\nВ лабе — **FakeDriver** (быстрый DOM в памяти). В работе и в `examples/portfolio-starter` — **реальный Chrome** + явные waits.\n## К практике\n\nКомпонент Header хранит `WebDriver` и `By root`. Метод `openLogo()`:\n\n1. Кликни логотип: `driver.findElement(By.className(\"logo\")).click()`\n2. Верни текст заголовка: `driver.findElement(By.id(\"page-title\")).getText()`\n",
+  "keyPoints": [
+    "Компоненты против копипасты",
+    "Flows/steps для сквозных сценариев",
+    "isLoaded снижает флаки"
+  ],
+  "interviewTips": [
+    "Слой steps vs page",
+    "Когда Screenplay оправдан?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Повторяющийся header лучше вынести в:",
+      "options": [
+        "каждый page copy-paste",
+        "Component класс",
+        "Jenkins",
+        "String utils"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "UI-компонент.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Header component click logo",
+      "description": "Дано:\n- класс / артефакт: Header\n- режим selenium-fake (in-memory FakeDriver)\n- DOM fixture уже подготовлен тренажёром\n\nЗадание:\nСм. теорию «К практике» (Header.openLogo).\nHeader(WebDriver, By root): метод openLogo() кликает CSS \"a.logo\" кликни logo и верни текст page-title (см. «К практике»)\n\nРезультат:\n- verifier проверяет действия на FakeDriver",
+      "difficulty": "hard",
+      "mode": "selenium-fake",
+      "className": "Header",
+      "fixtureJson": "{\"elements\":[{\"tag\":\"div\",\"id\":\"hdr\",\"class\":\"header\",\"displayed\":true},{\"tag\":\"a\",\"id\":\"logo\",\"class\":\"logo\",\"text\":\"Logo\",\"displayed\":true},{\"tag\":\"h1\",\"id\":\"page-title\",\"text\":\"Home\",\"displayed\":true}]}",
+      "starterCode": "import org.openqa.selenium.*;\n\npublic class Header {\n    private final WebDriver driver;\n    private final By root;\n\n    public Header(WebDriver driver, By root) {\n        this.driver = driver;\n        this.root = root;\n    }\n\n    public String openLogo() {\n        // TODO: click By.className(\"logo\") or css a.logo, return #page-title text\n        return null;\n    }\n}\n",
+      "solutionCode": "import org.openqa.selenium.*;\n\npublic class Header {\n    private final WebDriver driver;\n    private final By root;\n\n    public Header(WebDriver driver, By root) {\n        this.driver = driver;\n        this.root = root;\n    }\n\n    public String openLogo() {\n        driver.findElement(By.className(\"logo\")).click();\n        return driver.findElement(By.id(\"page-title\")).getText();\n    }\n}\n",
+      "hints": [
+        "By.className(\"logo\") и By.id(\"page-title\")",
+        "click + getText",
+        "Доведи до детерминированного результата из раздела «Результат»."
+      ],
+      "verifierCode": "import java.util.*;\nimport org.openqa.selenium.*;\nimport com.qatrainer.lab.selenium.FakeDriver;\n\npublic class ExerciseVerifier {\n  public List<String> verify(Class<?> cls, WebDriver driver) throws Exception {\n    List<String> fails = new ArrayList<>();\n    Object page = cls.getConstructor(WebDriver.class, By.class).newInstance(driver, By.className(\"header\"));\n    String title = (String) cls.getMethod(\"openLogo\").invoke(page);\n    if (!\"Home\".equals(title)) fails.add(\"title: \" + title);\n    FakeDriver fake = (FakeDriver) driver;\n    if (fake.getActionsLog().stream().noneMatch(a -> a.startsWith(\"click:\"))) fails.add(\"click missing\");\n    return fails;\n  }\n}",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "selenium-adv"
+}

@@ -1,0 +1,53 @@
+{
+  "id": "m-api-clients",
+  "title": "Организация API-тестов и Client Factory",
+  "summary": "packages clients/specs/tests + фабрика клиентов по сервису.",
+  "theoryMarkdown": "# API test layout\n\nТипичная структура:\n\n```\napi/\n  clients/     # UserClient, OrderClient\n  specs/       # RequestSpecFactory\n  tests/       # @Test классы\n```\n\n## ApiClientFactory\n\n```java\nString base = factory.forService(\"orders\"); // https://orders...\n```\n\nОдин место для baseUrl/auth — меньше дублей, проще multi-service.\n\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### ApiClientFactory.forService\n```java\nimport java.util.*;\nimport org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass ApiClientFactory {\n    private final Map<String, String> bases = Map.of(\n        \"users\", \"http://users\",\n        \"orders\", \"http://orders\"\n    );\n\n    String forService(String name) {\n        String url = bases.get(name);\n        if (url == null) throw new IllegalArgumentException(\"unknown service: \" + name);\n        return url;\n    }\n}\n\npublic class ApiClientFactoryTest {\n    private final ApiClientFactory factory = new ApiClientFactory();\n\n    @Test\n    void known() { assertEquals(\"http://orders\", factory.forService(\"orders\")); }\n\n    @Test\n    void unknown() {\n        assertThrows(IllegalArgumentException.class, () -> factory.forService(\"billing\"));\n    }\n}\n```\n\n## baseUrl\n\nbaseUrl сервиса лучше брать из конфига/property — **одна точка правды**, а не хардкод в каждом тесте.\n",
+  "keyPoints": [
+    "clients / specs / tests",
+    "Factory по имени сервиса",
+    "Шаблон к заданию «ApiClientFactory.forService» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "Как делишь клиенты по микросервисам?",
+    "Где живёт auth?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "baseUrl сервиса лучше брать из:",
+      "options": [
+        "хардкода в каждом @Test",
+        "фабрики/конфига клиентов",
+        "CSS",
+        "скриншота"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Одна точка правды.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "ApiClientFactory.forService",
+      "description": "Дано:\n- класс / артефакт: ApiClientFactoryTest\n- режим junit (класс с @Test)\n\nЗадание:\nСм. теорию «К практике» (ApiClientFactory.forService).\nFactory с map users→http://users, orders→http://orders. forService(name) верни url или брось IllegalArgumentException.\n\nРезультат:\n- все @Test в классе зелёные",
+      "difficulty": "medium",
+      "mode": "junit",
+      "className": "ApiClientFactoryTest",
+      "starterCode": "import java.util.*;\nimport org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass ApiClientFactory {\n    private final Map<String, String> bases = Map.of(\n        \"users\", \"http://users\",\n        \"orders\", \"http://orders\"\n    );\n\n    String forService(String name) {\n        // TODO\n        return null;\n    }\n}\n\npublic class ApiClientFactoryTest {\n    private final ApiClientFactory factory = new ApiClientFactory();\n\n    @Test\n    void known() { assertEquals(\"http://orders\", factory.forService(\"orders\")); }\n\n    @Test\n    void unknown() {\n        assertThrows(IllegalArgumentException.class, () -> factory.forService(\"billing\"));\n    }\n}\n",
+      "solutionCode": "import java.util.*;\nimport org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass ApiClientFactory {\n    private final Map<String, String> bases = Map.of(\n        \"users\", \"http://users\",\n        \"orders\", \"http://orders\"\n    );\n\n    String forService(String name) {\n        String url = bases.get(name);\n        if (url == null) throw new IllegalArgumentException(\"unknown service: \" + name);\n        return url;\n    }\n}\n\npublic class ApiClientFactoryTest {\n    private final ApiClientFactory factory = new ApiClientFactory();\n\n    @Test\n    void known() { assertEquals(\"http://orders\", factory.forService(\"orders\")); }\n\n    @Test\n    void unknown() {\n        assertThrows(IllegalArgumentException.class, () -> factory.forService(\"billing\"));\n    }\n}\n",
+      "hints": [
+        "bases.get(name)",
+        "if null → throw IllegalArgumentException",
+        "Доведи до детерминированного результата из раздела «Результат»."
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "api"
+}

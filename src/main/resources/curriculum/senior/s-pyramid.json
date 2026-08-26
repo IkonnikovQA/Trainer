@@ -1,0 +1,77 @@
+{
+  "id": "s-pyramid",
+  "title": "Пирамида тестирования и стратегия покрытия",
+  "summary": "Senior выбирает уровень проверки по риску и стоимости.",
+  "theoryMarkdown": "# Пирамида тестирования\n\nМного быстрых unit/API, мало тяжёлого UI. UI — критические пользовательские пути.\n\n## Как применять\n\n- Бизнес-правила и расчёты → unit/API\n- Контракты на границах сервисов → contract\n- UI smoke / critical journey → немного E2E\n\n## Anti-pattern\n\nПеревернутая пирамида: всё через UI → медленно, flaky, дорого чинить.\n\nНа собесе: «сдвигаем влево», цифры времени feedback и flake.\n\n\n\n## В работе vs лаба\n\nВ лабе проверяется **текст артефакта** (структура YAML/Jenkinsfile). В работе pipeline должен **реально выполняться** в CI (см. портфолио GHA).\n\nУрок учит **решению/политике**. Мышцы автоматизации наращивай в портфолио и на реальном проекте.\n## К практике\n\nYAML-политика пирамиды (без password):\n\n```yaml\nunit_share: 70\napi_share: 20\nui_share: 10\nshift_left: true\n```\n\n## Стоимость уровней\n\nСамый дорогой в поддержке обычно **UI E2E** (хрупкий и медленный). Перевернутая пирамида — почти всё покрыто тяжёлым UI.\n",
+  "keyPoints": [
+    "UI дорогой",
+    "API даёт ROI",
+    "Риск важнее % coverage"
+  ],
+  "interviewTips": [
+    "Как решаешь, что автоматизировать?",
+    "Что оставишь ручным?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Самый дорогой в поддержке обычно уровень:",
+      "options": [
+        "Unit",
+        "API",
+        "UI E2E",
+        "Статический анализ"
+      ],
+      "correctIndexes": [
+        2
+      ],
+      "explanation": "UI хрупкий и медленный.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Перевернутая пирамида — это когда:",
+      "options": [
+        "Много unit, мало UI",
+        "Почти всё покрыто тяжёлым UI E2E",
+        "Нет тестов",
+        "Только lint"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Дорого и хрупко.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Test strategy checklist YAML",
+      "description": "Дано:\n- артефакт PyramidPolicy (YAML)\n\nЗадание:\nЗаполни доли пирамиды и shift_left. Ключи — в теории «К практике». Без секретов.\n\nРезультат:\n- unit_share / api_share / ui_share / shift_left присутствуют",
+      "difficulty": "medium",
+      "mode": "artifact",
+      "artifactKind": "gha",
+      "artifactRules": [
+        "contains:unit_share",
+        "contains:api_share",
+        "contains:ui_share",
+        "contains:shift_left",
+        "yamlKey:unit_share",
+        "noSecret:password"
+      ],
+      "className": "PyramidPolicy",
+      "starterCode": "# Test pyramid policy\n# TODO: unit_share, api_share, ui_share, shift_left\n",
+      "solutionCode": "unit_share: 70\napi_share: 20\nui_share: 10\nshift_left: true\n",
+      "hints": [
+        "Числа — доли в процентах",
+        "shift_left должен быть true"
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "senior",
+  "moduleId": "architecture"
+}

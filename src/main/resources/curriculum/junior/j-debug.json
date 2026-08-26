@@ -1,0 +1,103 @@
+{
+  "id": "j-debug",
+  "title": "Отладка падающих тестов",
+  "summary": "Классификация логов падений ускоряет triage flaky/CI — навык Junior QA Automation.",
+  "theoryMarkdown": "# Дебаг UI/API теста\n\n## Чеклист\n\n1. Падение стабильно или flaky?\n2. Что именно упало: ассерт / timeout / locator / infra?\n3. Есть скрин, HTML dump, request/response, video?\n4. Воспроизводится локально на том же окружении?\n5. Данные теста валидны?\n\n## Читай stacktrace\n\n- `TimeoutException` / `waiting` → условие wait не наступило (WAIT)\n- `AssertionError` / `Assert` → ожидание не совпало с фактом (ASSERT)\n- `NoSuchElementException` → локатор/DOM (LOCATOR)\n- `StaleElementReferenceException` → элемент протух после обновления DOM — refetch + wait\n- Connection / 5xx → infra/окружение (OTHER)\n\n## Инструменты\n\nЛоги WebDriver, breakpoints, Allure attachments, browser console.\n\n## Не делай\n\nSleep без понимания; skip без тикета.\n\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### Классификатор ошибки\n```java\npublic class FailureClass {\n    public String classify(String msg) {\n        if (msg == null) return \"OTHER\";\n        String m = msg.toLowerCase();\n        if (m.contains(\"timeout\")) return \"WAIT\";\n        if (m.contains(\"assert\")) return \"ASSERT\";\n        if (m.contains(\"nosuchelement\")) return \"LOCATOR\";\n        return \"OTHER\";\n    }\n}\n```\n\n## StaleElementReferenceException\n\nDOM обновился — элемент «протух». Нужна **свежая ссылка** (найти элемент заново) и wait на условие.\n",
+  "keyPoints": [
+    "Сначала классифицируй ошибку",
+    "Артефакты ускоряют разбор",
+    "Шаблон к заданию «Классификатор ошибки» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "Расскажи историю расследования flaky",
+    "Как логируешь API вызовы?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "TimeoutException чаще всего значит:",
+      "options": [
+        "JVM сломалась",
+        "Ожидаемое условие не наступило вовремя",
+        "JUnit баг",
+        "Maven не установлен"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Wait не дождался условия.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "StaleElementReferenceException — что делать?",
+      "options": [
+        "Увеличить Thread.sleep и кэшировать WebElement",
+        "Не кэшировать элемент надолго: refetch + явное ожидание",
+        "Игнорировать",
+        "Удалить локатор"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "DOM обновился — нужна свежая ссылка и wait.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "difficulty": "easy",
+      "hints": [
+        "Normalize input first: toLowerCase()",
+        "Check markers in stable order: timeout, assert, nosuchelement",
+        "Fallback branch should return OTHER"
+      ],
+      "testCases": [
+        {
+          "name": "wait",
+          "callExpression": "classify(\"TimeoutException: waiting\")",
+          "expected": "WAIT",
+          "expectedType": "string"
+        },
+        {
+          "name": "assert",
+          "callExpression": "classify(\"AssertionError expected\")",
+          "expected": "ASSERT",
+          "expectedType": "string"
+        },
+        {
+          "name": "loc",
+          "callExpression": "classify(\"NoSuchElementException\")",
+          "expected": "LOCATOR",
+          "expectedType": "string"
+        },
+        {
+          "name": "other",
+          "callExpression": "classify(\"Connection refused\")",
+          "expected": "OTHER",
+          "expectedType": "string"
+        },
+        {
+          "name": "assert2",
+          "callExpression": "classify(\"Assert failed: text\")",
+          "expected": "ASSERT",
+          "expectedType": "string"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "public class FailureClass {\n    public String classify(String msg) {\n        if (msg == null) return \"OTHER\";\n        String m = msg.toLowerCase();\n        if (m.contains(\"timeout\")) return \"WAIT\";\n        if (m.contains(\"assert\")) return \"ASSERT\";\n        if (m.contains(\"nosuchelement\")) return \"LOCATOR\";\n        return \"OTHER\";\n    }\n}\n",
+      "methodName": null,
+      "id": "e1",
+      "title": "Классификатор ошибки",
+      "description": "Дано:\n- класс / артефакт: FailureClass\n- режим java (класс с методами)\n\nЗадание:\nСм. теорию «К практике» (Классификатор ошибки).\ntimeout -> WAIT, assert/assertion -> ASSERT, nosuchelement -> LOCATOR, otherwise OTHER.\n\nРезультат:\n- classify(\"TimeoutException: waiting\") → WAIT\n- classify(\"AssertionError expected\") → ASSERT\n- classify(\"NoSuchElementException\") → LOCATOR\n- classify(\"Connection refused\") → OTHER",
+      "className": "FailureClass",
+      "starterCode": "public class FailureClass {\n    public String classify(String msg) {\n        // TODO\n        return \"OTHER\";\n    }\n}\n",
+      "mode": "java",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "junior",
+  "moduleId": "tools"
+}

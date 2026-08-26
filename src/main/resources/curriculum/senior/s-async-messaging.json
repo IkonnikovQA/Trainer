@@ -1,0 +1,70 @@
+{
+  "id": "s-async-messaging",
+  "title": "Async / Kafka testing без брокера",
+  "summary": "Стратегии проверки асинхронности: poll, outbox, contract — не только «поднять Kafka».",
+  "theoryMarkdown": "# Async / messaging testing без брокера\n\n## Стратегии\n\n1. **Testcontainers Kafka** — ближе к прод, тяжелее CI\n2. **Embedded / in-memory bus** — быстрые unit/integration\n3. **Contract + outbox table** — проверяешь запись события, не брокер\n4. **Await/poll** статуса/inbox до таймаута\n\n## At-least-once и идемпотентность\n\nБрокер может доставить сообщение **дважды**. Consumer должен обрабатывать duplicate безопасно:\nхранить `processedIds` и не увеличивать счётчик повторно.\n\nВ этом lab — in-memory Inbox + идемпотентный `accept(id)` (не клон Awaitility-поллера).\n\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### Idempotent Inbox.accept\n```java\nimport java.util.*;\nimport org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass Inbox {\n    private final Set<String> seen = new HashSet<>();\n    private int processedCount = 0;\n\n    void accept(String id) {\n        if (!seen.add(id)) return;\n        processedCount++;\n    }\n\n    int processedCount() { return processedCount; }\n}\n\npublic class InboxIdempotentTest {\n    @Test\n    void firstDeliveryCounts() {\n        Inbox inbox = new Inbox();\n        inbox.accept(\"msg-1\");\n        assertEquals(1, inbox.processedCount());\n    }\n\n    @Test\n    void duplicateDoesNotDouble() {\n        Inbox inbox = new Inbox();\n        inbox.accept(\"msg-1\");\n        inbox.accept(\"msg-1\");\n        assertEquals(1, inbox.processedCount());\n    }\n\n    @Test\n    void differentIdsCountSeparately() {\n        Inbox inbox = new Inbox();\n        inbox.accept(\"a\");\n        inbox.accept(\"b\")\n// ...\n```\n\n## Ожидание в async\n\nВместо Thread.sleep лучше ждать **условие**, не время (poll/await на появление сообщения).\n\n\n## At-least-once и идемпотентность\n\nAt-least-once означает: дубли возможны, consumer должен **быть идемпотентным к повторной доставке** и обрабатывать безопасно.\n",
+  "keyPoints": [
+    "Poll until condition",
+    "Outbox/contract без брокера",
+    "Шаблон к заданию «Idempotent Inbox.accept» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "Как тестируешь Kafka у себя?",
+    "Чем опасен sleep(5) в async тесте?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Вместо Thread.sleep в async-тесте лучше:",
+      "options": [
+        "Увеличить sleep",
+        "Poll/await условия с таймаутом",
+        "Отключить тест",
+        "Только UI"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Ждём условие, не время.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "At-least-once доставка означает, что consumer должен:",
+      "options": [
+        "Игнорировать дубли",
+        "Быть идемпотентным к повторной доставке",
+        "Всегда падать на втором сообщении",
+        "Использовать только UI"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Дубли возможны — обрабатывай безопасно.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Idempotent Inbox.accept",
+      "description": "Дано:\n- класс / артефакт: InboxIdempotentTest\n- режим junit (класс с @Test)\n\nЗадание:\nСм. теорию «К практике» (Idempotent Inbox.accept).\nfirst delivery increments count, duplicate id does not; different ids increment independently.\n\nРезультат:\n- все @Test в классе зелёные",
+      "difficulty": "medium",
+      "mode": "junit",
+      "className": "InboxIdempotentTest",
+      "timeoutMs": 15000,
+      "starterCode": "import java.util.*;\nimport org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass Inbox {\n    private final Set<String> seen = new HashSet<>();\n    private int processedCount = 0;\n\n    void accept(String id) {\n        // TODO: if already seen — return; else mark seen and ++processedCount\n    }\n\n    int processedCount() { return processedCount; }\n}\n\npublic class InboxIdempotentTest {\n    @Test\n    void firstDeliveryCounts() {\n        Inbox inbox = new Inbox();\n        inbox.accept(\"msg-1\");\n        assertEquals(1, inbox.processedCount());\n    }\n\n    @Test\n    void duplicateDoesNotDouble() {\n        Inbox inbox = new Inbox();\n        inbox.accept(\"msg-1\");\n        inbox.accept(\"msg-1\");\n        assertEquals(1, inbox.processedCount());\n    }\n\n    @Test\n    void differentIdsCountSeparately() {\n        Inbox inbox = new Inbox();\n        inbox.accept(\"a\");\n        inbox.accept(\"b\");\n        assertEquals(2, inbox.processedCount());\n    }\n}\n",
+      "solutionCode": "import java.util.*;\nimport org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass Inbox {\n    private final Set<String> seen = new HashSet<>();\n    private int processedCount = 0;\n\n    void accept(String id) {\n        if (!seen.add(id)) return;\n        processedCount++;\n    }\n\n    int processedCount() { return processedCount; }\n}\n\npublic class InboxIdempotentTest {\n    @Test\n    void firstDeliveryCounts() {\n        Inbox inbox = new Inbox();\n        inbox.accept(\"msg-1\");\n        assertEquals(1, inbox.processedCount());\n    }\n\n    @Test\n    void duplicateDoesNotDouble() {\n        Inbox inbox = new Inbox();\n        inbox.accept(\"msg-1\");\n        inbox.accept(\"msg-1\");\n        assertEquals(1, inbox.processedCount());\n    }\n\n    @Test\n    void differentIdsCountSeparately() {\n        Inbox inbox = new Inbox();\n        inbox.accept(\"a\");\n        inbox.accept(\"b\");\n        assertEquals(2, inbox.processedCount());\n    }\n}\n",
+      "hints": [
+        "Use a set to track already processed ids",
+        "If id already seen, return without increment",
+        "Increment counter only on first add"
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "senior",
+  "moduleId": "advanced"
+}

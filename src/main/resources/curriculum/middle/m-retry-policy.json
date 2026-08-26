@@ -1,0 +1,69 @@
+{
+  "id": "m-retry-policy",
+  "title": "Restart failed tests: rerun vs quarantine",
+  "summary": "Surefire rerun — костыль; quarantine + fix flake — стратегия.",
+  "theoryMarkdown": "# Restart failed tests: rerun vs quarantine\n\n## Surefire\n\n```xml\n<rerunFailingTestsCount>1</rerunFailingTestsCount>\n```\n\nПомогает от шума CI, но **маскирует** flaky.\n\n## Стратегия\n\n1. Чинить причину (waits/data/isolation)\n2. Quarantine `@Tag(\"flaky\")` вне PR gate\n3. Метрика flake rate + владелец\n\n## Retry budget\n\nОграниченный budget (1 rerun) ок как временная мера. Бесконечный rerun в PR — anti-pattern.\n\n## К практике\n\nБюджет ретраев:\n\n```java\nstatic boolean allow(int failsSoFar, int maxReruns) {\n    return failsSoFar < maxReruns;\n}\n```\n\nПри `failsSoFar == maxReruns` новый прогон уже нельзя.\n",
+  "keyPoints": [
+    "rerunFailingTestsCount",
+    "Quarantine flaky",
+    "Сначала root cause"
+  ],
+  "interviewTips": [
+    "Сколько rerun допустимо в PR?",
+    "Как ведёшь quarantine list?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Бесконечный rerun упавших в PR:",
+      "options": [
+        "Лучшая практика",
+        "Маскирует нестабильность",
+        "Заменяет waits",
+        "Обязателен JUnit"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Скрывает flake.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Quarantine flaky теста значит:",
+      "options": [
+        "Удалить навсегда без тикета",
+        "Вынести из PR gate, чинить отдельно с метрикой",
+        "Увеличить sleep до 60с",
+        "Отключить CI"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Не маскируй — изолируй и чини.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "RetryBudget.allow",
+      "description": "Дано:\n- класс / артефакт: RetryBudgetTest\n- режим junit (класс с @Test)\n\nЗадание:\nСм. теорию «К практике» (RetryBudget.allow).\nallow only while failsSoFar is strictly less than maxReruns.\n\nРезультат:\n- все @Test в классе зелёные",
+      "difficulty": "medium",
+      "mode": "junit",
+      "className": "RetryBudgetTest",
+      "starterCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass RetryBudget {\n    static boolean allow(int failsSoFar, int maxReruns) {\n        // TODO\n        return false;\n    }\n}\n\npublic class RetryBudgetTest {\n    @Test\n    void underLimit() { assertTrue(RetryBudget.allow(0, 1)); }\n    @Test\n    void atLimit() { assertFalse(RetryBudget.allow(1, 1)); }\n}\n",
+      "solutionCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass RetryBudget {\n    static boolean allow(int failsSoFar, int maxReruns) {\n        return failsSoFar < maxReruns;\n    }\n}\n\npublic class RetryBudgetTest {\n    @Test\n    void underLimit() { assertTrue(RetryBudget.allow(0, 1)); }\n    @Test\n    void atLimit() { assertFalse(RetryBudget.allow(1, 1)); }\n}\n",
+      "hints": [
+        "Think of retry budget as remaining attempts",
+        "At limit should already be denied",
+        "Implement as strict comparison"
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "quality"
+}

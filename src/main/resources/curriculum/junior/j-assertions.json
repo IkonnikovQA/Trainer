@@ -1,0 +1,57 @@
+{
+  "id": "j-assertions",
+  "title": "Ассерты и дизайн проверок",
+  "summary": "Хороший ассерт проверяет поведение и даёт понятный fail-message.",
+  "theoryMarkdown": "# Ассерты\n\n## Правила\n\n1. Проверяй **поведение**, не реализацию\n2. Сообщение падения должно говорить *что ожидали*\n3. Несколько связанных проверок — SoftAssertions\n4. Не проверяй всё подряд — фокус на риске\n\n```java\nassertThat(response.statusCode()).isEqualTo(200);\nassertThat(response.jsonPath().getString(\"id\")).isNotBlank();\n```\n\n## assertEquals vs assertSame\n\n- `assertEquals(a, b)` — сравнение по `equals` (значение/содержимое)\n- `assertSame(a, b)` — сравнение **ссылок** (тот же объект в памяти)\n\n## AssertJ contains\n\n```java\nassertThat(response.body()).contains(\"ok\");\nassertThat(response.id()).isNotBlank();\n```\n\n## Anti-patterns\n\n- `assertTrue(a == b)` вместо `assertEquals`\n- Ассерт без смысла после действия\n- Скриншот вместо проверки текста (когда текст доступен)\n\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### AssertJ проверки ответа\nВспомогательные классы / логика:\n**ApiResponse**\n```java\npublic class ApiResponse {\n  private final int status; private final String body;\n  public ApiResponse(int status, String body) { this.status = status; this.body = body; }\n  public int status() { return status; }\n  public String body() { return body; }\n  public String id() { return body.contains(\"\\\"id\\\":\\\"\") ? body.replaceAll(\".*\\\"id\\\":\\\"([^\\\"]+)\\\".*\", \"$1\") : \"\"; }\n}\n```\nВ тестах проверь поведение через assert/verify (см. starter).\n",
+  "keyPoints": [
+    "assertSame сравнивает ссылки, не equals",
+    "Понятный failure message",
+    "AssertJ читаемее",
+    "Шаблон к заданию «AssertJ проверки ответа» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "Чем assertEquals отличается от assertSame?",
+    "Когда soft assertions вредны?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "assertSame сравнивает:",
+      "options": [
+        "equals содержимое",
+        "ссылки на один объект",
+        "hashCode",
+        "toString"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "same = identity ==",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "AssertJ проверки ответа",
+      "description": "Дано:\n- класс / артефакт: ApiAssertTest\n- режим junit (класс с @Test)\n- вспомогательные классы: ApiResponse\n\nЗадание:\nСм. теорию «К практике» (AssertJ проверки ответа).\nApiAssertTest: дан ApiResponse(status, body). Напиши тесты: status 200, body содержит \"ok\", id не blank. Используй AssertJ assertThat.\n\nРезультат:\n- все @Test в классе зелёные",
+      "difficulty": "medium",
+      "mode": "junit",
+      "className": "ApiAssertTest",
+      "supportSources": {
+        "ApiResponse": "public class ApiResponse {\n  private final int status; private final String body;\n  public ApiResponse(int status, String body) { this.status = status; this.body = body; }\n  public int status() { return status; }\n  public String body() { return body; }\n  public String id() { return body.contains(\"\\\"id\\\":\\\"\") ? body.replaceAll(\".*\\\"id\\\":\\\"([^\\\"]+)\\\".*\", \"$1\") : \"\"; }\n}"
+      },
+      "starterCode": "import org.junit.jupiter.api.Test;\nimport static org.assertj.core.api.Assertions.*;\n\npublic class ApiAssertTest {\n    private final ApiResponse response = new ApiResponse(200, \"{\\\"ok\\\":true,\\\"id\\\":\\\"42\\\"}\");\n\n    // TODO tests with assertThat\n}\n",
+      "solutionCode": "import org.junit.jupiter.api.Test;\nimport static org.assertj.core.api.Assertions.*;\n\npublic class ApiAssertTest {\n    private final ApiResponse response = new ApiResponse(200, \"{\\\"ok\\\":true,\\\"id\\\":\\\"42\\\"}\");\n\n    @Test\n    void statusOk() { assertThat(response.status()).isEqualTo(200); }\n\n    @Test\n    void bodyHasOk() { assertThat(response.body()).contains(\"ok\"); }\n\n    @Test\n    void idPresent() { assertThat(response.id()).isNotBlank(); }\n}\n",
+      "hints": [
+        "assertThat(x).isEqualTo / contains / isNotBlank",
+        "Нужно 3 @Test",
+        "Доведи до детерминированного результата из раздела «Результат»."
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "junior",
+  "moduleId": "maven-junit"
+}

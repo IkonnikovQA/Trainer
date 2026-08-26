@@ -1,0 +1,53 @@
+{
+  "id": "m-testdata",
+  "title": "Тестовые данные: фабрики, фикстуры, изоляция",
+  "summary": "Нестабильные данные — частая причина flaky. Middle обязан уметь готовить данные правильно.",
+  "theoryMarkdown": "# Тестовые данные\n\n## Стратегии\n\n1. **Создать через API** перед UI\n2. **Фабрики/билдеры** с дефолтами + overrides\n3. **Уникальность**: UUID, timestamp\n4. **Cleanup**: delete/after, или immutable env\n\n## Плохо\n\n- Зависимость от ручного состояния стенда\n- Один и тот же email в параллели\n- Тесты, требующие точный порядок выполнения\n\n```java\nUser user = UserFactory.builder().email(\"qa+\" + UUID.randomUUID() + \"@mail.com\").build();\n```\n\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### Unique email factory\n```java\nimport org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass EmailFactory {\n    static String email(String prefix, String id) {\n        return prefix + \"+\" + id + \"@example.com\";\n    }\n}\n\npublic class EmailFactoryTest {\n    @Test\n    void builds() {\n        assertEquals(\"qa+42@example.com\", EmailFactory.email(\"qa\", \"42\"));\n    }\n}\n```\n",
+  "keyPoints": [
+    "Уникальные данные для параллели",
+    "Setup через API",
+    "Шаблон к заданию «Unique email factory» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "Как готовишь данные для E2E?",
+    "Что делать с shared sandbox?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Почему UUID в email полезен?",
+      "options": [
+        "Красиво",
+        "Избегает коллизий в параллельных прогонах",
+        "Ускоряет Chrome",
+        "Нужен Maven"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Уникальность данных.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Unique email factory",
+      "description": "Дано:\n- класс / артефакт: EmailFactoryTest\n- режим junit (класс с @Test)\n\nЗадание:\nСм. теорию «К практике» (Unique email factory).\nРеализуй EmailFactory.email(prefix, id) → prefix+\"+\"+id+\"@example.com\". Тесты уже есть.\n\nРезультат:\n- все @Test в классе зелёные",
+      "difficulty": "medium",
+      "mode": "junit",
+      "className": "EmailFactoryTest",
+      "starterCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass EmailFactory {\n    static String email(String prefix, String id) {\n        // TODO\n        return \"\";\n    }\n}\n\npublic class EmailFactoryTest {\n    @Test\n    void builds() {\n        assertEquals(\"qa+42@example.com\", EmailFactory.email(\"qa\", \"42\"));\n    }\n}\n",
+      "solutionCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass EmailFactory {\n    static String email(String prefix, String id) {\n        return prefix + \"+\" + id + \"@example.com\";\n    }\n}\n\npublic class EmailFactoryTest {\n    @Test\n    void builds() {\n        assertEquals(\"qa+42@example.com\", EmailFactory.email(\"qa\", \"42\"));\n    }\n}\n",
+      "hints": [
+        "prefix + \"+\" + id + \"@example.com\"",
+        "Use the API/pattern required by the lesson mode.",
+        "Finalize with exact return/assert conditions required by tests."
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "api"
+}

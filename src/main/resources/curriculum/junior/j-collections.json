@@ -1,0 +1,124 @@
+{
+  "id": "j-collections",
+  "title": "Коллекции: List, Set, Map",
+  "summary": "Коллекции нужны каждый день: списки элементов, уникальные значения, словари тестовых данных.",
+  "theoryMarkdown": "# Коллекции\n\n| Интерфейс | Реализации | Когда |\n|-----------|------------|-------|\n| List | ArrayList, LinkedList | Порядок, дубликаты, индекс |\n| Set | HashSet, LinkedHashSet, TreeSet | Уникальность |\n| Map | HashMap, LinkedHashMap, TreeMap | Ключ → значение |\n\n## Уникальные строки (практика 1)\n\n`HashSet` сам отбрасывает дубликаты. Можно собрать из массива/списка:\n\n```java\nSet<String> unique = new HashSet<>(Arrays.asList(items));\n// или: new HashSet<>(list);\n```\n\n## Частотный словарь (практика 2)\n\nСчитаем, сколько раз встретилось каждое слово. Удобный приём — `getOrDefault` или `merge`:\n\n```java\nMap<String, Integer> freq = new HashMap<>();\nfor (String word : words) {\n    freq.put(word, freq.getOrDefault(word, 0) + 1);\n    // то же: freq.merge(word, 1, Integer::sum);\n}\n```\n\n## Частые операции\n\n- `list.add`, `get`, `size`, `contains`\n- `map.put`, `get`, `containsKey`, `getOrDefault`, `merge`\n- `set.add` — не добавит дубликат\n\n## Java Streams (кратко)\n\n```java\nList<String> texts = elements.stream()\n    .map(WebElement::getText)\n    .filter(t -> !t.isBlank())\n    .toList();\n```\n\n## К практике\n\n### uniqueCount\nЕсли `items == null` — верни `0`. Иначе собери `HashSet` и возьми `size()`:\n\n```java\nif (items == null) return 0;\nreturn new HashSet<>(Arrays.asList(items)).size();\n```\n\n### freq\n`null` → пустая `HashMap`. Для каждого слова: `map.merge(w, 1, Integer::sum)`.\n\n## Map.of\n\n`Map.of(\"email\", \"a@b.c\", \"pass\", \"secret\")` создаёт **неизменяемую** map фиксированного набора пар. Добавить ключ через `put` нельзя — будет исключение. Для изменяемого словаря используй `new HashMap<>()`.\n",
+  "keyPoints": [
+    "Map.of — неизменяемая map фиксированного набора",
+    "HashSet убирает дубликаты",
+    "Частоты: getOrDefault или merge",
+    "ArrayList — дефолтный List, HashMap — быстрый словарь"
+  ],
+  "interviewTips": [
+    "ArrayList vs LinkedList",
+    "HashMap: как работает, что с null-ключом",
+    "Чем ConcurrentHashMap отличается от HashMap?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Какая структура гарантирует уникальность элементов?",
+      "options": [
+        "List",
+        "Set",
+        "Queue только",
+        "Массив int"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Set не допускает дубликаты.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Map.of(...) создаёт:",
+      "options": [
+        "Изменяемую HashMap",
+        "Неизменяемую map фиксированного набора",
+        "TreeMap",
+        "Vector"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Map.of — immutable map.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "difficulty": "easy",
+      "hints": [
+        "Сначала проверь null",
+        "HashSet сам уберёт дубликаты"
+      ],
+      "testCases": [
+        {
+          "name": "с дублями",
+          "callExpression": "uniqueCount({\"a\",\"b\",\"a\"})",
+          "expected": "2",
+          "expectedType": "int"
+        },
+        {
+          "name": "все уникальны",
+          "callExpression": "uniqueCount({\"x\",\"y\"})",
+          "expected": "2",
+          "expectedType": "int"
+        },
+        {
+          "name": "пустой",
+          "callExpression": "uniqueCount(null)",
+          "expected": "0",
+          "expectedType": "int"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "import java.util.*;\npublic class CollectionTasks {\n    public int uniqueCount(String[] items) {\n        if (items == null) return 0;\n        return new HashSet<>(Arrays.asList(items)).size();\n    }\n}\n",
+      "methodName": null,
+      "id": "e1",
+      "title": "Уникальные строки",
+      "description": "Дано:\n- класс CollectionTasks\n- метод uniqueCount(String[] items)\n\nЗадание:\nВерни число уникальных строк. null → 0. См. «К практике».\n\nРезультат:\n- uniqueCount({\"a\",\"b\",\"a\"}) → 2\n- uniqueCount(null) → 0",
+      "className": "CollectionTasks",
+      "starterCode": "import java.util.*;\npublic class CollectionTasks {\n    public int uniqueCount(String[] items) {\n        // TODO: используй Set\n        return 0;\n    }\n}\n",
+      "mode": "java",
+      "revealAfterFails": 2
+    },
+    {
+      "difficulty": "medium",
+      "hints": [
+        "new HashMap<>()",
+        "for (String w : words) map.merge(w, 1, Integer::sum)",
+        "Доведи до детерминированного результата из раздела «Результат»."
+      ],
+      "testCases": [
+        {
+          "name": "a дважды",
+          "callExpression": "getCount({\"a\",\"b\",\"a\"}, \"a\")",
+          "expected": "2",
+          "expectedType": "int"
+        },
+        {
+          "name": "нет ключа",
+          "callExpression": "getCount({\"a\"}, \"z\")",
+          "expected": "0",
+          "expectedType": "int"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "import java.util.*;\npublic class CollectionTasks {\n    public Map<String, Integer> freq(String[] words) {\n        Map<String, Integer> map = new HashMap<>();\n        if (words == null) return map;\n        for (String w : words) map.merge(w, 1, Integer::sum);\n        return map;\n    }\n    public int getCount(String[] words, String key) {\n        return freq(words).getOrDefault(key, 0);\n    }\n}\n",
+      "methodName": null,
+      "id": "e2",
+      "title": "Частотный словарь",
+      "description": "Дано:\n- класс / артефакт: CollectionTasks\n- режим java (класс с методами)\n\nЗадание:\nСм. теорию «К практике» (freq + merge).\nСм. теорию «Частотный словарь» (getOrDefault / merge).\nfreq(String[] words) верни Map слово→количество. Порядок не важен. Для проверки используем getCount.\n\nРезультат:\n- getCount({\"a\",\"b\",\"a\"}, \"a\") → 2\n- getCount({\"a\"}, \"z\") → 0",
+      "className": "CollectionTasks",
+      "starterCode": "import java.util.*;\npublic class CollectionTasks {\n    public Map<String, Integer> freq(String[] words) {\n        // TODO\n        return Map.of();\n    }\n    public int getCount(String[] words, String key) {\n        return freq(words).getOrDefault(key, 0);\n    }\n}\n",
+      "mode": "java",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "junior",
+  "moduleId": "java-basics"
+}

@@ -1,0 +1,89 @@
+{
+  "id": "j-locators",
+  "title": "Локаторы: CSS, XPath, стратегии",
+  "summary": "Качество локаторов = стабильность UI-тестов.",
+  "theoryMarkdown": "# Локаторы\n\n## Приоритет выбора\n\n1. **data-testid / id** — стабильные, договорённость с фронтом\n2. **CSS** — структура, атрибуты\n3. **XPath** — текст, оси, сложные отношения\n4. Хрупкие: абсолютный xpath, индексы `div[3]`, CSS-hash классы\n\n## CSS\n\n```\n#login\ninput[name='email']\n.btn.primary\n[data-testid='save']\n```\n\n## XPath\n\n```\n//button[normalize-space()='Submit']\n//div[@class='row']//input\n//*[contains(@class,'error')]\n```\n\n## Плохие практики\n\n- `/html/body/div[3]/div[1]/...`\n- Локатор от позиции в списке без бизнес-смысла\n- Завязка на динамические CSS-modules hash\n\nНа собесе говори: «сначала стабильный test id, xpath — когда нужен текст/ось».\n\n\n\n## В работе vs лаба\n\nВ лабе — **FakeDriver** (быстрый DOM в памяти). В работе и в `examples/portfolio-starter` — **реальный Chrome** + явные waits.\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### By по data-testid\n```java\nimport org.openqa.selenium.By;\n\npublic class LocatorLab {\n    public By byTestId(String id) {\n        return By.cssSelector(\"[data-testid='\" + id + \"']\");\n    }\n}\n```\n\n### XPath кнопки по тексту\n```java\nimport org.openqa.selenium.By;\n\npublic class LocatorLab {\n    public By byButtonText(String text) {\n        return By.xpath(\"//button[normalize-space()='\" + text + \"']\");\n    }\n}\n```\n\n## Absolute XPath\n\nПуть вида `/html/body/...` плох: малейшее изменение DOM ломает путь. Предпочитай `data-testid`, CSS, относительный XPath.\n",
+  "keyPoints": [
+    "Стабильный атрибут лучше красивого xpath",
+    "CSS для структуры, XPath для текста",
+    "Шаблон к заданию «By по data-testid» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "CSS vs XPath производительность",
+    "Как работать с Shadow DOM (ограничения)"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Какой локатор предпочтительнее для стабильности?",
+      "options": [
+        "/html/body/div[5]/button",
+        "By.cssSelector(\"[data-testid='login']\")",
+        "By.xpath(\"//div[3]\")",
+        "By.className(\"css-hash-123\")"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "data-testid специально для тестов.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Absolute XPath (/html/body/...) плох потому что:",
+      "options": [
+        "Слишком быстрый",
+        "Хрупкий к любым изменениям вёрстки",
+        "Не поддерживается Selenium",
+        "Запрещён в Java"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Малейшее изменение DOM ломает путь.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "By по data-testid",
+      "description": "Дано:\n- класс / артефакт: LocatorLab\n- режим selenium-fake (in-memory FakeDriver)\n- DOM fixture уже подготовлен тренажёром\n\nЗадание:\nСм. теорию «К практике» (By по data-testid).\nreturn CSS selector by data-testid attribute exactly for given id.\n\nРезультат:\n- verifier проверяет действия на FakeDriver",
+      "difficulty": "easy",
+      "mode": "selenium-fake",
+      "className": "LocatorLab",
+      "fixtureJson": "{\"title\":\"Login\",\"elements\":[{\"tag\":\"button\",\"id\":\"go\",\"testId\":\"login\",\"text\":\"Login\",\"displayed\":true}]}",
+      "starterCode": "import org.openqa.selenium.By;\n\npublic class LocatorLab {\n    public By byTestId(String id) {\n        // Пример: By.cssSelector(\"[data-testid='login']\")\n        // Подставь переменную id вместо login\n        return null;\n    }\n}\n",
+      "solutionCode": "import org.openqa.selenium.By;\n\npublic class LocatorLab {\n    public By byTestId(String id) {\n        return By.cssSelector(\"[data-testid='\" + id + \"']\");\n    }\n}\n",
+      "hints": [
+        "Use CSS attribute selector syntax",
+        "Interpolate id inside [data-testid='...']",
+        "Return By.cssSelector(...)"
+      ],
+      "verifierCode": "import java.util.*;\nimport org.openqa.selenium.*;\nimport com.qatrainer.lab.selenium.FakeDriver;\n\npublic class ExerciseVerifier {\n  public List<String> verify(Class<?> cls, WebDriver driver) throws Exception {\n    List<String> fails = new ArrayList<>();\n    Object lab = cls.getDeclaredConstructor().newInstance();\n    By by = (By) cls.getMethod(\"byTestId\", String.class).invoke(lab, \"login\");\n    WebElement el = driver.findElement(by);\n    if (!\"Login\".equals(el.getText())) fails.add(\"Не нашли кнопку Login по data-testid\");\n    return fails;\n  }\n}",
+      "revealAfterFails": 2
+    },
+    {
+      "id": "e2",
+      "title": "XPath кнопки по тексту",
+      "description": "Дано:\n- класс / артефакт: LocatorLab\n- режим selenium-fake (in-memory FakeDriver)\n- DOM fixture уже подготовлен тренажёром\n\nЗадание:\nСм. теорию «К практике» (XPath кнопки по тексту).\nbuild XPath //button[normalize-space()='text'] using provided variable.\n\nРезультат:\n- verifier проверяет действия на FakeDriver",
+      "difficulty": "easy",
+      "mode": "selenium-fake",
+      "className": "LocatorLab",
+      "fixtureJson": "{\"elements\":[{\"tag\":\"button\",\"id\":\"s\",\"text\":\"Save\",\"displayed\":true}]}",
+      "starterCode": "import org.openqa.selenium.By;\n\npublic class LocatorLab {\n    public By byButtonText(String text) {\n        // Пример: //button[normalize-space()='Save']\n        return null;\n    }\n}\n",
+      "solutionCode": "import org.openqa.selenium.By;\n\npublic class LocatorLab {\n    public By byButtonText(String text) {\n        return By.xpath(\"//button[normalize-space()='\" + text + \"']\");\n    }\n}\n",
+      "hints": [
+        "Use normalize-space() for text match",
+        "Build XPath with variable interpolation",
+        "Return By.xpath(...) with exact template"
+      ],
+      "verifierCode": "import java.util.*;\nimport org.openqa.selenium.*;\n\npublic class ExerciseVerifier {\n  public List<String> verify(Class<?> cls, WebDriver driver) throws Exception {\n    List<String> fails = new ArrayList<>();\n    Object lab = cls.getDeclaredConstructor().newInstance();\n    By by = (By) cls.getMethod(\"byButtonText\", String.class).invoke(lab, \"Save\");\n    if (!\"Save\".equals(driver.findElement(by).getText())) fails.add(\"Save button not found\");\n    return fails;\n  }\n}",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "junior",
+  "moduleId": "selenium"
+}

@@ -1,0 +1,61 @@
+{
+  "id": "s-compose-grid",
+  "title": "Docker Compose и Selenium Grid",
+  "summary": "Сетка браузеров и сервисы через compose — типичный Senior-сетап.",
+  "theoryMarkdown": "# Compose + Grid\n\n## Идея\n\n`docker-compose.yml`: hub + chrome/firefox nodes + mockapi.\n\nТесты в CI указывают `remoteUrl=http://hub:4444`.\n\n## Selenium Grid 4\n\nRouter/Distributor/Nodes... Для практики часто используют готовые образы selenium.\n\n## Проблемы\n\n- Нехватка shared memory для Chrome (`--shm-size`)\n- Сеть между сервисами\n- Старт гонки: wait-for-hub\n\n## Облако\n\nBrowserStack/LambdaTest — альтернатива своему Grid.\n\n\n\n## В работе vs лаба\n\nВ лабе проверяется **текст артефакта** (структура YAML/Jenkinsfile). В работе pipeline должен **реально выполняться** в CI (см. портфолио GHA).\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### compose с selenium\nЗаполни артефакт по образцу:\n```text\nservices:\n  chrome:\n    image: selenium/standalone-chrome:4.25.0\n    shm_size: 2gb\n    ports:\n      - \"4444:4444\"\n```\n\n## Тесты на Grid\n\nТесты используют **RemoteWebDriver** на hub URL, а не локальный ChromeDriver.\n",
+  "keyPoints": [
+    "remote WebDriver URL",
+    "shm-size для Chrome",
+    "Шаблон к заданию «compose с selenium» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "Grid vs облако",
+    "Как масштабировать nodes?",
+    "VNC для дебага"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Тесты на Grid используют:",
+      "options": [
+        "Только локальный ChromeDriver всегда",
+        "RemoteWebDriver на hub URL",
+        "Internet Explorer only",
+        "Без драйвера"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "RemoteWebDriver.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "compose с selenium",
+      "description": "Дано:\n- класс / артефакт: Compose\n- режим artifact (текст файла / YAML / Jenkinsfile)\n\nЗадание:\nСм. теорию «К практике» (compose с selenium).\ndocker-compose фрагмент: services, image selenium или chrome, без PASSWORD.\n\nРезультат:\n- в тексте есть: services:\n- в тексте есть: image:",
+      "difficulty": "easy",
+      "mode": "artifact",
+      "artifactKind": "compose",
+      "artifactRules": [
+        "contains:services:",
+        "contains:image:",
+        "regex:selenium|chrome|firefox",
+        "noSecret:PASSWORD"
+      ],
+      "className": "Compose",
+      "starterCode": "services:\n  # TODO hub/chrome\n",
+      "solutionCode": "services:\n  chrome:\n    image: selenium/standalone-chrome:4.25.0\n    shm_size: 2gb\n    ports:\n      - \"4444:4444\"\n",
+      "hints": [
+        "services: + image: selenium/standalone-chrome",
+        "Use the API/pattern required by the lesson mode.",
+        "Finalize with exact return/assert conditions required by tests."
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "senior",
+  "moduleId": "docker"
+}

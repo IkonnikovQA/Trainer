@@ -1,0 +1,71 @@
+﻿{
+  "id": "m-json-schema",
+  "title": "JSON contract checks",
+  "summary": "Проверка обязательных полей ответа — мини-контракт без тяжёлого schema framework.",
+  "theoryMarkdown": "# JSON Schema в API-тестах\n\nПроверяешь **форму** ответа: обязательные поля, типы, enums — не только status code.\n\n```java\n.then().body(matchesJsonSchemaInClasspath(\"schemas/order.json\"));\n```\n\n## Зачем\n\nЛовит ломающие контракт изменения раньше UI. Дополняет, не заменяет бизнес-ассерты (цена, статус заказа).\n\n## Ограничения\n\nСлишком жёсткая схема флакает на эволюцию API; держи schema рядом с контрактом/версией.\n\n\n\n## В работе vs лаба\n\nВ лабе — **MockWebServer**. В работе — стенд/demo API; контракты и негативы гоняй против живого baseUrl (jsonplaceholder в портфолио).\n## К практике\n\nВ этой лабе контракт проверяем **вручную** через RestAssured (без matchesJsonSchema):\n\n```java\nvar res = given().when().get(baseUrl + \"/user\").then().statusCode(200).extract();\nObject id = res.path(\"id\");\nString email = res.path(\"email\");\nString status = res.path(\"status\");\n// id != null, email содержит @, status равен \"ACTIVE\"\n```\n",
+  "keyPoints": [
+    "Required fields",
+    "Типы/enum",
+    "Fail fast на контракте"
+  ],
+  "interviewTips": [
+    "JSON Schema vs hand-written asserts",
+    "Где хранить контракты?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Если API убрал поле token из login-ответа, что должно упасть первым?",
+      "options": [
+        "Только UI",
+        "Контрактный/API assert на required field",
+        "Ничего",
+        "Линтер CSS"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Контракт ловит breaking change дешевле UI.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "JSON Schema в первую очередь проверяет:",
+      "options": [
+        "Цвет кнопки",
+        "Структуру/типы JSON-контракта",
+        "Скорость Chrome",
+        "Только HTTP 500"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Форма ответа, не весь бизнес.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "validateUserContract",
+      "description": "Дано:\n- класс / артефакт: UserContract\n- режим http (RestAssured + MockWebServer)\n- HTTP stub уже подготовлен тренажёром\n\nЗадание:\nСм. теорию «К практике» (ручной контракт path()).\nUserContract.validate(baseUrl): GET /user, проверь status 200 и что body содержит непустые id (number/string), email, status==\"ACTIVE\". Верни true если ок.\n\nРезультат:\n- verifier проверяет ответы через MockWebServer",
+      "difficulty": "hard",
+      "mode": "http",
+      "className": "UserContract",
+      "httpStubJson": "{\"stubs\":[{\"status\":200,\"body\":\"{\\\"id\\\":42,\\\"email\\\":\\\"qa@example.com\\\",\\\"status\\\":\\\"ACTIVE\\\"}\",\"headers\":{\"Content-Type\":\"application/json\"}}]}",
+      "starterCode": "import static io.restassured.RestAssured.*;\n\npublic class UserContract {\n    public boolean validate(String baseUrl) {\n        // TODO GET baseUrl+\"/user\", assert fields, return true\n        return false;\n    }\n}\n",
+      "solutionCode": "import static io.restassured.RestAssured.*;\n\npublic class UserContract {\n    public boolean validate(String baseUrl) {\n        var res = given().when().get(baseUrl + \"/user\").then().statusCode(200).extract();\n        Object id = res.path(\"id\");\n        String email = res.path(\"email\");\n        String status = res.path(\"status\");\n        if (id == null) throw new AssertionError(\"id required\");\n        if (email == null || email.isBlank()) throw new AssertionError(\"email required\");\n        if (!\"ACTIVE\".equals(status)) throw new AssertionError(\"status ACTIVE required\");\n        return true;\n    }\n}\n",
+      "hints": [
+        "Start from the concept and contract before coding exact statements.",
+        "given().when().get(baseUrl + \"/user\").then().statusCode(200).extract()",
+        "path(\"id\"), path(\"email\"), path(\"status\")"
+      ],
+      "verifierCode": "import java.util.*;\n\npublic class ExerciseVerifier {\n  public List<String> verify(Class<?> cls, String baseUrl) throws Exception {\n    List<String> fails = new ArrayList<>();\n    Object c = cls.getDeclaredConstructor().newInstance();\n    boolean ok = (Boolean) cls.getMethod(\"validate\", String.class).invoke(c, baseUrl);\n    if (!ok) fails.add(\"validate must return true\");\n    return fails;\n  }\n}",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "api"
+}

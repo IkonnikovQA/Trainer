@@ -1,0 +1,71 @@
+{
+  "id": "m-junit-extensions",
+  "title": "JUnit 5 Extensions: Store и Namespace",
+  "summary": "Extension вместо толстого BaseTest: callbacks + Store для данных на тест.",
+  "theoryMarkdown": "# JUnit 5 Extensions\n\n## Зачем\n\nBaseTest наследует всё подряд → хрупко. Extension подключаешь точечно через `@ExtendWith`.\n\n## BeforeEachCallback\n\n```java\npublic class TimingExtension implements BeforeEachCallback {\n  static final ExtensionContext.Namespace NS =\n      ExtensionContext.Namespace.create(\"timing\");\n\n  public void beforeEach(ExtensionContext ctx) {\n    ctx.getStore(NS).put(\"startedAt\", System.currentTimeMillis());\n  }\n}\n```\n\n## Store и Namespace\n\n- **Store** — map, живущий в контексте теста/класса\n- **Namespace** — ключ изоляции, чтобы расширения не затирали чужие данные\n\n## vs BaseTest\n\nExtension = композиция. BaseTest = наследование (один «родитель»).\n\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### TimingExtension + Store\n```java\nimport org.junit.jupiter.api.Test;\nimport org.junit.jupiter.api.extension.*;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass TimingExtension implements BeforeEachCallback {\n    static final ExtensionContext.Namespace NS =\n        ExtensionContext.Namespace.create(\"timing\");\n    private static ExtensionContext last;\n\n    @Override\n    public void beforeEach(ExtensionContext context) {\n        context.getStore(NS).put(\"startedAt\", System.currentTimeMillis());\n        last = context;\n    }\n\n    static Long startedAt() {\n        return last.getStore(NS).get(\"startedAt\", Long.class);\n    }\n}\n\n@ExtendWith(TimingExtension.class)\npublic class TimingExtensionTest {\n    @Test\n    void storeHasStart() {\n        Long started = TimingExtension.startedAt();\n        assertNotNull(started);\n        assertTrue(started > 0);\n    }\n}\n```\n",
+  "keyPoints": [
+    "@ExtendWith",
+    "Store + Namespace",
+    "Шаблон к заданию «TimingExtension + Store» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "Когда оставить BaseTest?",
+    "Что кладёшь в Store?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Namespace в ExtensionContext нужен чтобы:",
+      "options": [
+        "Ускорить Maven",
+        "Изолировать ключи Store между расширениями",
+        "Заменить @Test",
+        "Отключить параллель"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Разные расширения не конфликтуют по ключам.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "multiple",
+      "question": "Что правда про Extension?",
+      "options": [
+        "Подключается через @ExtendWith",
+        "Всегда требует наследования BaseTest",
+        "Store хранит данные на контекст теста",
+        "Заменяет CI"
+      ],
+      "correctIndexes": [
+        0,
+        2
+      ],
+      "explanation": "Композиция + Store.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "TimingExtension + Store",
+      "description": "Дано:\n- класс / артефакт: TimingExtensionTest\n- режим junit (класс с @Test)\n\nЗадание:\nСм. теорию «К практике» (TimingExtension + Store).\nwrite startedAt to Store under Namespace timing and keep context reference.\n\nРезультат:\n- все @Test в классе зелёные",
+      "difficulty": "medium",
+      "mode": "junit",
+      "className": "TimingExtensionTest",
+      "timeoutMs": 15000,
+      "revealAfterFails": 2,
+      "starterCode": "import org.junit.jupiter.api.Test;\nimport org.junit.jupiter.api.extension.*;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass TimingExtension implements BeforeEachCallback {\n    static final ExtensionContext.Namespace NS =\n        ExtensionContext.Namespace.create(\"timing\");\n    private static ExtensionContext last;\n\n    @Override\n    public void beforeEach(ExtensionContext context) {\n        // TODO: put startedAt into Store; last = context;\n    }\n\n    static Long startedAt() {\n        // TODO: return last.getStore(NS).get(\"startedAt\", Long.class);\n        return null;\n    }\n}\n\n@ExtendWith(TimingExtension.class)\npublic class TimingExtensionTest {\n    @Test\n    void storeHasStart() {\n        Long started = TimingExtension.startedAt();\n        assertNotNull(started);\n        assertTrue(started > 0);\n    }\n}\n",
+      "solutionCode": "import org.junit.jupiter.api.Test;\nimport org.junit.jupiter.api.extension.*;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass TimingExtension implements BeforeEachCallback {\n    static final ExtensionContext.Namespace NS =\n        ExtensionContext.Namespace.create(\"timing\");\n    private static ExtensionContext last;\n\n    @Override\n    public void beforeEach(ExtensionContext context) {\n        context.getStore(NS).put(\"startedAt\", System.currentTimeMillis());\n        last = context;\n    }\n\n    static Long startedAt() {\n        return last.getStore(NS).get(\"startedAt\", Long.class);\n    }\n}\n\n@ExtendWith(TimingExtension.class)\npublic class TimingExtensionTest {\n    @Test\n    void storeHasStart() {\n        Long started = TimingExtension.startedAt();\n        assertNotNull(started);\n        assertTrue(started > 0);\n    }\n}\n",
+      "hints": [
+        "Use ExtensionContext.Store with stable namespace",
+        "Store both timestamp and latest context reference",
+        "Read startedAt via last.getStore(...).get(..., Long.class)"
+      ]
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "quality"
+}

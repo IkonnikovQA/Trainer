@@ -1,0 +1,91 @@
+﻿{
+  "id": "m-restassured",
+  "title": "API тестирование с RestAssured",
+  "summary": "Большая часть ценности Middle — стабильные API-тесты и контракты ответов.",
+  "theoryMarkdown": "# RestAssured\n\n```java\ngiven()\n  .contentType(ContentType.JSON)\n  .body(payload)\n.when()\n  .post(\"/api/login\")\n.then()\n  .statusCode(200)\n  .body(\"token\", not(emptyString()));\n```\n\n## Спеки\n\n`RequestSpecBuilder` / `ResponseSpecBuilder` — общие headers, baseURI, ожидаемые коды.\n\n## jsonPath / hamcrest / assertj\n\nПроверяй поля, массивы, типы.\n\n## Пирамида\n\nAPI тесты быстрее и стабильнее UI — покрывай ими бизнес-логику.\n\n\n## Lab\n\nВ тренажёре поднимается **MockWebServer**. Пиши RestAssured against `baseUrl`.\n\n## Коды ответа\n\n**401 Unauthorized** — запрос без (или с неверной) аутентификации: «кто ты?» не принято.\n403 — аутентифицирован, но нет прав.\n\n\n\n## В работе vs лаба\n\nВ лабе — **MockWebServer**. В работе — стенд/demo API; контракты и негативы гоняй против живого baseUrl (jsonplaceholder в портфолио).\n## К практике\n\n### checkHealth (GET)\n\n```java\nreturn given()\n    .when()\n    .get(baseUrl + \"/health\")\n    .then()\n    .statusCode(200)\n    .extract().statusCode();\n```\n\n\n### loginToken\nPOST JSON на `/login`, вытащи токен:\n\n```java\nString body = \"{\\\"user\\\":\\\"\" + user + \"\\\",\\\"pass\\\":\\\"\" + pass + \"\\\"}\";\nreturn given()\n    .contentType(ContentType.JSON)\n    .body(body)\n    .when().post(baseUrl + \"/login\")\n    .then().statusCode(200)\n    .extract().path(\"token\");\n```\n\n## Где проверять бизнес-правило\n\nРасчёт цены и доменные правила — **ближе к логике** (unit/API), UI E2E для этого дороже.\n",
+  "keyPoints": [
+    "401 = не аутентифицирован",
+    "given-when-then",
+    "Выноси base spec",
+    "API > UI для логики"
+  ],
+  "interviewTips": [
+    "Идемпотентность",
+    "Как тестировать auth (Bearer)?",
+    "Разница 401 и 403"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "401 обычно значит:",
+      "options": [
+        "Нет прав (forbidden)",
+        "Не аутентифицирован",
+        "Сервер упал",
+        "OK"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Unauthorized — нет/невалидна аутентификация.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Где лучше проверять бизнес-правило расчёта цены?",
+      "options": [
+        "Только через тяжёлый UI",
+        "API/сервисный уровень (+ UI smoke)",
+        "Вручную раз в год",
+        "В CSS"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Ближе к логике — дешевле.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "GET /health через RestAssured",
+      "description": "Дано:\n- класс / артефакт: HealthClient\n- режим http (RestAssured + MockWebServer)\n- HTTP stub уже подготовлен тренажёром\n\nЗадание:\nМетод checkHealth(String baseUrl): GET {baseUrl}/health, верни status code. Ожидай 200 и body с \"UP\".\n\nРезультат:\n- verifier проверяет ответы через MockWebServer",
+      "difficulty": "medium",
+      "mode": "http",
+      "className": "HealthClient",
+      "httpStubJson": "{\"stubs\":[{\"status\":200,\"body\":\"{\\\"status\\\":\\\"UP\\\"}\",\"headers\":{\"Content-Type\":\"application/json\"}}]}",
+      "starterCode": "import io.restassured.RestAssured;\nimport static io.restassured.RestAssured.*;\n\npublic class HealthClient {\n    public int checkHealth(String baseUrl) {\n        // TODO: given().when().get(baseUrl + \"/health\").then()... statusCode\n        return 0;\n    }\n}\n",
+      "solutionCode": "import static io.restassured.RestAssured.*;\n\npublic class HealthClient {\n    public int checkHealth(String baseUrl) {\n        return given()\n            .when()\n            .get(baseUrl + \"/health\")\n            .then()\n            .statusCode(200)\n            .extract().statusCode();\n    }\n}\n",
+      "hints": [
+        "Start from the concept and contract before coding exact statements.",
+        "given().when().get(baseUrl + \"/health\")",
+        ".then().statusCode(200).extract().statusCode()"
+      ],
+      "verifierCode": "import java.util.*;\n\npublic class ExerciseVerifier {\n  public List<String> verify(Class<?> cls, String baseUrl) throws Exception {\n    List<String> fails = new ArrayList<>();\n    Object c = cls.getDeclaredConstructor().newInstance();\n    int code = (Integer) cls.getMethod(\"checkHealth\", String.class).invoke(c, baseUrl);\n    if (code != 200) fails.add(\"status expected 200, got \" + code);\n    return fails;\n  }\n}",
+      "revealAfterFails": 2
+    },
+    {
+      "id": "e2",
+      "title": "Bearer login token",
+      "description": "Дано:\n- класс / артефакт: AuthClient\n- режим http (RestAssured + MockWebServer)\n- HTTP stub уже подготовлен тренажёром\n\nЗадание:\nСм. теорию «К практике» (extract().path(token)).\nloginToken(baseUrl, user, pass): POST /login JSON {\"user\",\"pass\"}, верни token из body. Stub вернёт {\"token\":\"abc\"}.\n\nРезультат:\n- verifier проверяет ответы через MockWebServer",
+      "difficulty": "hard",
+      "mode": "http",
+      "className": "AuthClient",
+      "httpStubJson": "{\"stubs\":[{\"status\":200,\"body\":\"{\\\"token\\\":\\\"abc\\\"}\",\"headers\":{\"Content-Type\":\"application/json\"},\"times\":2}]}",
+      "starterCode": "import static io.restassured.RestAssured.*;\nimport io.restassured.http.ContentType;\n\npublic class AuthClient {\n    public String loginToken(String baseUrl, String user, String pass) {\n        // TODO POST baseUrl+\"/login\" with JSON body, return jsonPath token\n        return null;\n    }\n}\n",
+      "solutionCode": "import static io.restassured.RestAssured.*;\nimport io.restassured.http.ContentType;\n\npublic class AuthClient {\n    public String loginToken(String baseUrl, String user, String pass) {\n        String body = \"{\\\"user\\\":\\\"\" + user + \"\\\",\\\"pass\\\":\\\"\" + pass + \"\\\"}\";\n        return given()\n            .contentType(ContentType.JSON)\n            .body(body)\n            .when()\n            .post(baseUrl + \"/login\")\n            .then()\n            .statusCode(200)\n            .extract().path(\"token\");\n    }\n}\n",
+      "hints": [
+        "contentType JSON + body",
+        "extract().path(\"token\")",
+        "Доведи до детерминированного результата из раздела «Результат»."
+      ],
+      "verifierCode": "import java.util.*;\n\npublic class ExerciseVerifier {\n  public List<String> verify(Class<?> cls, String baseUrl) throws Exception {\n    List<String> fails = new ArrayList<>();\n    Object c = cls.getDeclaredConstructor().newInstance();\n    String token = (String) cls.getMethod(\"loginToken\", String.class, String.class, String.class)\n        .invoke(c, baseUrl, \"u\", \"p\");\n    if (!\"abc\".equals(token)) fails.add(\"token expected abc, got \" + token);\n    return fails;\n  }\n}",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "api"
+}

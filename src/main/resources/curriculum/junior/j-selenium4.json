@@ -1,0 +1,88 @@
+{
+  "id": "j-selenium4",
+  "levelId": "junior",
+  "moduleId": "selenium",
+  "title": "Selenium 4: relative locators и W3C",
+  "summary": "Современный Selenium: W3C протокол, relative locators, CDP/BiDi обзор.",
+  "theoryMarkdown": "# Selenium 4\n\n## W3C WebDriver\n\nSelenium 4 говорит с браузером по **W3C WebDriver**, а не JSON Wire Protocol.\nЭто единый стандарт → меньше сюрпризов между драйверами.\n\n## Relative locators\n\n```java\nBy email = RelativeLocator.with(By.tagName(\"input\")).above(By.id(\"password\"));\n```\n\nПолезны, когда нет стабильного id, но есть соседний якорь.\nНе злоупотребляй — data-testid всё ещё лучше.\n\n## CDP / BiDi (обзор)\n\nChrome DevTools Protocol и WebDriver BiDi дают доступ к сети, консоли, emulation.\nНа собеседовании достаточно понимать *зачем*: перехват запросов, геолокация, performance.\nВ проде часто выбирают Playwright, если нужен богатый network layer из коробки.\n\n## Anti-patterns Selenium 3 эпохи\n\n- DesiredCapabilities вместо Options\n- `findElementBy*` (deprecated)\n- Игнор relative locators / нового Grid\n\n\n## Важно для lab\n\nВ тренажёре relative locator моделируется **порядком элементов** (above = предыдущий input), потому что FakeDriver без layout geometry. В проде используй `RelativeLocator.with(...).above(...)`.\n\n\n\n## В работе vs лаба\n\nВ лабе — **FakeDriver** (быстрый DOM в памяти). В работе и в `examples/portfolio-starter` — **реальный Chrome** + явные waits.\n## К практике\n\nВ этой лабе RelativeLocator **эмулируется порядком input в DOM** (FakeDriver):\n\n1. `List<WebElement> inputs = driver.findElements(By.tagName(\"input\"));`\n2. Найди индекс, где `getAttribute(\"id\")` равен `\"password\"`.\n3. Элемент «выше» — `inputs.get(pwdIndex - 1)`.\n4. Верни его `getAttribute(\"name\")`.\n\n## Relative locators\n\nНужны, чтобы искать элемент **относительно якоря** (above/below/near), а не только по абсолютному локатору.\n",
+  "keyPoints": [
+    "W3C — стандарт протокола Selenium 4",
+    "Relative locators — рядом с якорем",
+    "CDP/BiDi — продвинутые возможности браузера"
+  ],
+  "interviewTips": [
+    "Чем Selenium 4 Grid отличается от Selenium 3 Hub-Node?",
+    "Когда relative locator уместен, а когда вреден?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Relative locator нужен чтобы:",
+      "options": [
+        "Заменить все CSS",
+        "Искать относительно другого элемента",
+        "Ускорить Maven",
+        "Отключить waits"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Поиск относительно якоря.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "W3C WebDriver — это:",
+      "options": [
+        "Старый JSON Wire",
+        "Стандартный протокол автоматизации браузера",
+        "Плагин Jenkins",
+        "Замена JUnit"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Стандарт протокола.",
+      "hint": null
+    },
+    {
+      "id": "q3",
+      "type": "multiple",
+      "question": "Что верно про CDP/BiDi? (несколько)",
+      "options": [
+        "Позволяют глубже работать с браузером (сеть/консоль)",
+        "Обязательны в каждом UI-тесте",
+        "Полезны для advanced сценариев",
+        "Заменяют POM"
+      ],
+      "correctIndexes": [
+        0,
+        2
+      ],
+      "explanation": "Advanced возможности, не замена архитектуры.",
+      "hint": "Не всё обязательно в каждом тесте."
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Relative-like: input above password by order",
+      "description": "Дано:\n- класс / артефакт: RelLab\n- режим selenium-fake (in-memory FakeDriver)\n- DOM fixture уже подготовлен тренажёром\n\nЗадание:\nСм. теорию «К практике» (порядок input).\nНайди все input, найди индекс элемента с id=password, верни name предыдущего input (модель «above»).\n\nРезультат:\n- verifier проверяет действия на FakeDriver",
+      "difficulty": "medium",
+      "mode": "selenium-fake",
+      "className": "RelLab",
+      "fixtureJson": "{\"elements\":[{\"tag\":\"input\",\"id\":\"email\",\"name\":\"email\"},{\"tag\":\"input\",\"id\":\"password\",\"name\":\"password\"},{\"tag\":\"input\",\"id\":\"extra\",\"name\":\"extra\"}]}",
+      "starterCode": "import org.openqa.selenium.*;\nimport java.util.*;\n\npublic class RelLab {\n    public String findInputAbovePassword(WebDriver driver) {\n        List<WebElement> inputs = driver.findElements(By.tagName(\"input\"));\n        int pwd = -1;\n        for (int i = 0; i < inputs.size(); i++) {\n            if (\"password\".equals(inputs.get(i).getAttribute(\"id\"))) {\n                pwd = i;\n            }\n        }\n        // TODO: если pwd > 0, верни name у inputs.get(pwd - 1)\n        return null;\n    }\n}\n",
+      "solutionCode": "import org.openqa.selenium.*;\nimport java.util.*;\n\npublic class RelLab {\n    public String findInputAbovePassword(WebDriver driver) {\n        List<WebElement> inputs = driver.findElements(By.tagName(\"input\"));\n        int pwd = -1;\n        for (int i = 0; i < inputs.size(); i++) {\n            if (\"password\".equals(inputs.get(i).getAttribute(\"id\"))) pwd = i;\n        }\n        if (pwd <= 0) return null;\n        return inputs.get(pwd - 1).getAttribute(\"name\");\n    }\n}\n",
+      "hints": [
+        "Start from the concept and contract before coding exact statements.",
+        "if (pwd <= 0) return null;",
+        "return inputs.get(pwd - 1).getAttribute(\"name\");"
+      ],
+      "verifierCode": "import java.util.*;\nimport org.openqa.selenium.*;\n\npublic class ExerciseVerifier {\n  public List<String> verify(Class<?> cls, WebDriver driver) throws Exception {\n    List<String> fails = new ArrayList<>();\n    Object lab = cls.getDeclaredConstructor().newInstance();\n    String name = (String) cls.getMethod(\"findInputAbovePassword\", WebDriver.class).invoke(lab, driver);\n    if (!\"email\".equals(name)) fails.add(\"expected email above password, got \" + name);\n    return fails;\n  }\n}",
+      "revealAfterFails": 2
+    }
+  ]
+}

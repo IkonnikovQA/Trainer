@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Собеседование · QA Forge</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+</head>
+<body>
+<header class="topbar">
+    <a class="brand" href="/">QA Forge</a>
+    <nav>
+        <a href="/">Курс</a>
+        <a href="/interview" class="active">Собеседование</a>
+    </nav>
+</header>
+<main class="home interview-home">
+    <section class="hero">
+        <p class="eyebrow">Банк вопросов · mock-сессии</p>
+        <h1>Собеседование</h1>
+        <p class="lead">Сначала ответь сам — потом открой эталон. Режим «Сессия» — тренировка 30/45 минут как на собесе.</p>
+        <div class="hero-actions" style="margin-top:12px">
+            <button class="btn primary" type="button" id="startSession30">Сессия 30 мин</button>
+            <button class="btn ghost" type="button" id="startSession45">Сессия 45 мин</button>
+            <a class="btn ghost" href="/">← К курсу / CAREER</a>
+        </div>
+        <div id="sessionBar" class="session-panel" hidden>
+            <p class="recommend-label">Mock-сессия</p>
+            <p class="session-meta"><strong id="sessionTimer">30:00</strong> · вопрос <span id="sessionIdx">1</span>/<span id="sessionTotal">8</span></p>
+            <p class="muted" id="sessionHint">Ответь вслух, затем оцени себя.</p>
+            <div class="session-actions">
+                <button class="btn ghost" type="button" id="sessionReveal">Показать эталон</button>
+                <button class="btn ghost" type="button" id="sessionOk">Знаю ✓</button>
+                <button class="btn ghost" type="button" id="sessionWeak">Слабо</button>
+                <button class="btn ghost" type="button" id="sessionEnd">Завершить</button>
+            </div>
+            <div id="sessionCard" class="card"></div>
+            <div id="sessionSummary" hidden></div>
+        </div>
+    </section>
+    <div class="filters">
+        <button class="btn ghost" data-level="junior" type="button">Junior</button>
+        <button class="btn ghost" data-level="middle" type="button"
+                th:disabled="${!middleUnlocked}"
+                th:title="${middleUnlocked} ? 'Middle' : 'Откроется после ~80% Junior'">Middle</button>
+        <button class="btn ghost" data-level="senior" type="button"
+                th:disabled="${!seniorUnlocked}"
+                th:title="${seniorUnlocked} ? 'Senior' : 'Откроется после ~80% Middle'">Senior</button>
+        <button class="btn ghost" data-level="junior-hot" type="button">Часто на Junior</button>
+    </div>
+    <p class="muted" style="margin-top:0"
+       th:if="${!middleUnlocked}">Сейчас открыт только Junior — как в курсе. Middle/Senior появятся по прогрессу.</p>
+    <div class="search-row">
+        <label class="search-label" for="interviewSearch">Поиск вопроса</label>
+        <input id="interviewSearch" type="search" placeholder="waits, локаторы, JUnit…" autocomplete="off">
+    </div>
+    <p class="muted search-empty" id="interviewEmpty" hidden>Ничего не найдено</p>
+    <div id="cards" class="cards"></div>
+</main>
+<script th:inline="javascript">
+  window.__FOCUS_LEVEL__ = /*[[${focusLevel}]]*/ 'junior';
+  window.__MIDDLE_UNLOCKED__ = /*[[${middleUnlocked}]]*/ false;
+  window.__SENIOR_UNLOCKED__ = /*[[${seniorUnlocked}]]*/ false;
+</script>
+<script th:src="@{/js/interview.js}"></script>
+</body>
+</html>

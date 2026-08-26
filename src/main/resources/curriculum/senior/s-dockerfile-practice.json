@@ -1,0 +1,54 @@
+{
+  "id": "s-dockerfile-practice",
+  "title": "Dockerfile и кэш зависимостей Maven",
+  "summary": "Правильный порядок слоёв ускоряет CI в разы.",
+  "theoryMarkdown": "# Dockerfile caching\n\nПлохо: COPY . /app сразу — любой чих в исходниках сбрасывает кэш зависимостей.\n\nХорошо:\n\n1. COPY pom.xml\n2. RUN mvn -B dependency:go-offline\n3. COPY src\n4. RUN mvn -B test\n\n## Multi-stage\n\nИногда build stage отдельно от runtime — для тестов чаще один Maven image.\n\n\n\n## В работе vs лаба\n\nВ лабе проверяется **текст артефакта** (структура YAML/Jenkinsfile). В работе pipeline должен **реально выполняться** в CI (см. портфолио GHA).\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### Dockerfile с кэшем deps\nЗаполни артефакт по образцу:\n```text\nFROM maven:3.9-eclipse-temurin-17\nWORKDIR /app\nCOPY pom.xml .\nRUN mvn -B dependency:go-offline\nCOPY src ./src\nRUN mvn -B test\n```\n",
+  "keyPoints": [
+    "Сначала pom — кэш deps",
+    "dockerignore",
+    "Шаблон к заданию «Dockerfile с кэшем deps» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "Как ускорял CI image build?",
+    "Layer caching"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Почему сначала копируют pom.xml?",
+      "options": [
+        "Так красивее",
+        "Чтобы кэшировать слой зависимостей",
+        "Требование Docker Hub",
+        "Без src нельзя"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "deps слой переиспользуется.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Dockerfile с кэшем deps",
+      "description": "Дано:\n- класс / артефакт: Dockerfile\n- режим artifact (текст файла / YAML / Jenkinsfile)\n\nЗадание:\nСм. теорию «К практике» (Dockerfile с кэшем deps).\nНапиши Dockerfile: FROM maven:3.9-eclipse-temurin-17, COPY pom.xml раньше src, RUN mvn dependency:go-offline, затем COPY src и RUN mvn -B test.\n\nРезультат:\n- артефакт проходит правила проверки",
+      "difficulty": "medium",
+      "mode": "artifact",
+      "artifactKind": "dockerfile",
+      "className": "Dockerfile",
+      "starterCode": "FROM maven:3.9-eclipse-temurin-17\nWORKDIR /app\n# TODO: правильный порядок слоёв\n",
+      "solutionCode": "FROM maven:3.9-eclipse-temurin-17\nWORKDIR /app\nCOPY pom.xml .\nRUN mvn -B dependency:go-offline\nCOPY src ./src\nRUN mvn -B test\n",
+      "hints": [
+        "COPY pom.xml до COPY src",
+        "RUN mvn -B dependency:go-offline между ними",
+        "Доведи до детерминированного результата из раздела «Результат»."
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "senior",
+  "moduleId": "docker"
+}

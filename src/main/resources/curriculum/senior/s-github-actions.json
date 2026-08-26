@@ -1,0 +1,63 @@
+{
+  "id": "s-github-actions",
+  "levelId": "senior",
+  "moduleId": "ci",
+  "title": "GitHub Actions для Java-тестов",
+  "summary": "Workflow YAML: checkout, JDK, Maven cache, артефакты отчётов.",
+  "theoryMarkdown": "# GitHub Actions\n\n```yaml\non: [pull_request]\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-java@v4\n        with: { distribution: temurin, java-version: 17, cache: maven }\n      - run: mvn -B test\n```\n\n## cache: maven\n\nОпция cache: maven в setup-java кэширует локальный репозиторий .m2, чтобы CI **не скачивал зависимости заново** на каждом прогоне.\n\n## vs Jenkins\n\nGHA — меньше ops для GitHub-реп. Jenkins — гибкость on-prem/сложных агентов.\nSenior должен уметь оба.\n\n\n\n## В работе vs лаба\n\nВ лабе проверяется **текст артефакта** (структура YAML/Jenkinsfile). В работе pipeline должен **реально выполняться** в CI (см. портфолио GHA).\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### Напиши GHA workflow\nЗаполни артефакт по образцу:\n```text\nname: tests\non:\n  pull_request:\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-java@v4\n        with:\n          distribution: temurin\n          java-version: '17'\n          cache: maven\n      - run: mvn -B test\n```\n",
+  "keyPoints": [
+    "cache: maven — кэш .m2, быстрее CI",
+    "checkout + setup-java + mvn",
+    "cache: maven",
+    "Шаблон к заданию «Напиши GHA workflow» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "Как кэшируешь зависимости?",
+    "Matrix browsers в GHA?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "actions/setup-java cache: maven помогает:",
+      "options": [
+        "Скачать Chrome",
+        "Не качать зависимости каждый раз",
+        "Заменить тесты",
+        "Хранить пароли"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Кэш .m2.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Напиши GHA workflow",
+      "description": "Дано:\n- класс / артефакт: Workflow\n- режим artifact (текст файла / YAML / Jenkinsfile)\n\nЗадание:\nСм. теорию «К практике» (Напиши GHA workflow).\nYAML: on, jobs, runs-on, actions/checkout, mvn. Без password.\n\nРезультат:\n- в тексте есть: on:\n- в тексте есть: jobs:\n- в тексте есть: runs-on:\n- в тексте есть: actions/checkout\n- в тексте есть: mvn",
+      "mode": "artifact",
+      "artifactKind": "gha",
+      "artifactRules": [
+        "contains:on:",
+        "contains:jobs:",
+        "contains:runs-on:",
+        "contains:actions/checkout",
+        "contains:mvn",
+        "noSecret:password"
+      ],
+      "className": "Workflow",
+      "starterCode": "name: tests\non:\n  pull_request:\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      # TODO\n",
+      "solutionCode": "name: tests\non:\n  pull_request:\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-java@v4\n        with:\n          distribution: temurin\n          java-version: '17'\n          cache: maven\n      - run: mvn -B test\n",
+      "hints": [
+        "actions/checkout@v4",
+        "run: mvn -B test",
+        "Доведи до детерминированного результата из раздела «Результат»."
+      ],
+      "difficulty": "medium",
+      "revealAfterFails": 2
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "id": "s-performance-basics",
+  "title": "Основы performance для QA Auto",
+  "summary": "Не путай функциональные UI-тесты с нагрузочными. Знай базу метрик.",
+  "theoryMarkdown": "# Performance basics\n\n## Метрики\n\n- latency (p50/p95/p99)\n- throughput (RPS)\n- error rate\n- saturation (CPU/IO)\n\n## Инструменты (обзор)\n\nJMeter, Gatling, k6. Для фронта — Lighthouse (не нагрузка бэка).\n\n## Роль автоматизатора\n\nИногда встраивает smoke perf в CI (не полный load), следит за деградацией p95.\n\n## Что такое p95\n\n**p95 (95-й процентиль)** latency — значение, ниже которого лежат 95% замеров времени ответа. Пример: p95 = 200 мс значит, что 95% запросов ответили не медленнее 200 мс (а 5% — медленнее).\n\n## К практике\n\nАлгоритм `PerfGate.evaluate(samples, budgetMs)`:\n\n1. Пустой/null samples или `budgetMs <= 0` → `IllegalArgumentException`\n2. Скопируй и `Arrays.sort`\n3. `p50 = arr[floor(0.5 * (n-1))]`, `p95 = arr[ceil(0.95 * (n-1))]`\n4. `\"OK\"` если `p95 <= budgetMs` **и** `p50 <= budgetMs * 0.6`, иначе `\"SLOW\"`\n",
+  "keyPoints": [
+    "p95 — 95-й процентиль времени ответа",
+    "p95 важнее среднего",
+    "Нагрузка ≠ UI selenium loop",
+    "Smoke perf в CI возможен"
+  ],
+  "interviewTips": [
+    "Что такое percentile?",
+    "Как отличить perf баг от функционального?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "p95 latency — это:",
+      "options": [
+        "Среднее",
+        "95-й процентиль времени ответа",
+        "Максимум всегда",
+        "CPU"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Percentile.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "SLO evaluator from samples",
+      "description": "Дано:\n- класс / артефакт: PerfGateTest\n- режим junit (класс с @Test)\n\nЗадание:\nСм. теорию «К практике» (p50/p95 gate).\nsort samples, compute p50 and p95, return OK only when p95<=budgetMs and p50<=budgetMs*0.6.\n\nРезультат:\n- все @Test в классе зелёные",
+      "difficulty": "hard",
+      "mode": "junit",
+      "className": "PerfGateTest",
+      "starterCode": "import java.util.Arrays;\nimport org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass PerfGate {\n    static String evaluate(long[] samples, long budgetMs) {\n        // TODO sort + compute p50/p95 + thresholds\n        return \"\";\n    }\n}\n\npublic class PerfGateTest {\n    @Test\n    void healthy() {\n        assertEquals(\"OK\", PerfGate.evaluate(new long[]{100,120,130,140,150,160,170,180,190,200}, 250));\n    }\n\n    @Test\n    void slowByP95() {\n        assertEquals(\"SLOW\", PerfGate.evaluate(new long[]{100,110,120,130,140,150,160,170,180,800}, 250));\n    }\n\n    @Test\n    void slowByP50() {\n        assertEquals(\"SLOW\", PerfGate.evaluate(new long[]{220,230,240,250,260,270,280,290,300,310}, 400));\n    }\n\n    @Test\n    void emptyNotAllowed() {\n        assertThrows(IllegalArgumentException.class, () -> PerfGate.evaluate(new long[]{}, 100));\n    }\n}\n",
+      "solutionCode": "import java.util.Arrays;\nimport org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass PerfGate {\n    static String evaluate(long[] samples, long budgetMs) {\n        if (samples == null || samples.length == 0 || budgetMs <= 0) {\n            throw new IllegalArgumentException(\"invalid input\");\n        }\n        long[] arr = Arrays.copyOf(samples, samples.length);\n        Arrays.sort(arr);\n        long p50 = arr[(int) Math.floor(0.5 * (arr.length - 1))];\n        long p95 = arr[(int) Math.ceil(0.95 * (arr.length - 1))];\n        if (p95 <= budgetMs && p50 <= (long) (budgetMs * 0.6)) {\n            return \"OK\";\n        }\n        return \"SLOW\";\n    }\n}\n\npublic class PerfGateTest {\n    @Test\n    void healthy() {\n        assertEquals(\"OK\", PerfGate.evaluate(new long[]{100,120,130,140,150,160,170,180,190,200}, 250));\n    }\n\n    @Test\n    void slowByP95() {\n        assertEquals(\"SLOW\", PerfGate.evaluate(new long[]{100,110,120,130,140,150,160,170,180,800}, 250));\n    }\n\n    @Test\n    void slowByP50() {\n        assertEquals(\"SLOW\", PerfGate.evaluate(new long[]{220,230,240,250,260,270,280,290,300,310}, 400));\n    }\n\n    @Test\n    void emptyNotAllowed() {\n        assertThrows(IllegalArgumentException.class, () -> PerfGate.evaluate(new long[]{}, 100));\n    }\n}\n",
+      "hints": [
+        "Sort a copy of samples to calculate percentiles",
+        "Use indexes for p50 and p95 from sorted array",
+        "Return OK only if both thresholds pass (p50 budget share = 0.6)"
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "senior",
+  "moduleId": "advanced"
+}

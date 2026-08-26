@@ -1,0 +1,27 @@
+name: portfolio-tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+      - name: API tests (skip UI in CI by default for speed)
+        working-directory: .
+        run: mvn -B test -DskipUi=true
+        # Для полного прогона с Chrome: поставь Google Chrome в job и убери -DskipUi
+      - name: Upload surefire
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire
+          path: target/surefire-reports/
+          if-no-files-found: ignore

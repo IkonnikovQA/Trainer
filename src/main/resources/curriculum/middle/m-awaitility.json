@@ -1,0 +1,53 @@
+{
+  "id": "m-awaitility",
+  "title": "Поллинг и Awaitility-стиль",
+  "summary": "Вместо Thread.sleep — ожидание условия с таймаутом.",
+  "theoryMarkdown": "# Awaitility-стиль\n\nВ UI/API часто нужно ждать, пока условие станет true.\n\n```java\nawait().atMost(2, SECONDS).until(() -> status.equals(\"READY\"));\n```\n\nВ этом уроке реализуй простой `Poller` без внешней библиотеки: цикл + deadline + sleep.\n\n## Правила\n\n- Таймаут обязателен\n- Интервал опроса не должен быть нулевым\n- По таймауту — понятное исключение\n\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### Poller.awaitTrue\n```java\nimport java.util.concurrent.atomic.AtomicBoolean;\nimport java.util.function.BooleanSupplier;\nimport org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass Poller {\n    static void awaitTrue(BooleanSupplier condition, long timeoutMs, long intervalMs) {\n        long deadline = System.currentTimeMillis() + timeoutMs;\n        while (System.currentTimeMillis() < deadline) {\n            if (condition.getAsBoolean()) return;\n            try { Thread.sleep(Math.max(1, intervalMs)); } catch (InterruptedException e) {\n                Thread.currentThread().interrupt();\n                throw new IllegalStateException(\"interrupted\");\n            }\n        }\n        if (condition.getAsBoolean()) return;\n        throw new IllegalStateException(\"timeout\");\n    }\n}\n\npublic class PollerTest {\n    @Test\n    void becomesTrue() {\n        AtomicBoolean flag = new AtomicBoolean(f\n// ...\n```\n\n## Sleep vs await\n\n`Thread.sleep(5000)` плох: фиксированный sleep либо ждёт лишнее, либо мало. Awaitility ждёт условие с таймаутом.\n",
+  "keyPoints": [
+    "Poll until condition",
+    "Timeout + interval",
+    "Шаблон к заданию «Poller.awaitTrue» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "Чем Awaitility лучше sleep?",
+    "Как выбрать polling interval?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Thread.sleep(5000) в тесте плох потому что:",
+      "options": [
+        "Медленнее даже когда условие уже true",
+        "Запрещён в Java",
+        "Не работает в CI",
+        "Ломает Maven"
+      ],
+      "correctIndexes": [
+        0
+      ],
+      "explanation": "Фиксированный sleep либо ждёт лишнее, либо мало.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Poller.awaitTrue",
+      "description": "Дано:\n- класс / артефакт: PollerTest\n- режим junit (класс с @Test)\n\nЗадание:\nСм. теорию «К практике» (Poller.awaitTrue).\nРеализуй Poller.awaitTrue(BooleanSupplier, timeoutMs, intervalMs). Тесты в том же файле уже написаны — сделай, чтобы они проходили.\n\nРезультат:\n- все @Test в классе зелёные",
+      "difficulty": "hard",
+      "mode": "junit",
+      "className": "PollerTest",
+      "starterCode": "import java.util.concurrent.atomic.AtomicBoolean;\nimport java.util.function.BooleanSupplier;\nimport org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass Poller {\n    static void awaitTrue(BooleanSupplier condition, long timeoutMs, long intervalMs) {\n        // TODO\n        throw new UnsupportedOperationException(\"todo\");\n    }\n}\n\npublic class PollerTest {\n    @Test\n    void becomesTrue() {\n        AtomicBoolean flag = new AtomicBoolean(false);\n        Thread t = new Thread(() -> {\n            try { Thread.sleep(80); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }\n            flag.set(true);\n        });\n        t.start();\n        Poller.awaitTrue(flag::get, 2000, 20);\n        assertTrue(flag.get());\n    }\n\n    @Test\n    void timesOut() {\n        assertThrows(IllegalStateException.class,\n            () -> Poller.awaitTrue(() -> false, 120, 20));\n    }\n}\n",
+      "solutionCode": "import java.util.concurrent.atomic.AtomicBoolean;\nimport java.util.function.BooleanSupplier;\nimport org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass Poller {\n    static void awaitTrue(BooleanSupplier condition, long timeoutMs, long intervalMs) {\n        long deadline = System.currentTimeMillis() + timeoutMs;\n        while (System.currentTimeMillis() < deadline) {\n            if (condition.getAsBoolean()) return;\n            try { Thread.sleep(Math.max(1, intervalMs)); } catch (InterruptedException e) {\n                Thread.currentThread().interrupt();\n                throw new IllegalStateException(\"interrupted\");\n            }\n        }\n        if (condition.getAsBoolean()) return;\n        throw new IllegalStateException(\"timeout\");\n    }\n}\n\npublic class PollerTest {\n    @Test\n    void becomesTrue() {\n        AtomicBoolean flag = new AtomicBoolean(false);\n        Thread t = new Thread(() -> {\n            try { Thread.sleep(80); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }\n            flag.set(true);\n        });\n        t.start();\n        Poller.awaitTrue(flag::get, 2000, 20);\n        assertTrue(flag.get());\n    }\n\n    @Test\n    void timesOut() {\n        assertThrows(IllegalStateException.class,\n            () -> Poller.awaitTrue(() -> false, 120, 20));\n    }\n}\n",
+      "hints": [
+        "deadline = now + timeoutMs; while now < deadline",
+        "если условие true — return; иначе sleep(interval); в конце throw IllegalStateException(\"timeout\")",
+        "Доведи до детерминированного результата из раздела «Результат»."
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "quality"
+}

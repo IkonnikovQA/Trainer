@@ -1,0 +1,76 @@
+{
+  "id": "j-exceptions",
+  "title": "Исключения и обработка ошибок",
+  "summary": "В тестах исключения — сигнал падения. Важно отличать fail теста от инфраструктурной ошибки.",
+  "theoryMarkdown": "# Исключения\n\n## Иерархия\n\n`Throwable` → `Error` | `Exception` → `RuntimeException` (unchecked)\n\n## try / catch / finally / try-with-resources\n\n```java\ntry (WebDriver driver = openDriver()) {\n    // test\n} catch (NoSuchElementException e) {\n    // элемент не найден\n} \n```\n\n## В автотестах\n\n- `NoSuchElementException` — плохой локатор или нет ожидания; это **unchecked** (`RuntimeException`)\n- `TimeoutException` — условие wait не выполнилось\n- `AssertionError` — ассерт не прошёл (это и есть failing test)\n\nНе глотай исключения пустым catch — потеряешь сигнал.\n\n## К практике\n\n### parseIntSafe(String s)\n1. `s == null` или `s.isBlank()` → `-1`\n2. Иначе `try { return Integer.parseInt(s); } catch (NumberFormatException e) { return -1; }`\n\n```java\npublic int parseIntSafe(String s) {\n    if (s == null || s.isBlank()) return -1;\n    try {\n        return Integer.parseInt(s);\n    } catch (NumberFormatException e) {\n        return -1;\n    }\n}\n```\n",
+  "keyPoints": [
+    "NoSuchElementException — unchecked (RuntimeException)",
+    "AssertionError = упавший ассерт",
+    "Не проглатывай исключения без лога",
+    "try-with-resources закрывает AutoCloseable"
+  ],
+  "interviewTips": [
+    "checked vs unchecked",
+    "Что будет если exception в @AfterEach?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "NoSuchElementException — это:",
+      "options": [
+        "checked",
+        "unchecked (RuntimeException)",
+        "Error",
+        "не исключение"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Это runtime exception Selenium/Java.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "difficulty": "easy",
+      "hints": [
+        "Start from the concept and contract before coding exact statements.",
+        "try { return Integer.parseInt(s); } catch (NumberFormatException e) { return -1; }",
+        "Учти null → тоже -1"
+      ],
+      "testCases": [
+        {
+          "name": "число",
+          "callExpression": "parseIntSafe(\"42\")",
+          "expected": "42",
+          "expectedType": "int"
+        },
+        {
+          "name": "мусор",
+          "callExpression": "parseIntSafe(\"x\")",
+          "expected": "-1",
+          "expectedType": "int"
+        },
+        {
+          "name": "пустая",
+          "callExpression": "parseIntSafe(\"\")",
+          "expected": "-1",
+          "expectedType": "int"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "public class SafeParse {\n    public int parseIntSafe(String s) {\n        if (s == null || s.isBlank()) return -1;\n        try {\n            return Integer.parseInt(s);\n        } catch (NumberFormatException e) {\n            return -1;\n        }\n    }\n}\n",
+      "methodName": null,
+      "id": "e1",
+      "title": "parseIntSafe",
+      "description": "Дано:\n- класс / артефакт: SafeParse\n- режим java (класс с методами)\n\nЗадание:\nparseIntSafe(String s): если число — верни его, иначе -1. Используй try/catch NumberFormatException.\n\nРезультат:\n- parseIntSafe(\"42\") → 42\n- parseIntSafe(\"x\") → -1\n- parseIntSafe(\"\") → -1",
+      "className": "SafeParse",
+      "starterCode": "public class SafeParse {\n    public int parseIntSafe(String s) {\n        // TODO\n        return -1;\n    }\n}\n",
+      "mode": "java",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "junior",
+  "moduleId": "java-basics"
+}

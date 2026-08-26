@@ -1,0 +1,75 @@
+{
+  "id": "j-git",
+  "title": "Git для автоматизатора",
+  "summary": "Ветки, коммиты, PR — обязательный навык для работы в команде. В автотестах ветки помогают изолировать фичи и PR-проверки.",
+  "theoryMarkdown": "# Git essentials для QA\n\n## База\n\n```\ngit status\ngit pull\ngit checkout -b feature/QA-12-login-smoke\ngit add .\ngit commit -m \"Add login smoke tests\"\ngit push -u origin HEAD\n```\n\n## Ветки и PR\n\n- Имя ветки: `feature/TICKET-short-slug` (единообразие в команде)\n- PR: описание что тестируем + как прогнать; дождись CI\n- Не коммить `target/`, `.idea/`, `*.env`, секреты\n\n## Конфликты в автотестах\n\nЧаще всего в локаторах и общих util. Разрешай осознанно, прогони smoke локально.\n\n## .gitignore\n\nМинимум: артефакты сборки, IDE, локальные env-файлы.\n\n\n\n## В работе vs лаба\n\nВ лабе проверяется **текст артефакта** (структура YAML/Jenkinsfile). В работе pipeline должен **реально выполняться** в CI (см. портфолио GHA).\n## К практике\n\nАртефакт — YAML со **строго этими ключами** (без `password` и секретов):\n\n```yaml\nbranch_pattern: feature/TICKET-slug\ngitignore_entries: target/, .idea/, *.env\npr_requires_ci: true\n```\n\n## PR hygiene\n\nПеред merge PR с автотестами лучше дождаться **зелёного CI** и коротко описать сценарий в PR.\n",
+  "keyPoints": [
+    "Не коммить секреты и target/",
+    "Короткие feature-ветки",
+    "PR = ревью + CI"
+  ],
+  "interviewTips": [
+    "merge vs rebase",
+    "Что такое git bisect?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Что обычно добавляют в .gitignore автотестов?",
+      "options": [
+        "src/test/java",
+        "target/, .idea/, *.env",
+        "pom.xml",
+        "README"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Артефакты сборки и локальные файлы.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Перед merge PR с автотестами лучше:",
+      "options": [
+        "Зафорсить без CI",
+        "Дождаться зелёного CI и коротко описать сценарий",
+        "Закоммитить target/",
+        "Удалить все ассерты"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "CI + понятный PR — базовый гигиенический минимум.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Git hygiene checklist",
+      "description": "Дано:\n- артефакт GitHygiene (YAML)\n- режим artifact\n\nЗадание:\nЗаполни чеклист гигиены репозитория. Нужные ключи — в теории «К практике». Секретов/password быть не должно.\n\nРезультат:\n- есть branch_pattern, gitignore_entries, pr_requires_ci\n- нет password",
+      "difficulty": "easy",
+      "mode": "artifact",
+      "artifactKind": "gha",
+      "artifactRules": [
+        "contains:branch_pattern",
+        "contains:gitignore_entries",
+        "contains:pr_requires_ci",
+        "noSecret:password"
+      ],
+      "className": "GitHygiene",
+      "starterCode": "# git hygiene for QA repo\n# TODO\n",
+      "solutionCode": "branch_pattern: feature/TICKET-slug\ngitignore_entries: target/, .idea/, *.env\npr_requires_ci: true\n",
+      "hints": [
+        "Скопируй структуру YAML из теории и подставь осмысленные значения",
+        "Не добавляй password и токены"
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "junior",
+  "moduleId": "tools"
+}

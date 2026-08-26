@@ -1,0 +1,71 @@
+﻿{
+  "id": "m-restassured-deep",
+  "levelId": "middle",
+  "moduleId": "api",
+  "title": "RestAssured deep: specs, schema, 401/403",
+  "summary": "RequestSpecification, проверка authZ, отличие 401 и 403.",
+  "theoryMarkdown": "# RestAssured deep dive\n\n## RequestSpecification\n\n```java\nRequestSpecification spec = new RequestSpecBuilder()\n  .setBaseUri(base)\n  .setContentType(ContentType.JSON)\n  .addHeader(\"Authorization\", \"Bearer \" + token)\n  .build();\n```\n\n## 401 vs 403\n\n- **401 Unauthorized** — нет/протухла аутентификация\n- **403 Forbidden** — аутентифицирован, но нет прав\n\n## Negative matrix\n\nНе ограничивайся happy-path. Минимум:\n\n| Кейс | Ожидание |\n|------|----------|\n| нет токена | 401 |\n| чужая роль | 403 |\n| неизвестный id | 404 |\n| конфликт/дубль | 409 |\n| невалидное тело | 400/422 |\n\nПараметризуй негативы (`@CsvSource`) — дешевле, чем копипаста.\n\n## Schema\n\nПроверяй JSON Schema на критичных контрактах (или отдельный contract test).\n\n\n\n## В работе vs лаба\n\nВ лабе — **MockWebServer**. В работе — стенд/demo API; контракты и негативы гоняй против живого baseUrl (jsonplaceholder в портфолио).\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### Проверка 401\n```java\nimport static io.restassured.RestAssured.*;\n\npublic class SecureClient {\n    public int unauthorized(String baseUrl) {\n        return given().when().get(baseUrl + \"/secure\").then().extract().statusCode();\n    }\n}\n```\n",
+  "keyPoints": [
+    "Выноси common headers в RequestSpec",
+    "401 ≠ 403",
+    "Шаблон к заданию «Проверка 401» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "Как обновляешь token в параллели?",
+    "Где хранишь baseUri по окружениям?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "403 означает:",
+      "options": [
+        "Не залогинен",
+        "Залогинен, но нет прав",
+        "Сервер упал",
+        "OK"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Forbidden — авторизован, нет permission.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "RequestSpecification полезен чтобы:",
+      "options": [
+        "Убрать дубли headers/baseUri",
+        "Заменить POM",
+        "Отключить CI",
+        "Ускорить Chrome"
+      ],
+      "correctIndexes": [
+        0
+      ],
+      "explanation": "Переиспользование настроек запроса.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Проверка 401",
+      "description": "Дано:\n- класс / артефакт: SecureClient\n- режим http (RestAssured + MockWebServer)\n- HTTP stub уже подготовлен тренажёром\n\nЗадание:\nСм. теорию «К практике» (Проверка 401).\nunauthorized(baseUrl): GET /secure без токена, верни status (stub = 401).\n\nРезультат:\n- verifier проверяет ответы через MockWebServer",
+      "difficulty": "medium",
+      "mode": "http",
+      "className": "SecureClient",
+      "httpStubJson": "{\"stubs\":[{\"status\":401,\"body\":\"{\\\"error\\\":\\\"unauthorized\\\"}\"}]}",
+      "starterCode": "import static io.restassured.RestAssured.*;\n\npublic class SecureClient {\n    public int unauthorized(String baseUrl) {\n        // TODO GET baseUrl+\"/secure\" extract status\n        return 0;\n    }\n}\n",
+      "solutionCode": "import static io.restassured.RestAssured.*;\n\npublic class SecureClient {\n    public int unauthorized(String baseUrl) {\n        return given().when().get(baseUrl + \"/secure\").then().extract().statusCode();\n    }\n}\n",
+      "hints": [
+        "get(baseUrl + \"/secure\").then().extract().statusCode()",
+        "Use the API/pattern required by the lesson mode.",
+        "Finalize with exact return/assert conditions required by tests."
+      ],
+      "verifierCode": "import java.util.*;\npublic class ExerciseVerifier {\n  public List<String> verify(Class<?> cls, String baseUrl) throws Exception {\n    List<String> fails = new ArrayList<>();\n    int code = (Integer) cls.getMethod(\"unauthorized\", String.class)\n      .invoke(cls.getDeclaredConstructor().newInstance(), baseUrl);\n    if (code != 401) fails.add(\"expected 401 got \" + code);\n    return fails;\n  }\n}",
+      "revealAfterFails": 2
+    }
+  ]
+}

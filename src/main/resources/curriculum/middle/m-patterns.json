@@ -1,0 +1,53 @@
+{
+  "id": "m-patterns",
+  "title": "Паттерны тест-фреймворка",
+  "summary": "Factory, Builder, Strategy, Facade — как применять в тестах.",
+  "theoryMarkdown": "# Паттерны\n\n## Factory\n\n`DriverFactory.create(Browser.CHROME)`\n\n## Builder\n\nСборка сложных тестовых данных/запросов.\n\n## Strategy\n\nРазные waits/auth стратегии.\n\n## Facade\n\nУпрощённый API над сложным subsystem (например, `MailFacade`).\n\n## Singleton — осторожно\n\nЛегко создать скрытое состояние и сломать параллель.\n\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### Fluent Query builder\n```java\nimport org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass Query {\n    private String path = \"\";\n    private int limit = 0;\n    Query withPath(String p) { this.path = p; return this; }\n    Query withLimit(int n) { this.limit = n; return this; }\n    String build() { return \"PATH \" + path + \" LIMIT \" + limit; }\n}\n\npublic class QueryBuilderTest {\n    @Test\n    void fluent() {\n        String s = new Query().withPath(\"/users\").withLimit(10).build();\n        assertEquals(\"PATH /users LIMIT 10\", s);\n    }\n}\n```\n",
+  "keyPoints": [
+    "Factory для драйверов",
+    "Builder для данных",
+    "Шаблон к заданию «Fluent Query builder» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "Какие паттерны в твоём фреймворке?",
+    "DI в тестах"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "User.builder().email(..).build() — это:",
+      "options": [
+        "Factory Method строго",
+        "Builder",
+        "Observer",
+        "Proxy"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Builder.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Fluent Query builder",
+      "description": "Дано:\n- класс / артефакт: QueryBuilderTest\n- режим junit (класс с @Test)\n\nЗадание:\nСм. теорию «К практике» (Fluent Query builder).\nДопиши Query.withPath/withLimit (return this) и build() → \"PATH {path} LIMIT {limit}\".\n\nРезультат:\n- все @Test в классе зелёные",
+      "difficulty": "medium",
+      "mode": "junit",
+      "className": "QueryBuilderTest",
+      "starterCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass Query {\n    private String path = \"\";\n    private int limit = 0;\n    Query withPath(String p) { /* TODO return this */ return this; }\n    Query withLimit(int n) { /* TODO */ return this; }\n    String build() { /* TODO */ return \"\"; }\n}\n\npublic class QueryBuilderTest {\n    @Test\n    void fluent() {\n        String s = new Query().withPath(\"/users\").withLimit(10).build();\n        assertEquals(\"PATH /users LIMIT 10\", s);\n    }\n}\n",
+      "solutionCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass Query {\n    private String path = \"\";\n    private int limit = 0;\n    Query withPath(String p) { this.path = p; return this; }\n    Query withLimit(int n) { this.limit = n; return this; }\n    String build() { return \"PATH \" + path + \" LIMIT \" + limit; }\n}\n\npublic class QueryBuilderTest {\n    @Test\n    void fluent() {\n        String s = new Query().withPath(\"/users\").withLimit(10).build();\n        assertEquals(\"PATH /users LIMIT 10\", s);\n    }\n}\n",
+      "hints": [
+        "Start from the concept and contract before coding exact statements.",
+        "this.path = p; return this;",
+        "return \"PATH \" + path + \" LIMIT \" + limit;"
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "quality"
+}

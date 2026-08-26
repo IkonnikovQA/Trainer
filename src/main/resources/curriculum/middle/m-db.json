@@ -1,0 +1,53 @@
+{
+  "id": "m-db",
+  "title": "Проверки базы данных в автотестах",
+  "summary": "Иногда нужно проверить side-effect в БД — аккуратно и точечно.",
+  "theoryMarkdown": "# DB в тестах\n\n## Когда\n\n- Критичный side effect не виден через API\n- Сверка отчётов/биллинга\n\n## Как\n\nJDBC / jOOQ / MyBatis. Лучше отдельный read-only user.\n\n## Риски\n\n- Хрупкая привязка к схеме\n- Медленные тесты\n- Засорение данных\n\nПредпочти API verification, БД — точечно.\n\n## К практике\n\nБезопасный SQL-идентификатор:\n\n```java\nstatic String safeId(String name) {\n    if (name == null || !name.matches(\"[A-Za-z0-9_]+\")) return \"INVALID\";\n    return name;\n}\n```\n\nТолько буквы/цифры/_` — иначе `\"INVALID\"`.\n\n## Проверка создания сущности\n\nПредпочтительно: **API get** + при необходимости точечный SQL (API first), а не только UI.\n",
+  "keyPoints": [
+    "БД-проверки точечные",
+    "Read-only доступ",
+    "Не дублируй всё API проверками SQL"
+  ],
+  "interviewTips": [
+    "Как чистишь данные?",
+    "Транзакции в тестах"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Предпочтительный способ проверить создание сущности:",
+      "options": [
+        "Только SELECT в прод БД руками",
+        "API get + при необходимости точечный SQL",
+        "Только UI screenshot",
+        "Игнорировать"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "API first.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Safe SQL identifier",
+      "description": "Дано:\n- класс / артефакт: SqlSafeTest\n- режим junit (класс с @Test)\n\nЗадание:\nSqlSafe.safeId(name): только [A-Za-z0-9_], иначе \"INVALID\".\n\nРезультат:\n- все @Test в классе зелёные",
+      "difficulty": "medium",
+      "mode": "junit",
+      "className": "SqlSafeTest",
+      "starterCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass SqlSafe {\n    static String safeId(String name) {\n        // TODO\n        return \"\";\n    }\n}\n\npublic class SqlSafeTest {\n    @Test\n    void ok() { assertEquals(\"users_1\", SqlSafe.safeId(\"users_1\")); }\n    @Test\n    void bad() { assertEquals(\"INVALID\", SqlSafe.safeId(\"users;drop\")); }\n}\n",
+      "solutionCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass SqlSafe {\n    static String safeId(String name) {\n        if (name == null || !name.matches(\"[A-Za-z0-9_]+\")) return \"INVALID\";\n        return name;\n    }\n}\n\npublic class SqlSafeTest {\n    @Test\n    void ok() { assertEquals(\"users_1\", SqlSafe.safeId(\"users_1\")); }\n    @Test\n    void bad() { assertEquals(\"INVALID\", SqlSafe.safeId(\"users;drop\")); }\n}\n",
+      "hints": [
+        "name.matches(\"[A-Za-z0-9_]+\")",
+        "Use the API/pattern required by the lesson mode.",
+        "Finalize with exact return/assert conditions required by tests."
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "quality"
+}

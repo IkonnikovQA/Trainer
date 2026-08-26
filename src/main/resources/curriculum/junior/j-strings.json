@@ -1,0 +1,121 @@
+{
+  "id": "j-strings",
+  "title": "Строки, регулярки, форматирование",
+  "summary": "Парсинг текстов UI, регулярок, JSON-строк — ежедневная рутина QA Auto.",
+  "theoryMarkdown": "# Строки и регулярки\n\nВ автотестах постоянно чистишь текст с UI/API: пробелы, регистр, цифры из цены.\n\n## Нормализация email (практика 1)\n\n1. `null` → сразу верни пустую строку `\"\"`.\n2. `trim()` убирает пробелы по краям.\n3. `toLowerCase()` приводит к нижнему регистру.\n\n```java\nString normalizeEmail(String email) {\n    if (email == null) return \"\";\n    return email.trim().toLowerCase();\n}\n```\n\n## Извлечь число из цены (практика 2)\n\nОставь только цифры через `replaceAll`, потом `Integer.parseInt`. Если цифр нет — верни `-1`.\n\n```java\nString digits = price.replaceAll(\"[^0-9]\", \"\"); // \"Total: 1 250 rub\" -> \"1250\"\nif (digits.isEmpty()) return -1;\nreturn Integer.parseInt(digits);\n```\n\nПолезные методы рядом: `contains`, `startsWith`, `split`, `replace`, `formatted`.\n\n## StringBuilder\n\nКогда много склеек в цикле — `StringBuilder` (`String` immutable).\n",
+  "keyPoints": [
+    "null → \"\", потом trim + toLowerCase",
+    "replaceAll(\"[^0-9]\", \"\") вытаскивает цифры",
+    "String immutable; в цикле — StringBuilder"
+  ],
+  "interviewTips": [
+    "String vs StringBuilder vs StringBuffer",
+    "Почему String в pool?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Что вернёт \"  hi  \".trim()?",
+      "options": [
+        "\"  hi  \"",
+        "\"hi\"",
+        "\"hi  \"",
+        "null"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "trim убирает leading/trailing whitespace.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Как безопаснее вытащить только цифры из \"1 299 ₽\"?",
+      "options": [
+        "substring(0,1)",
+        "replaceAll(\"[^0-9]\", \"\") и проверить что не пусто",
+        "split по пробелу и взять [0] без проверки",
+        "игнорировать"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Убираем всё кроме цифр, потом parse.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "difficulty": "easy",
+      "hints": [
+        "Сначала проверь null",
+        "Потом trim и toLowerCase"
+      ],
+      "testCases": [
+        {
+          "name": "норма",
+          "callExpression": "normalizeEmail(\"  A@B.C \")",
+          "expected": "a@b.c",
+          "expectedType": "string"
+        },
+        {
+          "name": "null",
+          "callExpression": "normalizeEmail(null)",
+          "expected": "",
+          "expectedType": "string"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "public class TextUtils {\n    public String normalizeEmail(String email) {\n        if (email == null) return \"\";\n        return email.trim().toLowerCase();\n    }\n}\n",
+      "methodName": null,
+      "id": "e1",
+      "title": "Нормализация email",
+      "description": "Дано:\n- класс TextUtils\n- метод normalizeEmail(String email)\n- в теории раздел «Нормализация email»\n\nЗадание:\nЕсли email == null — верни пустую строку. Иначе trim + toLowerCase.\n\nРезультат:\n- normalizeEmail(\"  A@B.C \") → a@b.c\n- normalizeEmail(null) → (пустая строка)",
+      "className": "TextUtils",
+      "starterCode": "public class TextUtils {\n    public String normalizeEmail(String email) {\n        // TODO\n        return \"\";\n    }\n}\n",
+      "mode": "java",
+      "revealAfterFails": 2
+    },
+    {
+      "difficulty": "medium",
+      "hints": [
+        "Сначала вырежи всё кроме цифр",
+        "Пустая строка цифр → -1"
+      ],
+      "testCases": [
+        {
+          "name": "с пробелом",
+          "callExpression": "extractInt(\"Total: 1 250 rub\")",
+          "expected": "1250",
+          "expectedType": "int"
+        },
+        {
+          "name": "просто",
+          "callExpression": "extractInt(\"99\")",
+          "expected": "99",
+          "expectedType": "int"
+        },
+        {
+          "name": "нет цифр",
+          "callExpression": "extractInt(\"none\")",
+          "expected": "-1",
+          "expectedType": "int"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "public class TextUtils {\n    public int extractInt(String price) {\n        if (price == null) return -1;\n        String digits = price.replaceAll(\"[^0-9]\", \"\");\n        if (digits.isEmpty()) return -1;\n        return Integer.parseInt(digits);\n    }\n}\n",
+      "methodName": null,
+      "id": "e2",
+      "title": "Извлечь число из цены",
+      "description": "Дано:\n- класс TextUtils\n- метод extractInt(String price)\n- в теории раздел «Извлечь число из цены»\n\nЗадание:\nОставь только цифры (replaceAll), распарсь в int. Если цифр нет — верни -1.\n\nРезультат:\n- extractInt(\"Total: 1 250 rub\") → 1250\n- extractInt(\"99\") → 99\n- extractInt(\"none\") → -1",
+      "className": "TextUtils",
+      "starterCode": "public class TextUtils {\n    public int extractInt(String price) {\n        // TODO: убери пробелы/нецифры логично и распарсь\n        return -1;\n    }\n}\n",
+      "mode": "java",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "junior",
+  "moduleId": "java-basics"
+}

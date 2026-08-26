@@ -1,0 +1,53 @@
+{
+  "id": "s-testcontainers",
+  "levelId": "senior",
+  "moduleId": "docker",
+  "title": "Testcontainers: идея и практика",
+  "summary": "Реальные зависимости в Docker на время теста — изоляция без shared stage.",
+  "theoryMarkdown": "# Testcontainers\n\nПоднимает контейнеры (Postgres, Kafka, WireMock…) из JUnit.\n\n```java\n@Container\nstatic PostgreSQLContainer<?> db = new PostgreSQLContainer<>(\"postgres:16\");\n```\n\n## Зачем\n\n- Паритет с продом\n- Нет гонок за shared sandbox\n- CI воспроизводим (нужен Docker)\n\n## Trade-off\n\nМедленнее unit. Используй на integration слое, не на каждом UI клике.\n\n\n\n## В работе vs лаба\n\nУрок учит **решению/политике**. Мышцы автоматизации наращивай в портфолио и на реальном проекте.\n## К практике\n\nМатрица профиля:\n\n```java\nif (!needsRealDb) return \"unit\";\nif (hasDocker && ciMinutes >= 8) return \"integration-tc\";\nreturn \"integration-mock\";\n```\n",
+  "keyPoints": [
+    "Контейнер на lifecycle теста",
+    "Нужен Docker",
+    "Слой integration, не unit"
+  ],
+  "interviewTips": [
+    "Когда Testcontainers vs Test Double?",
+    "Как ускоряешь старт контейнеров?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Testcontainers требуют:",
+      "options": [
+        "Только JRE без Docker",
+        "Доступный Docker engine",
+        "Только Windows",
+        "BrowserStack"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Docker обязателен.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Container profile selection policy",
+      "description": "Дано:\n- класс / артефакт: TcPolicyTest\n- режим junit (класс с @Test)\n\nЗадание:\nСм. теорию «К практике» (TcPolicy.profile).\nif !needsRealDb -> unit; if needsRealDb and hasDocker and ciMinutes>=8 -> integration-tc; otherwise integration-mock.\n\nРезультат:\n- все @Test в классе зелёные",
+      "difficulty": "medium",
+      "mode": "junit",
+      "className": "TcPolicyTest",
+      "starterCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass TcPolicy {\n    public String profile(boolean needsRealDb, boolean hasDocker, int ciMinutes) {\n        // TODO decision matrix\n        return \"\";\n    }\n}\n\npublic class TcPolicyTest {\n    @Test void tcPath() { assertEquals(\"integration-tc\", new TcPolicy().profile(true, true, 12)); }\n    @Test void mockWhenNoDocker() { assertEquals(\"integration-mock\", new TcPolicy().profile(true, false, 12)); }\n    @Test void mockWhenBudgetLow() { assertEquals(\"integration-mock\", new TcPolicy().profile(true, true, 5)); }\n    @Test void unitPath() { assertEquals(\"unit\", new TcPolicy().profile(false, true, 20)); }\n}\n",
+      "solutionCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass TcPolicy {\n    public String profile(boolean needsRealDb, boolean hasDocker, int ciMinutes) {\n        if (!needsRealDb) return \"unit\";\n        if (hasDocker && ciMinutes >= 8) return \"integration-tc\";\n        return \"integration-mock\";\n    }\n}\n\npublic class TcPolicyTest {\n    @Test void tcPath() { assertEquals(\"integration-tc\", new TcPolicy().profile(true, true, 12)); }\n    @Test void mockWhenNoDocker() { assertEquals(\"integration-mock\", new TcPolicy().profile(true, false, 12)); }\n    @Test void mockWhenBudgetLow() { assertEquals(\"integration-mock\", new TcPolicy().profile(true, true, 5)); }\n    @Test void unitPath() { assertEquals(\"unit\", new TcPolicy().profile(false, true, 20)); }\n}\n",
+      "hints": [
+        "Start from the easiest branch: !needsRealDb -> unit",
+        "For real DB path, check both Docker availability and CI budget",
+        "If one constraint fails, fall back to integration-mock"
+      ],
+      "revealAfterFails": 2
+    }
+  ]
+}

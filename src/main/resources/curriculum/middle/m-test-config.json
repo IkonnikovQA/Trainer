@@ -1,0 +1,69 @@
+{
+  "id": "m-test-config",
+  "title": "Конфиг тестов: baseUrl и env",
+  "summary": "Вынеси окружение из хардкода — иначе CI и local разъедутся.",
+  "theoryMarkdown": "# Конфиг тестов: env / properties\n\n## Откуда брать baseUrl\n\n1. System property (`-DbaseUrl=`)\n2. Environment variable (`BASE_URL`)\n3. Безопасный default для local (`http://localhost:8080`)\n\n## Правила\n\n- Секреты — только credentials CI / vault, **не в git**\n- Разные профили: local / ci / stage\n- Один модуль `Config` / `Env` — точка правды\n\n## Anti-patterns\n\nХардкод URL в каждом `@Test`; пароли в репозитории; разные «магические» константы по файлам.\n\n## К практике\n\nЧитай именно system property `qa.baseUrl`:\n\n```java\nstatic String baseUrl() {\n    String v = System.getProperty(\"qa.baseUrl\");\n    return (v == null || v.isBlank()) ? \"http://localhost:8080\" : v;\n}\n```\n\nВ `@AfterEach` очищай property, чтобы тесты не мешали друг другу.\n",
+  "keyPoints": [
+    "getenv / property",
+    "default для local",
+    "без секретов в git"
+  ],
+  "interviewTips": [
+    "Как переключаешь стенды?",
+    "Secrets в CI"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "baseUrl лучше брать из:",
+      "options": [
+        "хардкода в каждом тесте",
+        "конфига/env с default",
+        "скриншота",
+        "CSS"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Env/config.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Пароль к stage в автотестах лучше:",
+      "options": [
+        "Закоммитить в Config.java",
+        "Взять из CI credentials / env",
+        "Написать в README",
+        "Захардкодить в CSS"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Секреты вне git.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "TestConfig.baseUrl",
+      "description": "Дано:\n- класс / артефакт: TestConfigTest\n- режим junit (класс с @Test)\n\nЗадание:\nРеализуй TestConfig.baseUrl(): если system property qa.baseUrl задан — его, иначе default http://localhost:8080. Тесты проверят оба пути.\n\nРезультат:\n- все @Test в классе зелёные",
+      "difficulty": "medium",
+      "mode": "junit",
+      "className": "TestConfigTest",
+      "starterCode": "import org.junit.jupiter.api.AfterEach;\nimport org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass TestConfig {\n    static String baseUrl() {\n        // TODO read System.getProperty(\"qa.baseUrl\") with default\n        return \"\";\n    }\n}\n\npublic class TestConfigTest {\n    @AfterEach\n    void clear() { System.clearProperty(\"qa.baseUrl\"); }\n\n    @Test\n    void defaultUrl() {\n        System.clearProperty(\"qa.baseUrl\");\n        assertEquals(\"http://localhost:8080\", TestConfig.baseUrl());\n    }\n\n    @Test\n    void fromProperty() {\n        System.setProperty(\"qa.baseUrl\", \"https://stage.example\");\n        assertEquals(\"https://stage.example\", TestConfig.baseUrl());\n    }\n}\n",
+      "solutionCode": "import org.junit.jupiter.api.AfterEach;\nimport org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass TestConfig {\n    static String baseUrl() {\n        String v = System.getProperty(\"qa.baseUrl\");\n        return (v == null || v.isBlank()) ? \"http://localhost:8080\" : v;\n    }\n}\n\npublic class TestConfigTest {\n    @AfterEach\n    void clear() { System.clearProperty(\"qa.baseUrl\"); }\n\n    @Test\n    void defaultUrl() {\n        System.clearProperty(\"qa.baseUrl\");\n        assertEquals(\"http://localhost:8080\", TestConfig.baseUrl());\n    }\n\n    @Test\n    void fromProperty() {\n        System.setProperty(\"qa.baseUrl\", \"https://stage.example\");\n        assertEquals(\"https://stage.example\", TestConfig.baseUrl());\n    }\n}\n",
+      "hints": [
+        "System.getProperty(\"qa.baseUrl\")",
+        "default http://localhost:8080",
+        "Доведи до детерминированного результата из раздела «Результат»."
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "api"
+}

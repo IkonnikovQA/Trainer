@@ -1,0 +1,141 @@
+{
+  "id": "j-control",
+  "title": "Условия, циклы, switch",
+  "summary": "Управляющие конструкции — основа валидаций и обхода коллекций в тестах.",
+  "theoryMarkdown": "# Условия и циклы\n\n## if / else\n\n```java\nif (status == 200) {\n    // ok\n} else if (status == 404) {\n    // not found\n} else {\n    // other\n}\n```\n\n## Тернарный оператор\n\n```java\nString result = ok ? \"PASS\" : \"FAIL\";\n```\n\n## Циклы\n\n- `for` — когда известен диапазон\n- `for-each` — обход коллекций/массивов\n- `while` / `do-while` — пока условие истинно\n\n```java\nfor (WebElement el : elements) {\n    assertTrue(el.isDisplayed());\n}\n```\n\n## switch\n\nС Java 14+ удобен switch expression:\n\n```java\nString type = switch (code) {\n    case 200, 201 -> \"success\";\n    case 400, 404 -> \"client\";\n    default -> \"other\";\n};\n```\n\n## Частые ошибки в тестах\n\n- Бесконечный while без условия выхода\n- Сравнение String через ==\n- Off-by-one в индексах массива\n\n## К практике\n\n### classify(int code)\nДиапазоны статусов:\n\n```java\nif (code >= 200 && code < 300) return \"success\"; // 2xx\nif (code >= 400 && code < 500) return \"client\";  // 4xx\nif (code >= 500 && code < 600) return \"server\";  // 5xx\nreturn \"other\";\n```\n\n### sum(int[] nums)\n`null` или пустой массив → `0`. Иначе суммируй for-each:\n\n```java\nint s = 0;\nfor (int n : nums) s += n;\nreturn s;\n```\n",
+  "keyPoints": [
+    "for-each удобен для списков элементов",
+    "switch expression возвращает значение",
+    "Избегай бесконечных циклов в ожиданиях — используй WebDriverWait"
+  ],
+  "interviewTips": [
+    "Чем for отличается от for-each?",
+    "Когда while предпочтительнее for?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Какой цикл лучше для обхода List<WebElement>?",
+      "options": [
+        "Бесконечный while",
+        "for-each",
+        "только do-while",
+        "goto"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "for-each читаем и безопасен по индексам.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Что вернёт выражение: true ? \"A\" : \"B\"?",
+      "options": [
+        "B",
+        "A",
+        "true",
+        "ошибка компиляции"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Тернарный оператор выбирает ветку true.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "difficulty": "medium",
+      "hints": [
+        "2xx: code >= 200 && code < 300",
+        "Можно через if-else цепочку",
+        "Доведи до детерминированного результата из раздела «Результат»."
+      ],
+      "testCases": [
+        {
+          "name": "200",
+          "callExpression": "classify(200)",
+          "expected": "success",
+          "expectedType": "string"
+        },
+        {
+          "name": "201",
+          "callExpression": "classify(201)",
+          "expected": "success",
+          "expectedType": "string"
+        },
+        {
+          "name": "404",
+          "callExpression": "classify(404)",
+          "expected": "client",
+          "expectedType": "string"
+        },
+        {
+          "name": "500",
+          "callExpression": "classify(500)",
+          "expected": "server",
+          "expectedType": "string"
+        },
+        {
+          "name": "100",
+          "callExpression": "classify(100)",
+          "expected": "other",
+          "expectedType": "string"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "public class HttpClass {\n    public String classify(int code) {\n        if (code >= 200 && code < 300) return \"success\";\n        if (code >= 400 && code < 500) return \"client\";\n        if (code >= 500 && code < 600) return \"server\";\n        return \"other\";\n    }\n}\n",
+      "methodName": null,
+      "id": "e1",
+      "title": "Классификация HTTP",
+      "description": "Дано:\n- класс / артефакт: HttpClass\n- режим java (класс с методами)\n\nЗадание:\nСм. теорию «К практике» (classify / sum).\nclassify(int code): \"success\" для 2xx, \"client\" для 4xx, \"server\" для 5xx, иначе \"other\".\n\nРезультат:\n- classify(200) → success\n- classify(201) → success\n- classify(404) → client\n- classify(500) → server",
+      "className": "HttpClass",
+      "starterCode": "public class HttpClass {\n    public String classify(int code) {\n        // TODO\n        return \"other\";\n    }\n}\n",
+      "mode": "java",
+      "revealAfterFails": 2
+    },
+    {
+      "difficulty": "easy",
+      "hints": [
+        "Проверь nums == null || nums.length == 0",
+        "for (int n : nums) sum += n",
+        "Доведи до детерминированного результата из раздела «Результат»."
+      ],
+      "testCases": [
+        {
+          "name": "обычный",
+          "callExpression": "sum({1,2,3})",
+          "expected": "6",
+          "expectedType": "int"
+        },
+        {
+          "name": "пустой",
+          "callExpression": "sum({})",
+          "expected": "0",
+          "expectedType": "int"
+        },
+        {
+          "name": "один",
+          "callExpression": "sum({10})",
+          "expected": "10",
+          "expectedType": "int"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "public class ArraysTask {\n    public int sum(int[] nums) {\n        if (nums == null || nums.length == 0) return 0;\n        int s = 0;\n        for (int n : nums) s += n;\n        return s;\n    }\n}\n",
+      "methodName": null,
+      "id": "e2",
+      "title": "Сумма массива",
+      "description": "Дано:\n- класс / артефакт: ArraysTask\n- режим java (класс с методами)\n\nЗадание:\nСм. теорию «К практике» (classify / sum).\nsum(int[] nums) — сумма элементов. Для null или пустого — 0.\n\nРезультат:\n- sum({1,2,3}) → 6\n- sum({}) → 0\n- sum({10}) → 10",
+      "className": "ArraysTask",
+      "starterCode": "public class ArraysTask {\n    public int sum(int[] nums) {\n        // TODO\n        return 0;\n    }\n}\n",
+      "mode": "java",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "junior",
+  "moduleId": "java-basics"
+}

@@ -1,0 +1,80 @@
+﻿{
+  "id": "m-portfolio",
+  "title": "Портфолио к офферу",
+  "summary": "Чеклист GitHub-портфолио: реальный Chrome, API, CI — то, без чего Junior редко берут.",
+  "estimatedMinutes": 35,
+  "levelId": "middle",
+  "moduleId": "quality",
+  "theoryMarkdown": "# Портфолио к офферу\n\nТренажёр учит на FakeDriver/MockWebServer. **Найм смотрит на публичное GitHub-портфолио с зелёными UI+API и CI** с реальными прогонами.\n\n## Шаблон\n\nВ репозитории QA Forge: `examples/portfolio-starter` — скопируй в свой GitHub.\n\nСтек шаблона: Java 17, JUnit 5, Selenium 4 + WebDriverManager, RestAssured, GitHub Actions.\n\n## Must-have сценарии\n\n1. UI login happy + negative\n2. UI ещё один простой interaction (форма/checkbox)\n3. API list 200\n4. API create 201\n5. API negative / contract field\n6. README: как запустить, стек, что покрыто\n7. CI workflow зелёный\n8. Без секретов в git\n\n## После capstone\n\nУрок Capstone даёт идеи POM + API + JUnit. **Перенеси** их в портфолио против the-internet / jsonplaceholder (или своего demo) — не оставляй только каты в тренажёре.\n\n## В работе\n\nРеальный Chrome, живой API, настоящий GHA. Здесь в практике — YAML-чеклист готовности портфолио.\n\n\n\n## В работе vs лаба\n\nВ лабе проверяется **текст артефакта** (структура YAML/Jenkinsfile). В работе pipeline должен **реально выполняться** в CI (см. портфолио GHA).\n## К практике\n\nЗаполни YAML чеклиста ключами ниже (все `true`, без password):\n\n```yaml\nreadme_present: true\nui_tests: true\napi_tests: true\nci_workflow: true\nno_secrets: true\npublic_github: true\n```\n",
+  "keyPoints": [
+    "Портфолио = реальный Chrome + API + CI",
+    "Шаблон: examples/portfolio-starter",
+    "После capstone — перенос в GitHub"
+  ],
+  "interviewTips": [
+    "Расскажи структуру своего репо за 60 секунд",
+    "Почему UI мало, а API больше?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Что важнее для первого оффера Junior Auto QA?",
+      "options": [
+        "Только теория без репозитория",
+        "Публичное GitHub-портфолио с зелёными UI+API и CI",
+        "Только сертификат без кода",
+        "Только FakeDriver-каты"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Рекрутер/техлид смотрят код и CI, не только пройденный тренажёр.",
+      "hint": "См. CAREER.md"
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Где в QA Forge лежит шаблон портфолио?",
+      "options": [
+        "только в Senior artifact",
+        "examples/portfolio-starter",
+        "workspace/progress.json",
+        "target/dependency"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "examples/portfolio-starter — стартовый GitHub-проект.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Чеклист портфолио",
+      "difficulty": "easy",
+      "mode": "artifact",
+      "artifactKind": "gha",
+      "className": "PortfolioChecklist",
+      "revealAfterFails": 2,
+      "description": "Дано:\n- артефакт PortfolioChecklist (YAML)\n- шаблон examples/portfolio-starter\n\nЗадание:\nСм. теорию «К практике». Заполни чеклист готовности портфолио: все ключи true, без секретов.\n\nРезультат:\n- есть readme_present, ui_tests, api_tests, ci_workflow, no_secrets, public_github",
+      "hints": [
+        "Скопируй YAML из теории и поставь true",
+        "Не добавляй password / токены"
+      ],
+      "artifactRules": [
+        "yamlKey:readme_present",
+        "yamlKey:ui_tests",
+        "yamlKey:api_tests",
+        "yamlKey:ci_workflow",
+        "yamlKey:no_secrets",
+        "yamlKey:public_github",
+        "noSecret:password",
+        "contains:true"
+      ],
+      "starterCode": "# Portfolio readiness checklist\n# put your keys here\n",
+      "solutionCode": "readme_present: true\nui_tests: true\napi_tests: true\nci_workflow: true\nno_secrets: true\npublic_github: true\n"
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "id": "m-parallel",
+  "title": "Параллельный запуск и ThreadLocal",
+  "summary": "Параллель ускоряет CI, но ломает наивные static WebDriver.",
+  "theoryMarkdown": "# Параллель\n\n## Проблема\n\n`static WebDriver driver` — гонки между потоками.\n\n## Решение\n\n`ThreadLocal<WebDriver>` + аккуратный cleanup в afterEach.\n\n## Уровни параллели\n\n- методы\n- классы\n- JVM forks (Surefire)\n\n## Данные\n\nИзоляция обязательна: иначе параллель покажет ложные падения.\n\n## К практике\n\nПроверка изоляции ThreadLocal:\n\n```java\nDriverHolder.set(\"main\");\nfinal String[] other = new String[1];\nThread t = new Thread(() -> {\n    DriverHolder.set(\"worker\");\n    other[0] = DriverHolder.get();\n    DriverHolder.clear();\n});\nt.start();\nt.join();\nassertEquals(\"worker\", other[0]);\nassertEquals(\"main\", DriverHolder.get());\n```\n\n## static WebDriver\n\n`static WebDriver` в параллели опасен: **shared mutable state** между потоками. Держи драйвер в ThreadLocal.\n",
+  "keyPoints": [
+    "ThreadLocal для драйвера",
+    "Cleanup в finally/after",
+    "Изоляция данных"
+  ],
+  "interviewTips": [
+    "Как отладить race в тестах?",
+    "parallel=methods vs classes"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "static WebDriver в параллели опасен потому что:",
+      "options": [
+        "Медленный",
+        "Потоки делят одну сессию/состояние",
+        "Запрещён Java",
+        "Не работает с Maven"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Shared mutable state.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "ThreadLocal isolation test",
+      "description": "Дано:\n- класс / артефакт: DriverHolderTest\n- режим junit (класс с @Test)\n- вспомогательные классы: DriverHolder\n\nЗадание:\nСм. теорию «К практике» (ThreadLocal isolation).\nДопиши DriverHolder (уже почти готов в support) и JUnit: два потока видят разные id.\n\nРезультат:\n- все @Test в классе зелёные",
+      "difficulty": "hard",
+      "mode": "junit",
+      "className": "DriverHolderTest",
+      "supportSources": {
+        "DriverHolder": "public class DriverHolder {\n  private static final ThreadLocal<String> TL = new ThreadLocal<>();\n  public static void set(String id) { TL.set(id); }\n  public static String get() { return TL.get(); }\n  public static void clear() { TL.remove(); }\n}"
+      },
+      "starterCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\npublic class DriverHolderTest {\n    @Test\n    void threadsAreIsolated() throws Exception {\n        // TODO: main sets \"main\"; worker thread sets \"worker\";\n        // assert worker saw \"worker\", main still \"main\"\n    }\n}\n",
+      "solutionCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\npublic class DriverHolderTest {\n    @Test\n    void threadsAreIsolated() throws Exception {\n        DriverHolder.set(\"main\");\n        final String[] other = new String[1];\n        Thread t = new Thread(() -> {\n            DriverHolder.set(\"worker\");\n            other[0] = DriverHolder.get();\n            DriverHolder.clear();\n        });\n        t.start();\n        t.join();\n        assertEquals(\"worker\", other[0]);\n        assertEquals(\"main\", DriverHolder.get());\n        DriverHolder.clear();\n    }\n}\n",
+      "hints": [
+        "new Thread(() -> { DriverHolder.set(\"worker\"); ...})",
+        "join + assertEquals",
+        "Доведи до детерминированного результата из раздела «Результат»."
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "reporting"
+}

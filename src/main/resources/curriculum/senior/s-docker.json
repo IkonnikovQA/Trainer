@@ -1,0 +1,62 @@
+{
+  "id": "s-docker",
+  "title": "Docker для автотестов",
+  "summary": "Контейнеры выравнивают окружение JDK/браузера/зависимостей.",
+  "theoryMarkdown": "# Docker\n\n## Зачем QA\n\n- Одинаковый runtime в CI и локально\n- Поднятие зависимостей (БД, mock-server)\n- Selenium Grid / standalone chrome\n\n## Базовые команды\n\n```\ndocker build -t qa-tests .\ndocker run --rm qa-tests\ndocker compose up -d\n```\n\n## Dockerfile (идея)\n\n`FROM maven:3.9-eclipse-temurin-17` → copy pom → dependency:go-offline → copy src → `mvn test`\n\n## Важно\n\n- Не клади секреты в image layers\n- .dockerignore для target/\n- Версионируй образы\n\n\n\n## В работе vs лаба\n\nВ лабе проверяется **текст артефакта** (структура YAML/Jenkinsfile). В работе pipeline должен **реально выполняться** в CI (см. портфолио GHA).\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### Dockerfile с кэшем Maven\nЗаполни артефакт по образцу:\n```text\nFROM maven:3.9-eclipse-temurin-17\nWORKDIR /app\nCOPY pom.xml .\nRUN mvn -B -q dependency:go-offline\nCOPY src ./src\nRUN mvn -B -DskipTests package\n```\n",
+  "keyPoints": [
+    "Воспроизводимость",
+    "compose для зависимостей",
+    "Шаблон к заданию «Dockerfile с кэшем Maven» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "IMAGE vs container",
+    "Как дебажить падение в контейнере?",
+    "Volumes"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Зачем .dockerignore?",
+      "options": [
+        "Ускорить сеть браузера",
+        "Не отправлять мусор (target/, .git) в build context",
+        "Заменить pom",
+        "Нужен только Windows"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Меньше context = быстрее/чище build.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Dockerfile с кэшем Maven",
+      "description": "Дано:\n- класс / артефакт: Dockerfile\n- режим artifact (текст файла / YAML / Jenkinsfile)\n\nЗадание:\nСм. теорию «К практике» (Dockerfile с кэшем Maven).\nНапиши Dockerfile: FROM maven, COPY pom.xml раньше COPY src, RUN mvn dependency или test. Без PASSWORD=.\n\nРезультат:\n- в тексте есть: FROM\n- в тексте есть: COPY pom.xml\n- в тексте есть: mvn",
+      "difficulty": "medium",
+      "mode": "artifact",
+      "artifactKind": "dockerfile",
+      "artifactRules": [
+        "contains:FROM",
+        "contains:COPY pom.xml",
+        "pomBeforeSrc",
+        "contains:mvn",
+        "noSecret:PASSWORD"
+      ],
+      "className": "Dockerfile",
+      "starterCode": "FROM maven:3.9-eclipse-temurin-17\nWORKDIR /app\n# TODO copy pom first, then src, then mvn\n",
+      "solutionCode": "FROM maven:3.9-eclipse-temurin-17\nWORKDIR /app\nCOPY pom.xml .\nRUN mvn -B -q dependency:go-offline\nCOPY src ./src\nRUN mvn -B -DskipTests package\n",
+      "hints": [
+        "COPY pom.xml до COPY src",
+        "RUN mvn dependency:go-offline",
+        "Доведи до детерминированного результата из раздела «Результат»."
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "senior",
+  "moduleId": "docker"
+}

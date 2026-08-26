@@ -1,0 +1,80 @@
+{
+  "id": "s-interview-soft",
+  "title": "Собеседование: системные ответы Senior",
+  "summary": "Как структурировать ответы: STAR, trade-offs, метрики, влияние.",
+  "theoryMarkdown": "# Как отвечать на Senior-интервью\n\n## STAR\n\n- **S**ituation — контекст команды/продукта\n- **T**ask — твоя цель/ответственность\n- **A**ction — что сделал (конкретно), какие trade-offs\n- **R**esult — эффект + **метрика** (flake%, время feedback, coverage критичных путей)\n\n## Структура длинного ответа\n\n1. Контекст  \n2. Проблема/риск  \n3. Варианты и trade-offs  \n4. Решение и твоя роль  \n5. Результат (цифры)\n\n## Типовые темы\n\nСнижение регресса, flaky, API-слой вместо UI, CI, менторство, legacy strangler.\n\n## Чего избегать\n\n«Мы просто написали много UI»; нет цифр; обвинение всех без своей роли.\n\n\n\n## В работе vs лаба\n\nВ лабе проверяется **текст артефакта** (структура YAML/Jenkinsfile). В работе pipeline должен **реально выполняться** в CI (см. портфолио GHA).\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### STAR checklist YAML\nЗаполни артефакт по образцу:\n```text\nsituation: flake 8% on waits in nightly\ntask: reduce flake and speed feedback\naction: explicit waits, data isolation, quarantine tag\nresult: flake under 2%, feedback minus 15 min\nmetric: flake_rate\n```\n\n## Резюме Auto QA (черновик)\n\n1 страница: роль, стек (Java/JUnit/Selenium/RA/CI), ссылка на GitHub, 3 буллета достижений.\n\n## STAR на собесе\n\n- **S**ituation — контекст (flake 8% на login)\n- **T**ask — цель (снизить до <2%)\n- **A**ction — waits, изоляция данных, quarantine с тикетом\n- **R**esult — цифра (flake, время CI)\n\nПодробный путь: CAREER.md в корне тренажёра. Mock-сессии — вкладка /interview → «Сессия».\n",
+  "keyPoints": [
+    "Trade-offs",
+    "Метрики эффекта",
+    "Шаблон к заданию «STAR checklist YAML» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "Подготовь 3 кейса STAR",
+    "Будь готов к live coding waits/POM/API"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Хороший Senior-ответ содержит:",
+      "options": [
+        "Только названия инструментов",
+        "Проблему, варианты, выбор, эффект",
+        "Мемы",
+        "Список всех аннотаций JUnit"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Структура и trade-offs.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "multiple",
+      "question": "Что входит в сильный Senior-ответ? (несколько)",
+      "options": [
+        "Контекст и проблема",
+        "Trade-offs вариантов",
+        "Только список инструментов",
+        "Результат/метрика"
+      ],
+      "correctIndexes": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Инструменты без trade-offs и эффекта — слабый ответ.",
+      "hint": "STAR / trade-offs"
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "STAR checklist YAML",
+      "description": "Дано:\n- класс / артефакт: StarChecklist\n- режим artifact (текст файла / YAML / Jenkinsfile)\n\nЗадание:\nСм. теорию «К практике» (STAR checklist YAML).\ninclude keys situation, task, action, result, metric and avoid secrets.\n\nРезультат:\n- в тексте есть: situation\n- в тексте есть: task\n- в тексте есть: action\n- в тексте есть: result\n- в тексте есть: metric",
+      "difficulty": "easy",
+      "mode": "artifact",
+      "artifactKind": "gha",
+      "artifactRules": [
+        "contains:situation",
+        "contains:task",
+        "contains:action",
+        "contains:result",
+        "contains:metric",
+        "noSecret:password"
+      ],
+      "className": "StarChecklist",
+      "starterCode": "# STAR answer skeleton\n# TODO\n",
+      "solutionCode": "situation: flake 8% on waits in nightly\ntask: reduce flake and speed feedback\naction: explicit waits, data isolation, quarantine tag\nresult: flake under 2%, feedback minus 15 min\nmetric: flake_rate\n",
+      "hints": [
+        "Describe context and responsibility first",
+        "Add concrete action and measurable result",
+        "Finish with explicit metric key"
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "senior",
+  "moduleId": "process"
+}

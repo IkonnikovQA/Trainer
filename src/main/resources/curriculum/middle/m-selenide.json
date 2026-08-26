@@ -1,0 +1,55 @@
+{
+  "id": "m-selenide",
+  "title": "Selenide: удобный слой над Selenium",
+  "summary": "Selenide даёт разумные дефолты waits и concise API.",
+  "theoryMarkdown": "# Selenide\n\n```java\nopen(\"/login\");\n$(\"#email\").setValue(\"u\");\n$(\"#password\").setValue(\"p\");\n$(\"button[type=submit]\").click();\n$(\".welcome\").shouldHave(text(\"Hello\"));\n```\n\n## Плюсы\n\n- Автоожидания\n- Красивые ассерты\n- Меньше бойлерплейта\n\n## Минусы/ограничения\n\n- Нужно понимать Selenium под капотом\n- Кастомизация драйвера/грида всё равно нужна\n\n\n## Lab\n\nПишешь тонкий wrapper в духе Selenide поверх FakeDriver: `$` и `shouldHaveText`.\n\n\n\n## В работе vs лаба\n\nВ лабе — **FakeDriver** (быстрый DOM в памяти). В работе и в `examples/portfolio-starter` — **реальный Chrome** + явные waits.\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### Selenide-like $ and shouldHaveText\n```java\nimport org.openqa.selenium.*;\n\npublic class SelenideLite {\n    private final WebDriver driver;\n    public SelenideLite(WebDriver driver) { this.driver = driver; }\n\n    public WebElement $(By by) {\n        return driver.findElement(by);\n    }\n\n    public void shouldHaveText(By by, String expected) {\n        String actual = $(by).getText();\n        if (!expected.equals(actual)) {\n            throw new AssertionError(\"expected [\" + expected + \"] but was [\" + actual + \"]\");\n        }\n    }\n}\n```\n\n## Smart waits в ассертах\n\nshouldHave(text(...)) обычно **ждёт условие в течение таймаута** — умные ожидания в ассертах Selenide.\n",
+  "keyPoints": [
+    "$ / $$ селекторы",
+    "should* ассерты с wait",
+    "Шаблон к заданию «Selenide-like $ and shouldHaveText» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "Selenide vs чистый Selenium",
+    "Как параллелить Selenide?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Selenide shouldHave(text(...)) обычно:",
+      "options": [
+        "Не ждёт",
+        "Ждёт условие в течение таймаута",
+        "Делает sleep 10с всегда",
+        "Работает только с Firefox"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Умные ожидания в ассертах.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Selenide-like $ and shouldHaveText",
+      "description": "Дано:\n- класс / артефакт: SelenideLite\n- режим selenium-fake (in-memory FakeDriver)\n- DOM fixture уже подготовлен тренажёром\n\nЗадание:\nСм. теорию «К практике» (Selenide-like $ and shouldHaveText).\nКласс SelenideLite(WebDriver): $(By) возвращает элемент; shouldHaveText(By, text) бросает AssertionError если текст не совпал, иначе void.\n\nРезультат:\n- verifier проверяет действия на FakeDriver",
+      "difficulty": "medium",
+      "mode": "selenium-fake",
+      "className": "SelenideLite",
+      "fixtureJson": "{\"elements\":[{\"tag\":\"div\",\"id\":\"welcome\",\"text\":\"Hello\",\"displayed\":true}]}",
+      "starterCode": "import org.openqa.selenium.*;\n\npublic class SelenideLite {\n    private final WebDriver driver;\n    public SelenideLite(WebDriver driver) { this.driver = driver; }\n\n    public WebElement $(By by) {\n        // TODO\n        return null;\n    }\n\n    public void shouldHaveText(By by, String expected) {\n        // TODO: if not equals throw new AssertionError(...)\n    }\n}\n",
+      "solutionCode": "import org.openqa.selenium.*;\n\npublic class SelenideLite {\n    private final WebDriver driver;\n    public SelenideLite(WebDriver driver) { this.driver = driver; }\n\n    public WebElement $(By by) {\n        return driver.findElement(by);\n    }\n\n    public void shouldHaveText(By by, String expected) {\n        String actual = $(by).getText();\n        if (!expected.equals(actual)) {\n            throw new AssertionError(\"expected [\" + expected + \"] but was [\" + actual + \"]\");\n        }\n    }\n}\n",
+      "hints": [
+        "$(by) = driver.findElement(by)",
+        "сравни getText() с expected",
+        "Доведи до детерминированного результата из раздела «Результат»."
+      ],
+      "verifierCode": "import java.util.*;\nimport org.openqa.selenium.*;\n\npublic class ExerciseVerifier {\n  public List<String> verify(Class<?> cls, WebDriver driver) throws Exception {\n    List<String> fails = new ArrayList<>();\n    Object lite = cls.getConstructor(WebDriver.class).newInstance(driver);\n    WebElement el = (WebElement) cls.getMethod(\"$\", By.class).invoke(lite, By.id(\"welcome\"));\n    if (el == null || !\"Hello\".equals(el.getText())) fails.add(\"$ failed\");\n    try {\n      cls.getMethod(\"shouldHaveText\", By.class, String.class).invoke(lite, By.id(\"welcome\"), \"Hello\");\n    } catch (Exception e) { fails.add(\"shouldHaveText positive failed: \" + e.getMessage()); }\n    try {\n      cls.getMethod(\"shouldHaveText\", By.class, String.class).invoke(lite, By.id(\"welcome\"), \"Nope\");\n      fails.add(\"shouldHaveText must fail on mismatch\");\n    } catch (Exception e) {\n      Throwable c = e.getCause() != null ? e.getCause() : e;\n      if (!(c instanceof AssertionError)) fails.add(\"expected AssertionError, got \" + c);\n    }\n    return fails;\n  }\n}",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "quality"
+}

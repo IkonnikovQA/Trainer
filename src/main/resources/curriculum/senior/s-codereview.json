@@ -1,0 +1,68 @@
+{
+  "id": "s-codereview",
+  "title": "Code review автотестов",
+  "summary": "Senior растит команду через ревью: стабильность, ценность, ясность.",
+  "theoryMarkdown": "# Code review автотестов\n\n## Смотри\n\n- Ценность сценария (не дубль)\n- Стабильность: waits без sleep, изоляция данных\n- Ассерты по делу (не только status 200)\n- Секреты, хардкод env\n- Время CI / параллель\n\n## Legacy\n\nSTAR: боль → strangler (новый слой рядом) → метрики → выпил старого. Не rewrite overnight.\n\n## Тон\n\nРевью про качество сигнала, не про стиль ради стиля.\n\n## Чеклист ревьюера\n\n1) Есть ли смысл сценария? 2) Стабилен ли wait? 3) Данные изолированы? 4) Секреты? 5) Время CI?\n\n## К практике\n\nАгрегатор находок:\n\n- `add(severity, msg)` считает только `HIGH` / `MEDIUM` / `LOW` (остальное игнор)\n- `summary()` → `\"HIGH:x;MEDIUM:y;LOW:z\"` через `getOrDefault`\n\n```java\ncounts.merge(severity, 1, Integer::sum);\nreturn \"HIGH:\" + counts.getOrDefault(\"HIGH\", 0)\n    + \";MEDIUM:\" + counts.getOrDefault(\"MEDIUM\", 0)\n    + \";LOW:\" + counts.getOrDefault(\"LOW\", 0);\n```\n\n## Red flags на ревью\n\nThread.sleep без причины и секрет в коде — red flag. Попроси заменить sleep на явное ожидание/условие.\n",
+  "keyPoints": [
+    "Ценность теста",
+    "Стабильность",
+    "Читаемость"
+  ],
+  "interviewTips": [
+    "Как даёшь фидбек junior?",
+    "Когда просишь переписать?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Thread.sleep(10000) в PR — действие ревьюера:",
+      "options": [
+        "Approve сразу",
+        "Попросить заменить на явное ожидание/условие",
+        "Игнорировать",
+        "Удалить весь репозиторий"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Sleep — red flag.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "В review автотеста red flag:",
+      "options": [
+        "Явный WebDriverWait",
+        "Thread.sleep без причины и секрет в коде",
+        "Page Object",
+        "AssertJ"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Sleep и секреты.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Review findings aggregator",
+      "description": "Дано:\n- класс ReviewReportTest\n- режим junit\n\nЗадание:\nРеализуй ReviewReport.add/summary как в теории «К практике» (считай HIGH/MEDIUM/LOW, остальное пропускай).\n\nРезультат:\n- summary после набора add → \"HIGH:2;MEDIUM:1;LOW:1\"",
+      "difficulty": "hard",
+      "mode": "junit",
+      "className": "ReviewReportTest",
+      "starterCode": "import java.util.*;\nimport org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass ReviewReport {\n    private final Map<String, Integer> counts = new HashMap<>();\n    void add(String severity, String msg) {\n        // TODO increment counts for HIGH/MEDIUM/LOW (ignore unknown)\n    }\n    String summary() {\n        // TODO return HIGH:x;MEDIUM:y;LOW:z using getOrDefault 0\n        return \"\";\n    }\n}\n\npublic class ReviewReportTest {\n    @Test\n    void aggregates() {\n        ReviewReport r = new ReviewReport();\n        r.add(\"HIGH\", \"sleep\");\n        r.add(\"HIGH\", \"sleep2\");\n        r.add(\"MEDIUM\", \"dup\");\n        r.add(\"LOW\", \"name\");\n        r.add(\"INFO\", \"skip\");\n        assertEquals(\"HIGH:2;MEDIUM:1;LOW:1\", r.summary());\n    }\n}\n",
+      "solutionCode": "import java.util.*;\nimport org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass ReviewReport {\n    private final Map<String, Integer> counts = new HashMap<>();\n    void add(String severity, String msg) {\n        if (!Set.of(\"HIGH\", \"MEDIUM\", \"LOW\").contains(severity)) return;\n        counts.merge(severity, 1, Integer::sum);\n    }\n    String summary() {\n        return \"HIGH:\" + counts.getOrDefault(\"HIGH\", 0)\n            + \";MEDIUM:\" + counts.getOrDefault(\"MEDIUM\", 0)\n            + \";LOW:\" + counts.getOrDefault(\"LOW\", 0);\n    }\n}\n\npublic class ReviewReportTest {\n    @Test\n    void aggregates() {\n        ReviewReport r = new ReviewReport();\n        r.add(\"HIGH\", \"sleep\");\n        r.add(\"HIGH\", \"sleep2\");\n        r.add(\"MEDIUM\", \"dup\");\n        r.add(\"LOW\", \"name\");\n        r.add(\"INFO\", \"skip\");\n        assertEquals(\"HIGH:2;MEDIUM:1;LOW:1\", r.summary());\n    }\n}\n",
+      "hints": [
+        "Игнорируй severity вне HIGH/MEDIUM/LOW",
+        "summary всегда в фиксированном формате"
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "senior",
+  "moduleId": "process"
+}

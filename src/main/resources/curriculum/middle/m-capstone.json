@@ -1,0 +1,107 @@
+﻿{
+  "id": "m-capstone",
+  "title": "Capstone: UI + API + JUnit",
+  "summary": "Сведи POM, RestAssured и JUnit в одном сценарии заказа.",
+  "theoryMarkdown": "# Capstone: одна история в трёх частях\n\nРеальный флоу заказа в пирамиде:\n\n1. **UI (POM)** — login / smoke видимости (дорого, мало)\n2. **API (RestAssured)** — создать заказ / подготовить данные (быстро, стабильно)\n3. **JUnit** — оркестратор: связать шаги и ассерты\n\n## Порядок\n\nСначала **API data setup**, потом UI проверка (если нужна), затем assert статуса.  \nНе плоди E2E «всё кликами» — UI для критичного пути, данные через API.\n\n## Критерии готовности lab\n\n- POM не светит CSS в тесте\n- API-клиент возвращает id/status\n- JUnit проверяет связку ожиданий\n\nЭто три упражнения одного сценария, не три разных курса.\n\n\n\n## В работе vs лаба\n\nВ лабе — **FakeDriver** (быстрый DOM в памяти). В работе и в `examples/portfolio-starter` — **реальный Chrome** + явные waits.\n\nВ лабе — **MockWebServer**. В работе — стенд/demo API; контракты и негативы гоняй против живого baseUrl (jsonplaceholder в портфолио).\n## К практике\n\n### CheckoutPage (e1)\n\n```java\npublic String placeOrder(String email) {\n    driver.findElement(By.id(\"email\")).sendKeys(email);\n    driver.findElement(By.id(\"place\")).click();\n    return driver.findElement(By.id(\"order-banner\")).getText();\n}\n```\n\n### OrderClient (e2)\n\n```java\nString body = \"{\\\"sku\\\":\\\"\" + sku + \"\\\"}\";\nreturn given().contentType(ContentType.JSON).body(body)\n    .when().post(baseUrl + \"/orders\")\n    .then().statusCode(201).extract().path(\"orderId\");\n```\n\n\n### OrderFlowTest (e3)\nЭто не полный E2E — юнит на `PriceCalc`:\n\n```java\nassertEquals(30, calc.total(3, 10));\nassertThrows(IllegalArgumentException.class, () -> calc.total(-1, 10));\n```\n\nUI (`CheckoutPage`) и API (`OrderClient`) — отдельные упражнения выше.\n\n\n## Дальше в портфолио\n\nПосле этих трёх кат **скопируй идеи в** examples/portfolio-starter (реальный Chrome + reqres + GHA). Чеклист — урок m-portfolio.\n",
+  "keyPoints": [
+    "POM для UI smoke",
+    "API для создания данных",
+    "JUnit как оркестратор проверок"
+  ],
+  "interviewTips": [
+    "Как делить UI/API в E2E?",
+    "Test data ownership"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Создавать заказ лучше:",
+      "options": [
+        "Только кликами в UI",
+        "Через API (+ UI smoke при необходимости)",
+        "Вручную в проде",
+        "В CSS"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "API быстрее и стабильнее для setup.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Оптимальный порядок в UI+API сценарии заказа:",
+      "options": [
+        "Только UI клики от регистрации до оплаты",
+        "API создаёт данные → UI smoke при необходимости → assert",
+        "Сначала sleep(10), потом всё подряд",
+        "Только SQL в @Test без API"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Данные через API, UI точечно.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "CheckoutPage POM",
+      "description": "Дано:\n- класс / артефакт: CheckoutPage\n- режим selenium-fake (in-memory FakeDriver)\n- DOM fixture уже подготовлен тренажёром\n\nЗадание:\nPOM fills email, clicks place button, returns order-banner text.\n\nРезультат:\n- verifier проверяет действия на FakeDriver",
+      "difficulty": "medium",
+      "mode": "selenium-fake",
+      "className": "CheckoutPage",
+      "fixtureJson": "{\"elements\":[{\"tag\":\"input\",\"id\":\"email\",\"value\":\"\"},{\"tag\":\"button\",\"id\":\"place\",\"text\":\"Place\",\"displayed\":true},{\"tag\":\"div\",\"id\":\"order-banner\",\"text\":\"Order OK\",\"displayed\":true}]}",
+      "starterCode": "import org.openqa.selenium.*;\n\npublic class CheckoutPage {\n    private final WebDriver driver;\n    // TODO By email, place, banner\n\n    public CheckoutPage(WebDriver driver) { this.driver = driver; }\n\n    public String placeOrder(String email) {\n        // TODO\n        return null;\n    }\n}\n",
+      "solutionCode": "import org.openqa.selenium.*;\n\npublic class CheckoutPage {\n    private final WebDriver driver;\n    private final By email = By.id(\"email\");\n    private final By place = By.id(\"place\");\n    private final By banner = By.id(\"order-banner\");\n\n    public CheckoutPage(WebDriver driver) { this.driver = driver; }\n\n    public String placeOrder(String email) {\n        driver.findElement(this.email).sendKeys(email);\n        driver.findElement(place).click();\n        return driver.findElement(banner).getText();\n    }\n}\n",
+      "hints": [
+        "Define By locators for email/place/banner",
+        "Apply sendKeys then click in this order",
+        "Return banner element text"
+      ],
+      "verifierCode": "import java.util.*;\nimport org.openqa.selenium.*;\nimport com.qatrainer.lab.selenium.FakeDriver;\n\npublic class ExerciseVerifier {\n  public List<String> verify(Class<?> cls, WebDriver driver) throws Exception {\n    List<String> fails = new ArrayList<>();\n    Object page = cls.getConstructor(WebDriver.class).newInstance(driver);\n    String text = (String) cls.getMethod(\"placeOrder\", String.class).invoke(page, \"qa@ex.com\");\n    if (!\"Order OK\".equals(text)) fails.add(\"banner: \" + text);\n    FakeDriver fake = (FakeDriver) driver;\n    if (fake.getActionsLog().stream().noneMatch(a -> a.startsWith(\"sendKeys:\"))) fails.add(\"sendKeys missing\");\n    if (fake.getActionsLog().stream().noneMatch(a -> a.startsWith(\"click:\"))) fails.add(\"click missing\");\n    return fails;\n  }\n}",
+      "revealAfterFails": 2
+    },
+    {
+      "id": "e2",
+      "title": "OrderClient API",
+      "description": "Дано:\n- класс / артефакт: OrderClient\n- режим http (RestAssured + MockWebServer)\n- HTTP stub уже подготовлен тренажёром\n\nЗадание:\nPOST /orders with JSON body and extract orderId from 201 response.\n\nРезультат:\n- verifier проверяет ответы через MockWebServer",
+      "difficulty": "medium",
+      "mode": "http",
+      "className": "OrderClient",
+      "httpStubJson": "{\"stubs\":[{\"status\":201,\"body\":\"{\\\"orderId\\\":\\\"ORD-9\\\"}\",\"headers\":{\"Content-Type\":\"application/json\"}}]}",
+      "starterCode": "import static io.restassured.RestAssured.*;\nimport io.restassured.http.ContentType;\n\npublic class OrderClient {\n    public String createOrder(String baseUrl, String sku) {\n        // TODO\n        return null;\n    }\n}\n",
+      "solutionCode": "import static io.restassured.RestAssured.*;\nimport io.restassured.http.ContentType;\n\npublic class OrderClient {\n    public String createOrder(String baseUrl, String sku) {\n        String body = \"{\\\"sku\\\":\\\"\" + sku + \"\\\"}\";\n        return given().contentType(ContentType.JSON).body(body)\n            .when().post(baseUrl + \"/orders\")\n            .then().statusCode(201).extract().path(\"orderId\");\n    }\n}\n",
+      "hints": [
+        "Prepare JSON body with sku field",
+        "POST to /orders and assert 201 status",
+        "Extract orderId from response path"
+      ],
+      "verifierCode": "import java.util.*;\n\npublic class ExerciseVerifier {\n  public List<String> verify(Class<?> cls, String baseUrl) throws Exception {\n    List<String> fails = new ArrayList<>();\n    Object c = cls.getDeclaredConstructor().newInstance();\n    String id = (String) cls.getMethod(\"createOrder\", String.class, String.class).invoke(c, baseUrl, \"SKU1\");\n    if (!\"ORD-9\".equals(id)) fails.add(\"orderId: \" + id);\n    return fails;\n  }\n}",
+      "revealAfterFails": 2
+    },
+    {
+      "id": "e3",
+      "title": "OrderFlowTest",
+      "description": "Дано:\n- класс OrderFlowTest + PriceCalc\n- режим junit\n\nЗадание:\nПроверь calc.total: нормальный кейс и отрицательное qty → IllegalArgumentException. См. «К практике».\n\nРезультат:\n- все @Test зелёные",
+      "difficulty": "medium",
+      "mode": "junit",
+      "className": "OrderFlowTest",
+      "supportSources": {
+        "PriceCalc": "public class PriceCalc {\n  public int total(int qty, int price) {\n    if (qty < 0) throw new IllegalArgumentException(\"qty\");\n    return qty * price;\n  }\n}"
+      },
+      "starterCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\npublic class OrderFlowTest {\n    private final PriceCalc calc = new PriceCalc();\n\n    // TODO: @Test totalOk and negativeQty\n}\n",
+      "solutionCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\npublic class OrderFlowTest {\n    private final PriceCalc calc = new PriceCalc();\n\n    @Test\n    void totalOk() { assertEquals(30, calc.total(3, 10)); }\n\n    @Test\n    void negativeQty() {\n        assertThrows(IllegalArgumentException.class, () -> calc.total(-1, 10));\n    }\n}\n",
+      "hints": [
+        "Используй assertEquals и assertThrows",
+        "Отрицательное количество — ошибка"
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "quality"
+}

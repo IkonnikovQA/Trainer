@@ -1,0 +1,72 @@
+{
+  "id": "m-allure-steps",
+  "levelId": "middle",
+  "moduleId": "reporting",
+  "title": "Allure steps и вложения",
+  "summary": "Как проектировать шаги отчёта и безопасные attachments.",
+  "theoryMarkdown": "# Allure steps vs отчёт целиком\n\nЭтот урок — про **гранулярность шагов**:\n\n- `@Step(\"Login as {user}\")` на page/flow методах\n- Вложенные steps для API given/when/then\n\n`m-allure` — зачем отчёт и вложения; здесь — как резать шаги, чтобы в CI было читаемо.\n\nНе дублируй один и тот же step на каждый findElement — шаг = бизнес-действие.\n\n## Пример\n\nStep на бизнес-действии (create order via API); UI-step отдельно. В отчёте виден сценарий без шума findElement.\n\n## К практике\n\n`AllureLite` — учебный рекордер шагов:\n\n- `step(name)` добавляет имя в список\n- `getSteps()` возвращает копию списка\n- `maskToken(token)` — как в уроке Allure: коротко → `****`, иначе `ab****ef`\n\nВ тесте проверь и запись шагов, и маску.\n",
+  "keyPoints": [
+    "@Step для бизнес-действий",
+    "Attachments на fail",
+    "Маскируй токены"
+  ],
+  "interviewTips": [
+    "Что прикладываешь к API fail?",
+    "Как именуешь steps?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Плохой текст Allure step:",
+      "options": [
+        "User opens checkout",
+        "Click css=#btn-3",
+        "Create order via API",
+        "Assert total amount"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "CSS в step — запах.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Хороший @Step обычно описывает:",
+      "options": [
+        "Каждый CSS-селектор",
+        "Бизнес-действие (login, createOrder)",
+        "Имя JDK",
+        "Цвет кнопки"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Читаемый сценарий в отчёте.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Step recorder + secret mask",
+      "description": "Дано:\n- класс / артефакт: AllureLiteTest\n- режим junit (класс с @Test)\n- вспомогательные классы: AllureLite\n\nЗадание:\ninclude step name and failed count in deterministic format.\n\nРезультат:\n- все @Test в классе зелёные",
+      "difficulty": "medium",
+      "mode": "junit",
+      "className": "AllureLiteTest",
+      "supportSources": {
+        "AllureLite": "import java.util.*;\npublic class AllureLite {\n  private final List<String> steps = new ArrayList<>();\n  public void step(String name) { steps.add(name); }\n  public String maskToken(String token) {\n    if (token == null || token.length() <= 4) return \"****\";\n    return token.substring(0, 2) + \"****\" + token.substring(token.length() - 2);\n  }\n  public List<String> getSteps() { return List.copyOf(steps); }\n}"
+      },
+      "starterCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\npublic class AllureLiteTest {\n    // TODO: test step recording and maskToken(\"abcdef\") -> ab****ef\n}\n",
+      "solutionCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\npublic class AllureLiteTest {\n    @Test\n    void recordsSteps() {\n        AllureLite a = new AllureLite();\n        a.step(\"Login\");\n        a.step(\"Open cart\");\n        assertEquals(2, a.getSteps().size());\n        assertEquals(\"Login\", a.getSteps().get(0));\n    }\n\n    @Test\n    void masksToken() {\n        assertEquals(\"ab****ef\", new AllureLite().maskToken(\"abcdef\"));\n        assertEquals(\"****\", new AllureLite().maskToken(\"ab\"));\n    }\n}\n",
+      "hints": [
+        "Keep output format stable for report parsing",
+        "Count failures from status list first",
+        "Build summary string from computed values"
+      ],
+      "revealAfterFails": 2
+    }
+  ]
+}

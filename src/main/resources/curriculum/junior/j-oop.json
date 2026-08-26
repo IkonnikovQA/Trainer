@@ -1,0 +1,72 @@
+{
+  "id": "j-oop",
+  "title": "ООП: классы, наследование, полиморфизм",
+  "summary": "Без OOP не понять Page Object, базовые тест-классы и фреймворки.",
+  "theoryMarkdown": "# ООП для автоматизатора\n\n## Инкапсуляция\n\nСкрываем детали: поля `private`, доступ через методы.\n\nВ Page Object локаторы часто `private final By...`, снаружи — бизнес-методы `login()`.\n\n## Наследование\n\n`class LoginPage extends BasePage`\n\nБазовый класс держит `WebDriver`, общие waits, `open(url)`.\n\n## Полиморфизм\n\nОдин интерфейс — разные реализации: `DriverFactory` возвращает Chrome/Firefox как `WebDriver`.\n\n## Абстракция\n\n`abstract class BaseTest` с `@BeforeEach`/`@AfterEach`.\n\n## Композиция vs наследование\n\nЧасто **композиция лучше**: `LoginPage` *имеет* `HeaderComponent`, а не наследует всё подряд.\n\n```java\npublic class BasePage {\n    protected final WebDriver driver;\n    public BasePage(WebDriver driver) { this.driver = driver; }\n}\n```\n\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### Класс User\n```java\npublic class User {\n    private String name;\n    private int age;\n\n    public User(String name, int age) {\n        this.name = name;\n        this.age = age;\n    }\n\n    public String getName() { return name; }\n    public int getAge() { return age; }\n    public boolean isAdult() { return age >= 18; }\n}\n```\n\n## Полиморфизм на примере драйвера\n\n`WebDriver chrome = new ChromeDriver();` — переменная типа интерфейса/родителя указывает на конкретную реализацию.\n",
+  "keyPoints": [
+    "Page Object = инкапсуляция UI",
+    "Базовые классы через наследование или композицию",
+    "Шаблон к заданию «Класс User» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "Объясни 4 принципа OOP на примере тестового фреймворка",
+    "Почему композиция часто лучше глубокого наследования страниц?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Какой принцип OOP прячет детали реализации Page Object?",
+      "options": [
+        "Полиморфизм",
+        "Инкапсуляция",
+        "Сериализация",
+        "Рефлексия"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Инкапсуляция скрывает локаторы и внутренности.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "WebDriver chrome = new ChromeDriver() — это пример?",
+      "options": [
+        "Наследования только",
+        "Полиморфизма (работа через интерфейс/родителя)",
+        "Нарушения OOP",
+        "Autoboxing"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Переменная типа родителя/интерфейса указывает на реализацию.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "difficulty": "medium",
+      "hints": [
+        "private String name; private int age;",
+        "public boolean isAdult() { return age >= 18; }",
+        "Нужны getName() и getAge()"
+      ],
+      "testCases": [],
+      "verifierCode": "import java.util.*;\npublic class ExerciseVerifier {\n  public List<String> verify(Class<?> cls) throws Exception {\n    List<String> fails = new ArrayList<>();\n    Object u = cls.getConstructor(String.class, int.class).newInstance(\"Ann\", 20);\n    Object u2 = cls.getConstructor(String.class, int.class).newInstance(\"Bob\", 16);\n    Object name = cls.getMethod(\"getName\").invoke(u);\n    Object age = cls.getMethod(\"getAge\").invoke(u);\n    Object adult = cls.getMethod(\"isAdult\").invoke(u);\n    Object adult2 = cls.getMethod(\"isAdult\").invoke(u2);\n    if (!\"Ann\".equals(name)) fails.add(\"getName: expected Ann\");\n    if (!Integer.valueOf(20).equals(age)) fails.add(\"getAge: expected 20\");\n    if (!Boolean.TRUE.equals(adult)) fails.add(\"isAdult(20) should be true\");\n    if (!Boolean.FALSE.equals(adult2)) fails.add(\"isAdult(16) should be false\");\n    return fails;\n  }\n}",
+      "solutionCode": "public class User {\n    private String name;\n    private int age;\n\n    public User(String name, int age) {\n        this.name = name;\n        this.age = age;\n    }\n\n    public String getName() { return name; }\n    public int getAge() { return age; }\n    public boolean isAdult() { return age >= 18; }\n}\n",
+      "methodName": null,
+      "id": "e1",
+      "title": "Класс User",
+      "description": "Дано:\n- класс / артефакт: User\n- режим java (класс с методами)\n\nЗадание:\nСм. теорию «К практике» (Класс User).\nКласс User с полями name, age; конструктор; getters; метод isAdult() (age >= 18).\n\nРезультат:\n- автопроверка тренажёра проходит",
+      "className": "User",
+      "starterCode": "public class User {\n    // TODO: fields, constructor, getters, isAdult()\n}\n",
+      "mode": "java",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "junior",
+  "moduleId": "java-basics"
+}

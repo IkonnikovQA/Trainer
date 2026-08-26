@@ -1,0 +1,76 @@
+{
+  "id": "m-mockmvc",
+  "title": "MockMvc-стиль: тест контроллера без браузера",
+  "summary": "Как Spring MockMvc: HTTP к «контроллеру» в процессе — быстрее UI, ближе к API-контракту.",
+  "theoryMarkdown": "# MockMvc-идея\n\nВ Spring:\n\n```java\nmockMvc.perform(get(\"/health\"))\n  .andExpect(status().isOk())\n  .andExpect(jsonPath(\"$.status\").value(\"UP\"));\n```\n\nСмысл: дергаешь web-слой без реального Tomcat/браузера.\n\n## В этом lab\n\nМини-`FakeMvc` + `HealthController`: student пишет тест в духе MockMvc — perform GET и assert status/body.\n\nНа работе — `spring-test` MockMvc / WebTestClient; здесь тот же навык без Spring-контекста тренажёра.\n\n## Что проверяют в MockMvc / FakeMvc\n\nТипичные проверки ответа: **status**, **body** (JSON path), **headers**.\n\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### FakeMvc health test\nВспомогательные классы / логика:\n**HealthController**\n```java\npublic class HealthController {\n  public FakeMvc.Response handle(String method, String path) {\n    if (\"GET\".equals(method) && \"/health\".equals(path)) {\n      return FakeMvc.Response.of(200, \"{\\\"status\\\":\\\"UP\\\"}\");\n    }\n    return FakeMvc.Response.of(404, \"{}\");\n  }\n}\n```\n**FakeMvc**\n```java\npublic class FakeMvc {\n  private final HealthController controller;\n  public FakeMvc(HealthController c) { this.controller = c; }\n  public Response perform(String method, String path) { return controller.handle(method, path); }\n  public static class Response {\n    public final int status; public final String body;\n    private Response(int s, String b) { status = s; body = b; }\n    public static Response of(int s, String b) { return new Response(s, b); }\n    public String jsonPath(String key) {\n      String needle = \"\\\"\" + key + \"\\\":\\\"\";\n      int i = body.indexOf(needle);\n      if (i < 0) return null;\n      int start = i + needle.length();\n      int end = body.indexOf('\"', start);\n      retu\n// ...\n```\nВ тестах проверь поведение через assert/verify (см. starter).\n",
+  "keyPoints": [
+    "MockMvc: status, body, headers",
+    "Web-слой без браузера",
+    "status + body asserts",
+    "Шаблон к заданию «FakeMvc health test» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "MockMvc vs RestAssured vs UI",
+    "Когда хватает @WebMvcTest?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "MockMvc чаще всего проверяет:",
+      "options": [
+        "Пиксели экрана",
+        "HTTP-слой контроллера (status/body/headers)",
+        "Jenkins agents",
+        "DNS"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Это тест web-слоя приложения.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "multiple",
+      "question": "Что обычно assertят в MockMvc-тесте?",
+      "options": [
+        "HTTP status",
+        "JSON path / body",
+        "Цвет кнопки",
+        "Headers"
+      ],
+      "correctIndexes": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "UI-пиксели — не зона MockMvc.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "FakeMvc health test",
+      "description": "Дано:\n- класс / артефакт: HealthMvcTest\n- режим junit (класс с @Test)\n- вспомогательные классы: HealthController, FakeMvc\n\nЗадание:\nСм. теорию «К практике» (FakeMvc health test).\nДопиши HealthMvcTest: perform GET /health, ожидай status 200 и body status=UP. FakeMvc и контроллер в support.\n\nРезультат:\n- все @Test в классе зелёные",
+      "difficulty": "hard",
+      "mode": "junit",
+      "className": "HealthMvcTest",
+      "supportSources": {
+        "HealthController": "public class HealthController {\n  public FakeMvc.Response handle(String method, String path) {\n    if (\"GET\".equals(method) && \"/health\".equals(path)) {\n      return FakeMvc.Response.of(200, \"{\\\"status\\\":\\\"UP\\\"}\");\n    }\n    return FakeMvc.Response.of(404, \"{}\");\n  }\n}",
+        "FakeMvc": "public class FakeMvc {\n  private final HealthController controller;\n  public FakeMvc(HealthController c) { this.controller = c; }\n  public Response perform(String method, String path) { return controller.handle(method, path); }\n  public static class Response {\n    public final int status; public final String body;\n    private Response(int s, String b) { status = s; body = b; }\n    public static Response of(int s, String b) { return new Response(s, b); }\n    public String jsonPath(String key) {\n      String needle = \"\\\"\" + key + \"\\\":\\\"\";\n      int i = body.indexOf(needle);\n      if (i < 0) return null;\n      int start = i + needle.length();\n      int end = body.indexOf('\"', start);\n      return end < 0 ? null : body.substring(start, end);\n    }\n  }\n}"
+      },
+      "starterCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\npublic class HealthMvcTest {\n    @Test\n    void healthIsUp() {\n        FakeMvc mvc = new FakeMvc(new HealthController());\n        // TODO: perform GET /health, assert status 200 and jsonPath(\"status\") == \"UP\"\n    }\n}\n",
+      "solutionCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\npublic class HealthMvcTest {\n    @Test\n    void healthIsUp() {\n        FakeMvc mvc = new FakeMvc(new HealthController());\n        FakeMvc.Response res = mvc.perform(\"GET\", \"/health\");\n        assertEquals(200, res.status);\n        assertEquals(\"UP\", res.jsonPath(\"status\"));\n    }\n}\n",
+      "hints": [
+        "FakeMvc.Response res = mvc.perform(\"GET\", \"/health\");",
+        "assertEquals(200, res.status); assertEquals(\"UP\", res.jsonPath(\"status\"));",
+        "Доведи до детерминированного результата из раздела «Результат»."
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "api"
+}

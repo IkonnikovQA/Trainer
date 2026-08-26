@@ -1,0 +1,53 @@
+{
+  "id": "m-soft-assert",
+  "title": "Soft asserts",
+  "summary": "Собрать несколько проверок и упасть один раз со всеми ошибками.",
+  "theoryMarkdown": "# Soft assert\n\nHard assert падает на первой ошибке. Soft assert копит failures и репортит в конце — удобно для UI snapshot полей формы.\n\n```java\nsoftly.assertThat(a).isEqualTo(1);\nsoftly.assertThat(b).isEqualTo(2);\nsoftly.assertAll();\n```\n\nРеализуй мини-`SoftAssert` на списке сообщений.\n\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### SoftAssert collector\n```java\nimport java.util.*;\nimport org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass SoftAssert {\n    private final List<String> fails = new ArrayList<>();\n\n    void checkEquals(Object expected, Object actual, String msg) {\n        if (!Objects.equals(expected, actual)) fails.add(msg);\n    }\n\n    void checkTrue(boolean cond, String msg) {\n        if (!cond) fails.add(msg);\n    }\n\n    void assertAll() {\n        if (!fails.isEmpty()) throw new AssertionError(String.join(\"; \", fails));\n    }\n}\n\npublic class SoftAssertTest {\n    @Test\n    void passesWhenAllOk() {\n        SoftAssert s = new SoftAssert();\n        s.checkEquals(1, 1, \"one\");\n        s.checkTrue(true, \"flag\");\n        s.assertAll();\n    }\n\n    @Test\n    void collectsMultiple() {\n        SoftAssert s = new SoftAssert();\n        s.checkEquals(\"a\", \"b\", \"eq\");\n        s.checkTrue(false, \"flag\");\n        A\n// ...\n```\n",
+  "keyPoints": [
+    "assertAll в конце",
+    "Не глотай ошибки",
+    "Шаблон к заданию «SoftAssert collector» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "AssertJ SoftAssertions",
+    "Когда soft вреден?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "soft assertAll() должен:",
+      "options": [
+        "Игнорировать ошибки",
+        "Бросить, если были failures, со всеми сообщениями",
+        "Всегда pass",
+        "Перезапустить тест"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Иначе soft бесполезен.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "SoftAssert collector",
+      "description": "Дано:\n- класс / артефакт: SoftAssertTest\n- режим junit (класс с @Test)\n\nЗадание:\nСм. теорию «К практике» (SoftAssert collector).\nРеализуй SoftAssert.checkEquals/checkTrue и assertAll(). Тесты уже есть — должны пройти.\n\nРезультат:\n- все @Test в классе зелёные",
+      "difficulty": "medium",
+      "mode": "junit",
+      "className": "SoftAssertTest",
+      "starterCode": "import java.util.*;\nimport org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass SoftAssert {\n    private final List<String> fails = new ArrayList<>();\n\n    void checkEquals(Object expected, Object actual, String msg) {\n        // TODO if not equal, add msg to fails (do not throw yet)\n    }\n\n    void checkTrue(boolean cond, String msg) {\n        // TODO\n    }\n\n    void assertAll() {\n        // TODO if fails not empty, throw AssertionError with joined messages\n    }\n}\n\npublic class SoftAssertTest {\n    @Test\n    void passesWhenAllOk() {\n        SoftAssert s = new SoftAssert();\n        s.checkEquals(1, 1, \"one\");\n        s.checkTrue(true, \"flag\");\n        s.assertAll();\n    }\n\n    @Test\n    void collectsMultiple() {\n        SoftAssert s = new SoftAssert();\n        s.checkEquals(\"a\", \"b\", \"eq\");\n        s.checkTrue(false, \"flag\");\n        AssertionError err = assertThrows(AssertionError.class, s::assertAll);\n        assertTrue(err.getMessage().contains(\"eq\"));\n        assertTrue(err.getMessage().contains(\"flag\"));\n    }\n}\n",
+      "solutionCode": "import java.util.*;\nimport org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass SoftAssert {\n    private final List<String> fails = new ArrayList<>();\n\n    void checkEquals(Object expected, Object actual, String msg) {\n        if (!Objects.equals(expected, actual)) fails.add(msg);\n    }\n\n    void checkTrue(boolean cond, String msg) {\n        if (!cond) fails.add(msg);\n    }\n\n    void assertAll() {\n        if (!fails.isEmpty()) throw new AssertionError(String.join(\"; \", fails));\n    }\n}\n\npublic class SoftAssertTest {\n    @Test\n    void passesWhenAllOk() {\n        SoftAssert s = new SoftAssert();\n        s.checkEquals(1, 1, \"one\");\n        s.checkTrue(true, \"flag\");\n        s.assertAll();\n    }\n\n    @Test\n    void collectsMultiple() {\n        SoftAssert s = new SoftAssert();\n        s.checkEquals(\"a\", \"b\", \"eq\");\n        s.checkTrue(false, \"flag\");\n        AssertionError err = assertThrows(AssertionError.class, s::assertAll);\n        assertTrue(err.getMessage().contains(\"eq\"));\n        assertTrue(err.getMessage().contains(\"flag\"));\n    }\n}\n",
+      "hints": [
+        "Objects.equals(expected, actual)",
+        "assertAll: if (!fails.isEmpty()) throw new AssertionError(String.join(\"; \", fails))",
+        "Доведи до детерминированного результата из раздела «Результат»."
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "quality"
+}

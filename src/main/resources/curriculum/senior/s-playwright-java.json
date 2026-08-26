@@ -1,0 +1,76 @@
+{
+  "id": "s-playwright-java",
+  "levelId": "senior",
+  "moduleId": "architecture",
+  "title": "Playwright for Java: когда менять Selenium",
+  "summary": "Auto-wait, traces, сравнение с Selenium — стратегический выбор стека.",
+  "theoryMarkdown": "# Playwright Java\n\n## Сильные стороны\n\n- Автоожидания из коробки\n- Trace viewer (как «видео» шагов)\n- Единый API web + APIRequest\n- Быстрый старт параллели\n\n## Когда остаться на Selenium\n\n- Зрелый Selenium-фреймворк команды\n- Нужна огромная экосистема legacy\n- Корпстандарт = Selenium + Selenide\n\n## Как отвечать\n\n«Смотрю на риск миграции. Greenfield UI — часто Playwright. Существующий стабильный Selenium — эволюционирую (Selenide/waits), а не переписываю ради хайпа.»\n\n\n\n## В работе vs лаба\n\nВ лабе проверяется **текст артефакта** (структура YAML/Jenkinsfile). В работе pipeline должен **реально выполняться** в CI (см. портфолио GHA).\n\nУрок учит **решению/политике**. Мышцы автоматизации наращивай в портфолио и на реальном проекте.\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### Tool choice policy YAML\nЗаполни артефакт по образцу:\n```text\nwhen_playwright: greenfield UI with traces and auto-wait\nwhen_selenium: mature Grid and existing POM investment\nmigrate_rule: evolve critical paths first, do not rewrite overnight\n```\n\n\n## Trace\n\nTrace в Playwright нужен, чтобы разбирать падения **пошагово**.\n\n\n## Смена стека\n\nПравильный Senior-подход: оценить **ROI**/риски/навыки команды.\n",
+  "keyPoints": [
+    "Playwright = auto-wait + traces",
+    "Миграция — cost/benefit",
+    "Шаблон к заданию «Tool choice policy YAML» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "Сравни flaky риск Selenium vs Playwright",
+    "Что такое Playwright trace?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Trace в Playwright нужен чтобы:",
+      "options": [
+        "Заменить ассерты",
+        "Разбирать падения пошагово",
+        "Собирать Maven",
+        "Писать Dockerfile"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Отладка прогона.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Правильный Senior-подход к смене стека:",
+      "options": [
+        "Всегда переписать за неделю",
+        "Оценить ROI/риски/навыки команды",
+        "Игнорировать Selenium навсегда",
+        "Только TestNG"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Trade-offs.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Tool choice policy YAML",
+      "description": "Дано:\n- класс / артефакт: ToolPolicy\n- режим artifact (текст файла / YAML / Jenkinsfile)\n\nЗадание:\nСм. теорию «К практике» (Tool choice policy YAML).\nYAML: when_playwright (строка), when_selenium, migrate_rule. Без password. Опиши стратегию выбора инструмента.\n\nРезультат:\n- в тексте есть: when_playwright\n- в тексте есть: when_selenium\n- в тексте есть: migrate_rule",
+      "difficulty": "medium",
+      "mode": "artifact",
+      "artifactKind": "gha",
+      "artifactRules": [
+        "contains:when_playwright",
+        "contains:when_selenium",
+        "contains:migrate_rule",
+        "noSecret:password"
+      ],
+      "className": "ToolPolicy",
+      "starterCode": "# UI tool policy\n# TODO\n",
+      "solutionCode": "when_playwright: greenfield UI with traces and auto-wait\nwhen_selenium: mature Grid and existing POM investment\nmigrate_rule: evolve critical paths first, do not rewrite overnight\n",
+      "hints": [
+        "when_playwright:",
+        "when_selenium:",
+        "migrate_rule:"
+      ],
+      "revealAfterFails": 2
+    }
+  ]
+}

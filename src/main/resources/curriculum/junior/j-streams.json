@@ -1,0 +1,85 @@
+{
+  "id": "j-streams",
+  "title": "Java Streams API",
+  "summary": "Stream API ускоряет обработку списков элементов и тестовых данных.",
+  "theoryMarkdown": "# Streams\n\nКонвейер: source → intermediate ops → terminal op.\n\n```java\nlong visible = elements.stream()\n    .filter(WebElement::isDisplayed)\n    .count();\n```\n\n## Ключевые операции\n\n- Intermediate: filter, map, flatMap, distinct, sorted, peek\n- Terminal: collect/toList, count, findFirst, anyMatch, reduce\n\n## Важно\n\nStreams **ленивые**: без terminal операции ничего не выполнится.  \nНе переиспользуй один и тот же Stream — после terminal он «закрыт».\n\n## В тестах\n\nУдобно агрегировать списки текстов/атрибутов с страницы, фильтровать тестовые данные.\n\n## К практике\n\n### sumEven\n`null` → `0`. Суммируй только чётные (`n % 2 == 0`).\n\nЦикл:\n\n```java\nint s = 0;\nfor (int n : nums) if (n % 2 == 0) s += n;\n```\n\nИли Stream:\n\n```java\nreturn Arrays.stream(nums).filter(n -> n % 2 == 0).sum();\n```\n",
+  "keyPoints": [
+    "filter/map/collect — базовый набор",
+    "Streams ленивые",
+    "toList() с Java 16"
+  ],
+  "interviewTips": [
+    "Промежуточные vs терминальные операции",
+    "Параллельные стримы — когда опасно"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Какая операция терминальная?",
+      "options": [
+        "map",
+        "filter",
+        "count",
+        "distinct"
+      ],
+      "correctIndexes": [
+        2
+      ],
+      "explanation": "count завершает пайплайн.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Можно ли повторно вызвать terminal op на том же Stream?",
+      "options": [
+        "Да, всегда",
+        "Нет, Stream одноразовый после terminal",
+        "Только для map",
+        "Только в parallel"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Нужен новый stream от источника.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "difficulty": "easy",
+      "hints": [
+        "Start from the concept and contract before coding exact statements.",
+        "if (nums==null) return 0;",
+        "если n % 2 == 0 — добавляй"
+      ],
+      "testCases": [
+        {
+          "name": "mixed",
+          "callExpression": "sumEven({1,2,3,4})",
+          "expected": "6",
+          "expectedType": "int"
+        },
+        {
+          "name": "none",
+          "callExpression": "sumEven({1,3})",
+          "expected": "0",
+          "expectedType": "int"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "public class StreamTasks {\n    public int sumEven(int[] nums) {\n        if (nums == null) return 0;\n        int s = 0;\n        for (int n : nums) if (n % 2 == 0) s += n;\n        return s;\n    }\n}\n",
+      "methodName": null,
+      "id": "e1",
+      "title": "Сумма чётных",
+      "description": "Дано:\n- класс / артефакт: StreamTasks\n- режим java (класс с методами)\n\nЗадание:\nsumEven(int[] nums) через цикл или stream-логику: сумма чётных. null → 0.\n\nРезультат:\n- sumEven({1,2,3,4}) → 6\n- sumEven({1,3}) → 0",
+      "className": "StreamTasks",
+      "starterCode": "public class StreamTasks {\n    public int sumEven(int[] nums) {\n        // TODO\n        return 0;\n    }\n}\n",
+      "mode": "java",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "junior",
+  "moduleId": "java-basics"
+}

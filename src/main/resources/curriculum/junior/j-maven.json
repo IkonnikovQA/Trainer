@@ -1,0 +1,91 @@
+{
+  "id": "j-maven",
+  "title": "Maven: проект, зависимости, жизненный цикл",
+  "summary": "Maven — стандарт сборки Java-тестов: зависимости, плагины, фазы.",
+  "theoryMarkdown": "# Maven для QA\n\n## Структура\n\n```\nsrc/main/java      — прод/фреймворк код\nsrc/test/java      — тесты\npom.xml            — координаты и зависимости\n```\n\n## Координаты\n\n`groupId`, `artifactId`, `version`\n\n## Lifecycle\n\n`validate → compile → test → package → verify → install → deploy`\n\nДля тестов чаще всего: `mvn test`, `mvn clean verify`.\n\n## Зависимости автотестов\n\n- selenium-java\n- junit-jupiter / testng\n- rest-assured\n- assertj / hamcrest\n- allure, webdrivermanager\n\n## Surefire\n\nПлагин запуска unit/UI тестов. Настраивает parallel, includes/excludes.\n\n## К практике\n\nGAV — строка `groupId:artifactId:version`. Разбей через `split(\":\")`:\n\n```java\nString[] p = gav.split(\":\");\n// p[0] groupId, p[1] artifactId, p[2] version\n```\n\nМетоды `groupId`, `artifactId`, `version` просто возвращают нужный индекс.\n",
+  "keyPoints": [
+    "pom.xml описывает проект",
+    "mvn test запускает тесты",
+    "scope test для тестовых библиотек"
+  ],
+  "interviewTips": [
+    "Чем Maven отличается от Gradle?",
+    "Что делает dependency scope: test/provided/compile?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Где лежат автотесты в стандартном Maven-проекте?",
+      "options": [
+        "src/main/java",
+        "src/test/java",
+        "target/only",
+        "root/tests"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Конвенция Maven: src/test/java.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Какая фаза запускает тесты?",
+      "options": [
+        "package",
+        "test",
+        "deploy",
+        "site"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Фаза test.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "difficulty": "medium",
+      "hints": [
+        "gav.split(\":\")",
+        "Проверь что частей ровно 3",
+        "Доведи до детерминированного результата из раздела «Результат»."
+      ],
+      "testCases": [
+        {
+          "name": "group",
+          "callExpression": "groupId(\"org.seleniumhq.selenium:selenium-java:4.25.0\")",
+          "expected": "org.seleniumhq.selenium",
+          "expectedType": "string"
+        },
+        {
+          "name": "artifact",
+          "callExpression": "artifactId(\"org.seleniumhq.selenium:selenium-java:4.25.0\")",
+          "expected": "selenium-java",
+          "expectedType": "string"
+        },
+        {
+          "name": "ver",
+          "callExpression": "version(\"a:b:1.0\")",
+          "expected": "1.0",
+          "expectedType": "string"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "public class MavenUtils {\n    public String[] parseArtifact(String gav) {\n        return gav.split(\":\");\n    }\n    public String groupId(String gav) { return parseArtifact(gav)[0]; }\n    public String artifactId(String gav) { return parseArtifact(gav)[1]; }\n    public String version(String gav) { return parseArtifact(gav)[2]; }\n}\n",
+      "methodName": null,
+      "id": "e1",
+      "title": "Парсер GAV",
+      "description": "Дано:\n- класс / артефакт: MavenUtils\n- режим java (класс с методами)\n\nЗадание:\nСм. теорию «К практике» (split GAV).\nparseArtifact(\"org.seleniumhq.selenium:selenium-java:4.25.0\") верни массив [groupId, artifactId, version].\n\nРезультат:\n- groupId(\"org.seleniumhq.selenium:selenium-java:4.25.0\") → org.seleniumhq.selenium\n- artifactId(\"org.seleniumhq.selenium:selenium-java:4.25.0\") → selenium-java\n- version(\"a:b:1.0\") → 1.0",
+      "className": "MavenUtils",
+      "starterCode": "public class MavenUtils {\n    public String[] parseArtifact(String gav) {\n        // TODO split by :\n        return new String[0];\n    }\n    public String groupId(String gav) { return parseArtifact(gav)[0]; }\n    public String artifactId(String gav) { return parseArtifact(gav)[1]; }\n    public String version(String gav) { return parseArtifact(gav)[2]; }\n}\n",
+      "mode": "java",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "junior",
+  "moduleId": "maven-junit"
+}

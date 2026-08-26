@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>QA Forge</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+</head>
+<body>
+<header class="topbar">
+    <a class="brand" href="/">QA Forge</a>
+    <nav>
+        <a href="/" class="active">Курс</a>
+        <a href="/interview">Собеседование</a>
+    </nav>
+    <div class="stats" th:with="done=${doneLessons}">
+        <span class="stat-item">Уроки <strong th:text="${done} + '/' + ${totalLessons}">0/0</strong></span>
+        <span class="stat-item">Практика <strong th:text="${progress.completedExercises.size()} + '/' + ${totalExercises}">0/0</strong></span>
+    </div>
+</header>
+
+<main class="home">
+    <section class="hero">
+        <p class="eyebrow">Локальный тренажёр · Java Automation</p>
+        <h1>QA Forge</h1>
+        <p class="lead" th:text="${curriculum.description}">Описание</p>
+        <div class="hero-actions">
+            <a class="btn primary" th:if="${progress.lastLessonId != null}" th:href="@{'/lesson/' + ${progress.lastLessonId}}">Продолжить</a>
+            <a class="btn primary" th:unless="${progress.lastLessonId != null}"
+               th:href="@{'/lesson/' + ${curriculum.levels[0].modules[0].lessons[0].id}}">Начать с Junior</a>
+            <button class="btn ghost" id="exportProgress" type="button">Экспорт прогресса</button>
+            <label class="btn ghost import-btn">Импорт<input type="file" id="importProgress" accept="application/json,.json" hidden></label>
+            <button class="btn ghost" id="resetProgress" type="button">Сбросить прогресс</button>
+        </div>
+
+        <div class="search-row">
+            <label class="search-label" for="courseSearch">Поиск урока</label>
+            <input id="courseSearch" type="search" placeholder="Название или модуль…" autocomplete="off">
+            <p class="muted search-empty" id="searchEmpty" hidden>Ничего не найдено</p>
+        </div>
+
+        <ul class="how-strip">
+            <li>
+                <span class="how-n">1 · Теория</span>
+                <p>Короткий разбор темы и рабочие примеры кода</p>
+            </li>
+            <li>
+                <span class="how-n">2 · Квиз</span>
+                <p>Проверь понимание — пояснения сразу после ответа</p>
+            </li>
+            <li>
+                <span class="how-n">3 · Практика</span>
+                <p>Реальный API: Selenium, RestAssured, JUnit, CI-артефакты</p>
+            </li>
+        </ul>
+
+        <div class="recommend" th:if="${recommended != null}">
+            <p class="recommend-label">Рекомендуем дальше</p>
+            <a class="recommend-link" th:href="@{'/lesson/' + ${recommended.id}}"
+               th:text="${recommended.title}">Урок</a>
+            <span class="mins" th:text="${recommended.estimatedMinutes} + ' мин'">20 мин</span>
+            <p class="muted recommend-note">Только следующий шаг по Junior → Middle → Senior, без прыжков вперёд.</p>
+        </div>
+
+        <p class="locked-banner muted" id="lockedBanner" hidden>
+            Middle и Senior откроются, когда закроешь ~80% предыдущего уровня.
+        </p>
+        <div class="progress-block">
+            <div class="progress-label">
+                <span>Прогресс курса</span>
+                <span id="coursePct">0%</span>
+            </div>
+            <div class="meter">
+                <div class="meter-fill" id="courseMeter"
+                     th:attr="data-done=${doneLessons},data-total=${totalLessons}"
+                     style="width:0%"></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="career-track" id="careerTrack" aria-label="Трек к офферу">
+        <p class="muted career-loading">Загрузка трека «К офферу»…</p>
+    </section>
+
+    <section class="levels level-section" th:each="level : ${curriculum.levels}"
+             th:with="unlocked=${level.id == 'junior' or (level.id == 'middle' and middleUnlocked) or (level.id == 'senior' and seniorUnlocked)}"
+             th:classappend="${!unlocked} ? 'level-locked' : ''">
+        <div class="level-head" th:style="'--accent:' + ${level.color}">
+            <span class="level-badge" th:text="${level.name}">Junior</span>
+            <h2 th:text="${level.title}">Title</h2>
+            <p th:text="${level.description}">Desc</p>
+            <p class="lock-note" th:if="${!unlocked}">
+                🔒 Пока закрыто — сначала закрой ≥80% предыдущего уровня. Так тренажёр не тащит в темы раньше времени.
+            </p>
+        </div>
+        <div class="modules" th:if="${unlocked}">
+            <article class="module" th:each="module : ${level.modules}">
+                <h3 th:text="${module.title}">Module</h3>
+                <p class="muted" th:text="${module.description}">desc</p>
+                <p class="module-progress"><span class="mod-done">0</span>/<span class="mod-total">0</span> уроков</p>
+                <div class="meter module-meter" style="margin:4px 0 4px;height:6px">
+                    <div class="meter-fill" style="width:0%"></div>
+                </div>
+                <ul class="lesson-list">
+                    <li th:each="lesson : ${module.lessons}"
+                        th:classappend="${progress.completedLessons.contains(lesson.id)} ? 'done' : ''">
+                        <a th:href="@{'/lesson/' + ${lesson.id}}">
+                            <span class="dot"></span>
+                            <span class="lesson-title" th:text="${lesson.title}">Lesson</span>
+                            <span class="mins">
+                                <span class="bm-star" th:if="${bookmarks != null and #sets.contains(bookmarks, lesson.id)}">★ </span>
+                                <span th:text="${lesson.estimatedMinutes} + ' мин'">20 мин</span>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+            </article>
+        </div>
+        <div class="modules locked-preview" th:unless="${unlocked}">
+            <p class="muted" th:each="module : ${level.modules}"
+               th:text="${module.title} + ' · ' + ${module.lessons.size()} + ' уроков'">Модуль</p>
+        </div>
+    </section>
+</main>
+
+<script th:inline="javascript">
+  window.__COMPLETED_LESSONS__ = /*[[${progress.completedLessons}]]*/ [];
+  window.__LESSON_TITLES__ = /*[[${lessonTitles}]]*/ {};
+</script>
+<script th:src="@{/js/career-track.js}"></script>
+<script>
+document.getElementById('resetProgress')?.addEventListener('click', async () => {
+  if (!confirm('Сбросить весь прогресс и сохранённый код?')) return;
+  await fetch('/api/progress/reset', { method: 'POST' });
+  location.reload();
+});
+document.getElementById('exportProgress')?.addEventListener('click', async () => {
+  const res = await fetch('/api/progress/export');
+  const data = await res.json();
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'qa-forge-progress.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+document.getElementById('importProgress')?.addEventListener('change', async (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const progress = JSON.parse(text);
+    const replace = confirm('OK = заменить прогресс целиком\\nCancel = слить (merge) с текущим');
+    const res = await fetch('/api/progress/import', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ progress, replace })
+    });
+    const data = await res.json();
+    if (!data.ok) alert(data.message || 'Ошибка импорта');
+    else location.reload();
+  } catch (err) {
+    alert('Не удалось прочитать файл: ' + err.message);
+  }
+});
+document.querySelectorAll('.module').forEach(mod => {
+  const items = mod.querySelectorAll('.lesson-list li');
+  const done = mod.querySelectorAll('.lesson-list li.done').length;
+  const fill = mod.querySelector('.meter-fill');
+  const doneEl = mod.querySelector('.mod-done');
+  const totalEl = mod.querySelector('.mod-total');
+  if (doneEl) doneEl.textContent = String(done);
+  if (totalEl) totalEl.textContent = String(items.length);
+  if (fill && items.length) fill.style.width = ((done * 100) / items.length) + '%';
+});
+const courseMeter = document.getElementById('courseMeter');
+if (courseMeter) {
+  const done = Number(courseMeter.dataset.done || 0);
+  const total = Number(courseMeter.dataset.total || 0);
+  const pct = total ? Math.round((done * 100) / total) : 0;
+  courseMeter.style.width = pct + '%';
+  const pctEl = document.getElementById('coursePct');
+  if (pctEl) pctEl.textContent = pct + '%';
+}
+const search = document.getElementById('courseSearch');
+const searchEmpty = document.getElementById('searchEmpty');
+search?.addEventListener('input', () => {
+  const q = search.value.trim().toLowerCase();
+  let visible = 0;
+  document.querySelectorAll('.module').forEach(mod => {
+    const modTitle = (mod.querySelector('h3')?.textContent || '').toLowerCase();
+    let modVisible = 0;
+    mod.querySelectorAll('.lesson-list li').forEach(li => {
+      const title = (li.querySelector('.lesson-title')?.textContent || '').toLowerCase();
+      const show = !q || title.includes(q) || modTitle.includes(q);
+      li.hidden = !show;
+      if (show) { modVisible++; visible++; }
+    });
+    mod.hidden = q && modVisible === 0;
+  });
+  document.querySelectorAll('.level-section').forEach(section => {
+    const any = [...section.querySelectorAll('.module')].some(m => !m.hidden);
+    section.hidden = q && !any;
+  });
+  const career = document.getElementById('careerTrack');
+  if (career) career.hidden = !!q;
+  if (searchEmpty) searchEmpty.hidden = !q || visible > 0;
+});
+if (new URLSearchParams(location.search).has('locked')) {
+  const b = document.getElementById('lockedBanner');
+  if (b) {
+    b.hidden = false;
+    b.textContent = 'Этот урок ещё закрыт. Сначала закрой ≥80% текущего уровня — Middle/Senior откроются сами.';
+  }
+}
+</script>
+</body>
+</html>

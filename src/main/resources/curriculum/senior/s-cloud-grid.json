@@ -1,0 +1,62 @@
+{
+  "id": "s-cloud-grid",
+  "levelId": "senior",
+  "moduleId": "docker",
+  "title": "Cloud Grid: BrowserStack / Sauce",
+  "summary": "Когда облако выгоднее своего Grid: масштаб устройств, ops, compliance.",
+  "theoryMarkdown": "# Cloud browser farms\n\n## Плюсы облака\n\n- Матрица браузеров/устройств без своего железа\n- Меньше ops\n- Видео/логи из коробки\n\n## Плюсы своего Grid\n\n- Данные не уходят наружу (compliance)\n- Предсказуемая стоимость на огромных объёмах\n- Контроль версий браузеров\n\n## Решение\n\nCompliance + бюджет + объём параллели + нужда в real devices.\n\n\n\n## В работе vs лаба\n\nВ лабе проверяется **текст артефакта** (структура YAML/Jenkinsfile). В работе pipeline должен **реально выполняться** в CI (см. портфолио GHA).\n\nУрок учит **решению/политике**. Мышцы автоматизации наращивай в портфолио и на реальном проекте.\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### Infra policy YAML\nЗаполни артефакт по образцу:\n```text\nwhen_private_grid:\n  reason: compliance blocks outbound browser traffic\nwhen_cloud:\n  reason: need many devices and browsers\ndefault:\n  reason: local-ci chrome headless\n```\n",
+  "keyPoints": [
+    "Облако = масштаб/ops",
+    "Свой Grid = контроль/compliance",
+    "Шаблон к заданию «Infra policy YAML» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "Как считаешь TCO Grid vs BrowserStack?",
+    "Что с секретами в облаке?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Если нельзя отправлять трафик наружу, чаще:",
+      "options": [
+        "Только BrowserStack",
+        "On-prem Selenium Grid",
+        "Отключить UI тесты навсегда",
+        "Только Thread.sleep"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Свой Grid / private cloud.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Infra policy YAML",
+      "description": "Дано:\n- класс / артефакт: Policy\n- режим artifact (текст файла / YAML / Jenkinsfile)\n\nЗадание:\nСм. теорию «К практике» (Infra policy YAML).\nНапиши YAML policy: ключи when_private_grid / when_cloud / default с осмысленными значениями (compliance, devices, local-ci).\n\nРезультат:\n- в тексте есть: when_private_grid:\n- в тексте есть: when_cloud:\n- в тексте есть: default:\n- в тексте есть: compliance\n- в тексте есть: devices",
+      "difficulty": "easy",
+      "mode": "artifact",
+      "artifactKind": "gha",
+      "artifactRules": [
+        "contains:when_private_grid:",
+        "contains:when_cloud:",
+        "contains:default:",
+        "contains:compliance",
+        "contains:devices",
+        "noSecret:password"
+      ],
+      "className": "Policy",
+      "starterCode": "when_private_grid:\n  # TODO\nwhen_cloud:\n  # TODO\ndefault:\n  # TODO\n",
+      "solutionCode": "when_private_grid:\n  reason: compliance blocks outbound browser traffic\nwhen_cloud:\n  reason: need many devices and browsers\ndefault:\n  reason: local-ci chrome headless\n",
+      "hints": [
+        "Нужны ключи when_private_grid, when_cloud, default",
+        "Упомяни compliance и devices",
+        "Доведи до детерминированного результата из раздела «Результат»."
+      ],
+      "revealAfterFails": 2
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "id": "s-jenkins",
+  "title": "Jenkins CI: job, pipeline, артефакты",
+  "summary": "Настройка CI — обязательный Senior-скилл: пайплайны, агенты, отчёты.",
+  "theoryMarkdown": "# Jenkins для автотестов\n\n## Declarative Pipeline\n\n```groovy\npipeline {\n  agent any\n  stages {\n    stage('Build') { steps { sh 'mvn -B -DskipTests package' } }\n    stage('Test')  { steps { sh 'mvn -B test' } }\n  }\n  post {\n    always {\n      junit '**/surefire-reports/*.xml'\n      archiveArtifacts artifacts: '**/allure-results/**', allowEmptyArchive: true\n    }\n  }\n}\n```\n\n## Важное\n\n- Отдельный agent/label с браузерами или Docker\n- Credentials plugin для секретов\n- Параметры: suite, env, browser\n- Таймауты стадии\n- Уведомления (Slack/email) при fail\n\n## PR checks vs Nightly\n\nPR: smoke быстрый. Nightly: полный регресс + отчёт.\n\n\n\n## В работе vs лаба\n\nВ лабе проверяется **текст артефакта** (структура YAML/Jenkinsfile). В работе pipeline должен **реально выполняться** в CI (см. портфолио GHA).\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### Напиши Jenkinsfile fragment\nЗаполни артефакт по образцу:\n```text\npipeline {\n  agent any\n  stages {\n    stage('Build') { steps { sh 'mvn -B -DskipTests package' } }\n    stage('Test')  { steps { sh 'mvn -B test' } }\n  }\n  post {\n    always {\n      junit '**/surefire-reports/*.xml'\n    }\n  }\n}\n```\n",
+  "keyPoints": [
+    "Pipeline as code",
+    "junit/allure в post",
+    "Шаблон к заданию «Напиши Jenkinsfile fragment» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "Declarative vs Scripted",
+    "Как параллелишь stages?",
+    "Blue Ocean/controllers"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Где обычно публикуют JUnit XML?",
+      "options": [
+        "stage checkout только",
+        "post { junit ... }",
+        "в README",
+        "в CSS"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "post always/failure/success.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Секреты в Jenkins лучше хранить в:",
+      "options": [
+        "Jenkinsfile plaintext",
+        "Credentials store",
+        "git commit",
+        "скриншоте"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Credentials plugin.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Напиши Jenkinsfile fragment",
+      "description": "Дано:\n- класс / артефакт: Jenkinsfile\n- режим artifact (текст файла / YAML / Jenkinsfile)\n\nЗадание:\nСм. теорию «К практике» (Напиши Jenkinsfile fragment).\nВ редакторе — текст Jenkinsfile (не Java). Нужны: pipeline, stages, stage Test с mvn test, post с junit. Без секретов password=.\n\nРезультат:\n- в тексте есть: pipeline\n- в тексте есть: stages\n- в тексте есть: mvn\n- в тексте есть: post\n- в тексте есть: junit",
+      "difficulty": "medium",
+      "mode": "artifact",
+      "artifactKind": "jenkinsfile",
+      "artifactRules": [
+        "contains:pipeline",
+        "contains:stages",
+        "contains:mvn",
+        "contains:post",
+        "contains:junit",
+        "noSecret:password"
+      ],
+      "className": "Jenkinsfile",
+      "starterCode": "pipeline {\n  agent any\n  stages {\n    // TODO stage Build/Test\n  }\n  post {\n    // TODO junit reports\n  }\n}\n",
+      "solutionCode": "pipeline {\n  agent any\n  stages {\n    stage('Build') { steps { sh 'mvn -B -DskipTests package' } }\n    stage('Test')  { steps { sh 'mvn -B test' } }\n  }\n  post {\n    always {\n      junit '**/surefire-reports/*.xml'\n    }\n  }\n}\n",
+      "hints": [
+        "stage('Test') { steps { sh 'mvn -B test' } }",
+        "post { always { junit '**/surefire-reports/*.xml' } }",
+        "Доведи до детерминированного результата из раздела «Результат»."
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "senior",
+  "moduleId": "ci"
+}

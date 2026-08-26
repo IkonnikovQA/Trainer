@@ -1,0 +1,139 @@
+{
+  "id": "j-types",
+  "title": "Типы данных и переменные",
+  "summary": "Примитивы, переменные и сборка строк через + — то, с чего начинается любой тест-код.",
+  "estimatedMinutes": 20,
+  "theoryMarkdown": "# Типы данных и переменные\n\nВ Java переменная всегда имеет **тип**.\n\nВ Java ровно **8 примитивов**: `byte`, `short`, `int`, `long`, `float`, `double`, `char`, `boolean`. Всё остальное — объекты (ссылочные типы), в том числе `String` и `Integer`.\n\nДля практики сейчас важны три:\n\n| Тип | Что хранит | Пример |\n|---|---|---|\n| `int` | целое число | `int code = 200;` |\n| `boolean` | true / false | `boolean ok = true;` |\n| `String` | текст | `String msg = \"pass\";` |\n\n`int` и `boolean` — **примитивы** (значение лежит в переменной).\n`String` — **объект** (в переменной лежит ссылка на текст).\n\n## Практика 1: складываем числа\n\nОператор `+` для двух чисел — обычное сложение:\n\n```java\nint a = 2;\nint b = 3;\nint sum = a + b; // 5\n```\n\nИменно это нужно в методе `sum(int a, int b)`: верни `a + b`.\n\n## Практика 2: собираем строку из частей\n\nЕсли слева от `+` уже есть **строка**, Java склеивает текст. Число и `boolean` при этом сами превращаются в текст:\n\n```java\nint code = 200;\nboolean ok = true;\n\nString s1 = \"code=\" + code;          // \"code=200\"\nString s2 = s1 + \";ok=\" + ok;        // \"code=200;ok=true\"\n\n// то же самое в одну строку:\nString status = \"code=\" + code + \";ok=\" + ok;\n```\n\nПорядок важен: `code + ok` без строки слева — это не склейка текста, а ошибка типов.\nВсегда начинай с литерала в кавычках.\n\nГотовый шаблон для задания «Формат статуса»:\n\n```java\nreturn \"code=\" + code + \";ok=\" + ok;\n```\n\n## Коротко на потом (для чтения тест-кода)\n\n- Примитив `int` vs объект `Integer` — boxing. Сравнивать `String` лучше через `equals`, не через `==`.\n- С Java 10 можно `var x = 200;` — тип выведется сам, если он очевиден.\n",
+  "keyPoints": [
+    "Примитивов ровно 8: byte short int long float double char boolean",
+    "int / boolean — примитивы, String — объект",
+    "Для чисел + складывает; если слева строка — склеивает текст",
+    "Шаблон статуса: \"code=\" + code + \";ok=\" + ok"
+  ],
+  "interviewTips": [
+    "Почему \"a\" == \"a\" иногда true? (String pool)",
+    "Чем int отличается от Integer и когда бывает NPE при unboxing"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Что хранит переменная типа String?",
+      "options": [
+        "Само значение текста прямо в стеке как у int",
+        "Ссылку на объект String в heap",
+        "Только hashCode",
+        "Массив char без объекта"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "String — ссылочный тип: в переменной лежит ссылка.",
+      "hint": "Примитив vs объект."
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Что получится в выражении \"code=\" + 200 + \";ok=\" + true?",
+      "options": [
+        "Ошибка компиляции",
+        "code=200;ok=true",
+        "code=200true",
+        "201"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Слева строка — дальше всё склеивается в текст.",
+      "hint": "Смотри раздел «Практика 2»."
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "question": "Сколько примитивных типов в Java?",
+      "options": [
+        "6",
+        "7",
+        "8",
+        "10"
+      ],
+      "correctIndexes": [
+        2
+      ],
+      "explanation": "byte short int long float double char boolean — 8.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "difficulty": "easy",
+      "hints": [
+        "Сложи аргументы a и b и верни результат",
+        "Сигнатуру метода не меняй — имя и типы уже правильные"
+      ],
+      "testCases": [
+        {
+          "name": "2+3",
+          "callExpression": "sum(2, 3)",
+          "expected": "5",
+          "expectedType": "int"
+        },
+        {
+          "name": "отрицательные",
+          "callExpression": "sum(-1, 1)",
+          "expected": "0",
+          "expectedType": "int"
+        },
+        {
+          "name": "нули",
+          "callExpression": "sum(0, 0)",
+          "expected": "0",
+          "expectedType": "int"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "public class Basics {\n    public int sum(int a, int b) {\n        return a + b;\n    }\n}\n",
+      "methodName": null,
+      "id": "e1",
+      "title": "Сумма и тип",
+      "description": "Дано:\n- класс Basics\n- метод sum(int a, int b)\n\nЗадание:\nВерни сумму аргументов. Для двух int оператор + — это сложение (см. «Практика 1» в теории).\n\nРезультат:\n- sum(2, 3) → 5\n- sum(-1, 1) → 0\n- sum(0, 0) → 0",
+      "className": "Basics",
+      "starterCode": "public class Basics {\n    public int sum(int a, int b) {\n        // TODO\n        return 0;\n    }\n}\n",
+      "mode": "java",
+      "revealAfterFails": 2
+    },
+    {
+      "difficulty": "easy",
+      "hints": [
+        "Начни с текстового литерала code= и допиши значения через +",
+        "В конце теории есть готовый шаблон для этого метода"
+      ],
+      "testCases": [
+        {
+          "name": "200 ok",
+          "callExpression": "formatStatus(200, true)",
+          "expected": "code=200;ok=true",
+          "expectedType": "string"
+        },
+        {
+          "name": "500 fail",
+          "callExpression": "formatStatus(500, false)",
+          "expected": "code=500;ok=false",
+          "expectedType": "string"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "public class Basics {\n    public String formatStatus(int code, boolean ok) {\n        return \"code=\" + code + \";ok=\" + ok;\n    }\n}\n",
+      "methodName": null,
+      "id": "e2",
+      "title": "Формат статуса",
+      "description": "Дано:\n- класс Basics\n- метод formatStatus(int code, boolean ok)\n- в теории уже есть пример склейки \"code=\" + code + \";ok=\" + ok\n\nЗадание:\nСобери и верни одну строку ровно в формате code=<число>;ok=<true|false>.\nИспользуй конкатенацию через + (число и boolean сами станут текстом).\n\nРезультат:\n- formatStatus(200, true) → code=200;ok=true\n- formatStatus(500, false) → code=500;ok=false",
+      "className": "Basics",
+      "starterCode": "public class Basics {\n    public String formatStatus(int code, boolean ok) {\n        // TODO\n        return \"\";\n    }\n}\n",
+      "mode": "java",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "junior",
+  "moduleId": "java-basics"
+}

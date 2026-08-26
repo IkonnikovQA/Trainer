@@ -1,0 +1,55 @@
+﻿{
+  "id": "s-security-qa",
+  "title": "Security awareness для автоматизатора",
+  "summary": "База: секреты, OWASP top risks, что проверять в API/UI тестах.",
+  "theoryMarkdown": "# Security для QA Auto\n\n## Must\n\n- Не коммитить токены/пароли\n- Маскировать секреты в логах/Allure\n- Проверять authZ: 401/403 на защищённых ресурсах\n- Не отключать SSL проверки «навсегда» без понимания\n\n## Полезно знать\n\nOWASP Top 10: injection, broken auth, XSS, SSRF...\n\nАвтотесты не заменяют security audit, но ловят регрессии контроля доступа.\n\n\n\n## В работе vs лаба\n\nВ лабе — **MockWebServer**. В работе — стенд/demo API; контракты и негативы гоняй против живого baseUrl (jsonplaceholder в портфолио).\n## К практике\n\nМатрица доступа через Bearer:\n\n```java\nreturn given()\n    .header(\"Authorization\", \"Bearer \" + token)\n    .when().get(baseUrl + \"/secure\")\n    .then().extract().statusCode();\n```\n\nОжидания verifier: плохой токен → 401, без роли → 403, admin → 200.\n",
+  "keyPoints": [
+    "Секреты",
+    "Проверки доступа",
+    "Регрессии authZ"
+  ],
+  "interviewTips": [
+    "Как храните secrets в CI?",
+    "Пример теста на 403"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Access token в Allure attachment — это:",
+      "options": [
+        "Best practice",
+        "Утечка секрета, нужно маскировать",
+        "Требование JUnit",
+        "Ускоряет тест"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Секреты маскируем.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Protected endpoint access matrix",
+      "description": "Дано:\n- класс / артефакт: SecureMatrix\n- режим http (RestAssured + MockWebServer)\n- HTTP stub уже подготовлен тренажёром\n\nЗадание:\nСм. теорию «К практике» (Bearer /secure).\nsend GET /secure with Authorization Bearer token; verifier checks matrix (bad->401, no-role->403, admin->200).\n\nРезультат:\n- verifier проверяет ответы через MockWebServer",
+      "difficulty": "hard",
+      "mode": "http",
+      "className": "SecureMatrix",
+      "starterCode": "import static io.restassured.RestAssured.*;\n\npublic class SecureMatrix {\n    public int check(String baseUrl, String token) {\n        // TODO given().header(\"Authorization\", \"Bearer \" + token)\n        // TODO GET /secure and return status\n        return 0;\n    }\n}\n",
+      "solutionCode": "import static io.restassured.RestAssured.*;\n\npublic class SecureMatrix {\n    public int check(String baseUrl, String token) {\n        return given()\n            .header(\"Authorization\", \"Bearer \" + token)\n            .when().get(baseUrl + \"/secure\")\n            .then().extract().statusCode();\n    }\n}\n",
+      "hints": [
+        "Use Authorization header with Bearer token",
+        "Call GET baseUrl + \"/secure\"",
+        "Return extracted statusCode()"
+      ],
+      "revealAfterFails": 2,
+      "httpStubJson": "{\"stubs\":[{\"status\":401,\"body\":\"{\\\"error\\\":\\\"unauthorized\\\"}\"},{\"status\":403,\"body\":\"{\\\"error\\\":\\\"forbidden\\\"}\"},{\"status\":200,\"body\":\"{\\\"ok\\\":true}\"}]}",
+      "verifierCode": "import java.util.*;\n\npublic class ExerciseVerifier {\n  public List<String> verify(Class<?> cls, String baseUrl) throws Exception {\n    List<String> fails = new ArrayList<>();\n    Object c = cls.getDeclaredConstructor().newInstance();\n    int bad = (Integer) cls.getMethod(\"check\", String.class, String.class).invoke(c, baseUrl, \"bad\");\n    int noRole = (Integer) cls.getMethod(\"check\", String.class, String.class).invoke(c, baseUrl, \"no-role\");\n    int admin = (Integer) cls.getMethod(\"check\", String.class, String.class).invoke(c, baseUrl, \"admin\");\n    if (bad != 401) fails.add(\"expected 401 got \" + bad);\n    if (noRole != 403) fails.add(\"expected 403 got \" + noRole);\n    if (admin != 200) fails.add(\"expected 200 got \" + admin);\n    return fails;\n  }\n}"
+    }
+  ],
+  "levelId": "senior",
+  "moduleId": "advanced"
+}

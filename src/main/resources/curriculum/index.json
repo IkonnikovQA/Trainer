@@ -1,0 +1,550 @@
+{
+  "title": "QA Forge — Java Automation Trainer",
+  "description": "Локальный тренажёр Junior → Middle → Senior: теория, квизы с мгновенной проверкой, практика Java с автотестами и подсказками. От базы языка до Jenkins, Docker и стратегии качества.",
+  "levels": [
+    {
+      "id": "junior",
+      "name": "Junior",
+      "title": "Фундамент Java и UI/API тестирования",
+      "description": "Язык, Maven, JUnit, Selenium, локаторы, waits, POM, Git и отладка.",
+      "color": "#1f6f5b",
+      "modules": [
+        {
+          "id": "java-basics",
+          "title": "Java с нуля для автотестов",
+          "description": "Типы, контроль потока, OOP, коллекции, исключения, строки, streams.",
+          "lessons": [
+            {
+              "id": "j-types",
+              "title": "Типы данных и переменные",
+              "file": "junior/j-types.json",
+              "estimatedMinutes": 25
+            },
+            {
+              "id": "j-control",
+              "title": "Условия, циклы, switch",
+              "file": "junior/j-control.json",
+              "estimatedMinutes": 25
+            },
+            {
+              "id": "j-oop",
+              "title": "ООП: классы и полиморфизм",
+              "file": "junior/j-oop.json",
+              "estimatedMinutes": 35
+            },
+            {
+              "id": "j-collections",
+              "title": "Коллекции List/Set/Map",
+              "file": "junior/j-collections.json",
+              "estimatedMinutes": 30
+            },
+            {
+              "id": "j-exceptions",
+              "title": "Исключения",
+              "file": "junior/j-exceptions.json",
+              "estimatedMinutes": 20
+            },
+            {
+              "id": "j-strings",
+              "title": "Строки и парсинг",
+              "file": "junior/j-strings.json",
+              "estimatedMinutes": 25
+            },
+            {
+              "id": "j-streams",
+              "title": "Java Streams API",
+              "file": "junior/j-streams.json",
+              "estimatedMinutes": 25
+            },
+            {
+              "id": "j-records-fixtures",
+              "title": "Java records как test data",
+              "file": "junior/j-records-fixtures.json",
+              "estimatedMinutes": 20
+            }
+          ]
+        },
+        {
+          "id": "maven-junit",
+          "title": "Maven и JUnit 5",
+          "description": "Сборка, зависимости, жизненный цикл теста и ассерты.",
+          "lessons": [
+            {
+              "id": "j-maven",
+              "title": "Maven основы",
+              "file": "junior/j-maven.json",
+              "estimatedMinutes": 25
+            },
+            {
+              "id": "j-junit",
+              "title": "JUnit 5",
+              "file": "junior/j-junit.json",
+              "estimatedMinutes": 30
+            },
+            {
+              "id": "j-assertions",
+              "title": "Ассерты и проверки",
+              "file": "junior/j-assertions.json",
+              "estimatedMinutes": 20
+            },
+            {
+              "id": "j-testng-vs-junit",
+              "title": "TestNG vs JUnit 5",
+              "file": "junior/j-testng-vs-junit.json",
+              "estimatedMinutes": 25
+            }
+          ]
+        },
+        {
+          "id": "selenium",
+          "title": "Selenium WebDriver",
+          "description": "Старт, локаторы, ожидания, Page Object.",
+          "lessons": [
+            {
+              "id": "j-selenium-intro",
+              "title": "Selenium введение",
+              "file": "junior/j-selenium-intro.json",
+              "estimatedMinutes": 30
+            },
+            {
+              "id": "j-locators",
+              "title": "Локаторы",
+              "file": "junior/j-locators.json",
+              "estimatedMinutes": 35
+            },
+            {
+              "id": "j-waits",
+              "title": "Ожидания",
+              "file": "junior/j-waits.json",
+              "estimatedMinutes": 30
+            },
+            {
+              "id": "j-pom-intro",
+              "title": "Page Object Model",
+              "file": "junior/j-pom-intro.json",
+              "estimatedMinutes": 30
+            },
+            {
+              "id": "j-selenium4",
+              "title": "Selenium 4",
+              "file": "junior/j-selenium4.json",
+              "estimatedMinutes": 30
+            }
+          ]
+        },
+        {
+          "id": "tools",
+          "title": "Инструменты Junior",
+          "description": "Git и системная отладка падений.",
+          "lessons": [
+            {
+              "id": "j-git",
+              "title": "Git для QA",
+              "file": "junior/j-git.json",
+              "estimatedMinutes": 20
+            },
+            {
+              "id": "j-debug",
+              "title": "Отладка тестов",
+              "file": "junior/j-debug.json",
+              "estimatedMinutes": 25
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "middle",
+      "name": "Middle",
+      "title": "Сильный практик автоматизации",
+      "description": "Advanced Selenium, API, данные, Allure, параллель, Mockito, BDD, DB, Selenide, паттерны, flaky, Awaitility/soft asserts, capstone.",
+      "color": "#2a5f8f",
+      "modules": [
+        {
+          "id": "selenium-adv",
+          "title": "UI уровень Middle",
+          "description": "Сложный Selenium и масштабируемый POM.",
+          "lessons": [
+            {
+              "id": "m-advanced-selenium",
+              "title": "Advanced Selenium",
+              "file": "middle/m-advanced-selenium.json",
+              "estimatedMinutes": 35
+            },
+            {
+              "id": "m-pom-fluent",
+              "title": "Fluent POM и компоненты",
+              "file": "middle/m-pom-fluent.json",
+              "estimatedMinutes": 30
+            }
+          ]
+        },
+        {
+          "id": "api",
+          "title": "API и данные",
+          "description": "RestAssured, JWT, Filter, clients/factory, MockMvc.",
+          "lessons": [
+            {
+              "id": "m-restassured",
+              "title": "RestAssured",
+              "file": "middle/m-restassured.json",
+              "estimatedMinutes": 40
+            },
+            {
+              "id": "m-testdata",
+              "title": "Тестовые данные",
+              "file": "middle/m-testdata.json",
+              "estimatedMinutes": 30
+            },
+            {
+              "id": "m-restassured-deep",
+              "title": "RestAssured deep",
+              "file": "middle/m-restassured-deep.json",
+              "estimatedMinutes": 35
+            },
+            {
+              "id": "m-json-schema",
+              "title": "JSON contract checks",
+              "file": "middle/m-json-schema.json",
+              "estimatedMinutes": 30
+            },
+            {
+              "id": "m-mockmvc",
+              "title": "MockMvc-стиль",
+              "file": "middle/m-mockmvc.json",
+              "estimatedMinutes": 30
+            },
+            {
+              "id": "m-jwt-auth",
+              "title": "API auth: Bearer и 401/403",
+              "file": "middle/m-jwt-auth.json",
+              "estimatedMinutes": 30
+            },
+            {
+              "id": "m-test-config",
+              "title": "Конфиг тестов",
+              "file": "middle/m-test-config.json",
+              "estimatedMinutes": 25
+            },
+            {
+              "id": "m-ra-filter",
+              "title": "Custom RestAssured Filter",
+              "file": "middle/m-ra-filter.json",
+              "estimatedMinutes": 30
+            },
+            {
+              "id": "m-api-clients",
+              "title": "API clients & factory",
+              "file": "middle/m-api-clients.json",
+              "estimatedMinutes": 25
+            }
+          ]
+        },
+        {
+          "id": "reporting",
+          "title": "Отчёты и скорость",
+          "description": "Allure и параллельный запуск.",
+          "lessons": [
+            {
+              "id": "m-allure",
+              "title": "Allure",
+              "file": "middle/m-allure.json",
+              "estimatedMinutes": 25
+            },
+            {
+              "id": "m-parallel",
+              "title": "Параллель и ThreadLocal",
+              "file": "middle/m-parallel.json",
+              "estimatedMinutes": 30
+            },
+            {
+              "id": "m-allure-steps",
+              "title": "Allure steps",
+              "file": "middle/m-allure-steps.json",
+              "estimatedMinutes": 20
+            }
+          ]
+        },
+        {
+          "id": "quality",
+          "title": "Качество Mid-уровня",
+          "description": "Моки, BDD, Extensions, Filter/AssertJ, flaky, retry.",
+          "lessons": [
+            {
+              "id": "m-mockito",
+              "title": "Mockito",
+              "file": "middle/m-mockito.json",
+              "estimatedMinutes": 25
+            },
+            {
+              "id": "m-cucumber",
+              "title": "Cucumber BDD",
+              "file": "middle/m-cucumber.json",
+              "estimatedMinutes": 30
+            },
+            {
+              "id": "m-db",
+              "title": "Проверки БД",
+              "file": "middle/m-db.json",
+              "estimatedMinutes": 25
+            },
+            {
+              "id": "m-selenide",
+              "title": "Selenide",
+              "file": "middle/m-selenide.json",
+              "estimatedMinutes": 25
+            },
+            {
+              "id": "m-patterns",
+              "title": "Паттерны фреймворка",
+              "file": "middle/m-patterns.json",
+              "estimatedMinutes": 30
+            },
+            {
+              "id": "m-flaky",
+              "title": "Flaky tests",
+              "file": "middle/m-flaky.json",
+              "estimatedMinutes": 30
+            },
+            {
+              "id": "m-stale-flaky",
+              "title": "StaleElement & flaky",
+              "file": "middle/m-stale-flaky.json",
+              "estimatedMinutes": 30
+            },
+            {
+              "id": "m-awaitility",
+              "title": "Поллинг и Awaitility-стиль",
+              "file": "middle/m-awaitility.json",
+              "estimatedMinutes": 30
+            },
+            {
+              "id": "m-soft-assert",
+              "title": "Soft asserts",
+              "file": "middle/m-soft-assert.json",
+              "estimatedMinutes": 25
+            },
+            {
+              "id": "m-capstone",
+              "title": "Capstone: UI + API + JUnit",
+              "file": "middle/m-capstone.json",
+              "estimatedMinutes": 45
+            },
+            {
+              "id": "m-portfolio",
+              "title": "Портфолио к офферу",
+              "file": "middle/m-portfolio.json",
+              "estimatedMinutes": 35
+            },
+            {
+              "id": "m-junit-params",
+              "title": "ParameterizedTest",
+              "file": "middle/m-junit-params.json",
+              "estimatedMinutes": 25
+            },
+            {
+              "id": "m-junit-extensions",
+              "title": "JUnit 5 Extensions",
+              "file": "middle/m-junit-extensions.json",
+              "estimatedMinutes": 35
+            },
+            {
+              "id": "m-invocation-interceptor",
+              "title": "InvocationInterceptor",
+              "file": "middle/m-invocation-interceptor.json",
+              "estimatedMinutes": 30
+            },
+            {
+              "id": "m-retry-policy",
+              "title": "Retry failed tests",
+              "file": "middle/m-retry-policy.json",
+              "estimatedMinutes": 25
+            },
+            {
+              "id": "m-custom-assertj",
+              "title": "Custom AssertJ",
+              "file": "middle/m-custom-assertj.json",
+              "estimatedMinutes": 30
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "senior",
+      "name": "Senior",
+      "title": "Стратегия, CI/CD, инфраструктура",
+      "description": "Архитектура, пирамида, Jenkins, Docker, Grid, метрики, ревью, контракты, perf/security.",
+      "color": "#8b3a4a",
+      "modules": [
+        {
+          "id": "architecture",
+          "title": "Стратегия и архитектура",
+          "description": "Фреймворк и пирамида.",
+          "lessons": [
+            {
+              "id": "s-framework",
+              "title": "Архитектура фреймворка",
+              "file": "senior/s-framework.json",
+              "estimatedMinutes": 35
+            },
+            {
+              "id": "s-pyramid",
+              "title": "Пирамида тестирования",
+              "file": "senior/s-pyramid.json",
+              "estimatedMinutes": 25
+            },
+            {
+              "id": "s-playwright-java",
+              "title": "Playwright for Java",
+              "file": "senior/s-playwright-java.json",
+              "estimatedMinutes": 30
+            }
+          ]
+        },
+        {
+          "id": "ci",
+          "title": "Jenkins CI/CD",
+          "description": "Пайплайны, артефакты, параметры.",
+          "lessons": [
+            {
+              "id": "s-jenkins",
+              "title": "Jenkins основы",
+              "file": "senior/s-jenkins.json",
+              "estimatedMinutes": 40
+            },
+            {
+              "id": "s-jenkinsfile",
+              "title": "Jenkinsfile практика",
+              "file": "senior/s-jenkinsfile.json",
+              "estimatedMinutes": 35
+            },
+            {
+              "id": "s-github-actions",
+              "title": "GitHub Actions",
+              "file": "senior/s-github-actions.json",
+              "estimatedMinutes": 30
+            }
+          ]
+        },
+        {
+          "id": "docker",
+          "title": "Docker и Grid",
+          "description": "Контейнеры, compose, Selenium Grid.",
+          "lessons": [
+            {
+              "id": "s-docker",
+              "title": "Docker для тестов",
+              "file": "senior/s-docker.json",
+              "estimatedMinutes": 35
+            },
+            {
+              "id": "s-compose-grid",
+              "title": "Compose и Grid",
+              "file": "senior/s-compose-grid.json",
+              "estimatedMinutes": 35
+            },
+            {
+              "id": "s-dockerfile-practice",
+              "title": "Dockerfile и кэш",
+              "file": "senior/s-dockerfile-practice.json",
+              "estimatedMinutes": 25
+            },
+            {
+              "id": "s-testcontainers",
+              "title": "Testcontainers",
+              "file": "senior/s-testcontainers.json",
+              "estimatedMinutes": 25
+            },
+            {
+              "id": "s-cloud-grid",
+              "title": "Cloud Grid",
+              "file": "senior/s-cloud-grid.json",
+              "estimatedMinutes": 20
+            }
+          ]
+        },
+        {
+          "id": "process",
+          "title": "Процессы Senior",
+          "description": "Ревью, метрики, собеседования.",
+          "lessons": [
+            {
+              "id": "s-codereview",
+              "title": "Code review тестов",
+              "file": "senior/s-codereview.json",
+              "estimatedMinutes": 25
+            },
+            {
+              "id": "s-metrics",
+              "title": "Метрики автоматизации",
+              "file": "senior/s-metrics.json",
+              "estimatedMinutes": 25
+            },
+            {
+              "id": "s-interview-soft",
+              "title": "Ответы на собеседовании",
+              "file": "senior/s-interview-soft.json",
+              "estimatedMinutes": 25
+            }
+          ]
+        },
+        {
+          "id": "advanced",
+          "title": "Расширенные темы",
+          "description": "Контракты, OpenAPI, coverage, async, perf, security, observability.",
+          "lessons": [
+            {
+              "id": "s-contract",
+              "title": "Контрактное тестирование",
+              "file": "senior/s-contract.json",
+              "estimatedMinutes": 25
+            },
+            {
+              "id": "s-performance-basics",
+              "title": "Performance basics",
+              "file": "senior/s-performance-basics.json",
+              "estimatedMinutes": 25
+            },
+            {
+              "id": "s-security-qa",
+              "title": "Security awareness",
+              "file": "senior/s-security-qa.json",
+              "estimatedMinutes": 25
+            },
+            {
+              "id": "s-observability",
+              "title": "Observability",
+              "file": "senior/s-observability.json",
+              "estimatedMinutes": 20
+            },
+            {
+              "id": "s-openapi-pitfalls",
+              "title": "OpenAPI Generator pitfalls",
+              "file": "senior/s-openapi-pitfalls.json",
+              "estimatedMinutes": 25
+            },
+            {
+              "id": "s-swagger-coverage",
+              "title": "Swagger coverage",
+              "file": "senior/s-swagger-coverage.json",
+              "estimatedMinutes": 25
+            },
+            {
+              "id": "s-async-messaging",
+              "title": "Async/Kafka testing",
+              "file": "senior/s-async-messaging.json",
+              "estimatedMinutes": 30
+            },
+            {
+              "id": "s-microservices-qa",
+              "title": "Тестирование микросервисов",
+              "file": "senior/s-microservices-qa.json",
+              "estimatedMinutes": 25
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

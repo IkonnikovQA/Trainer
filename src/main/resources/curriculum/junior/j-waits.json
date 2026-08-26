@@ -1,0 +1,72 @@
+{
+  "id": "j-waits",
+  "title": "Ожидания: implicit, explicit, anti-sleep",
+  "summary": "Правильные waits — главный антифлейк навык Junior→Middle.",
+  "theoryMarkdown": "# Ожидания\n\n## Implicit\n\nГлобально на поиск элементов. Легко скрывает проблемы. Часто ставят `0` и живут на explicit.\n\n## Explicit\n\n```java\nWebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));\nWebElement btn = wait.until(ExpectedConditions.elementToBeClickable(By.id(\"go\")));\n```\n\n## FluentWait\n\nКастомный polling и ignored exceptions — когда нужен тонкий контроль.\n\n## Запрещено почти всегда\n\n`Thread.sleep(5000)` — замедляет и флакает: жди **условие**, не время.\n\n## Типичные условия\n\nvisibility, clickable, presence, urlContains, textToBePresent.\n\n## Lab\n\nFakeDriver умеет `appearAfterMs` — элемент появляется через N мс. Используй WebDriverWait.\n\n\n\n## В работе vs лаба\n\nВ лабе — **FakeDriver** (быстрый DOM в памяти). В работе и в `examples/portfolio-starter` — **реальный Chrome** + явные waits.\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### Explicit wait visibility\n```java\nimport org.openqa.selenium.*;\nimport org.openqa.selenium.support.ui.*;\nimport java.time.Duration;\n\npublic class WaitLab {\n    public WebElement waitVisible(WebDriver driver, By by, long seconds) {\n        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(seconds));\n        return wait.until(ExpectedConditions.visibilityOfElementLocated(by));\n    }\n}\n```\n\n## Почему не Thread.sleep\n\nФиксированное время не равно условию готовности: либо ждёшь лишнее, либо мало. Используй явное ожидание условия.\n",
+  "keyPoints": [
+    "Explicit > sleep",
+    "Жди условие, не время",
+    "Шаблон к заданию «Explicit wait visibility» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "Почему sleep — зло?",
+    "Как отладить TimeoutException?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Лучшая замена Thread.sleep в UI тесте:",
+      "options": [
+        "увеличить sleep",
+        "WebDriverWait + ExpectedConditions",
+        "игнорировать падение",
+        "закрыть глаза"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Явное ожидание условия.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Почему Thread.sleep плох в UI-тесте?",
+      "options": [
+        "Он ускоряет тест",
+        "Либо ждёт лишнее, либо не дожидается — и флакает",
+        "Не компилируется",
+        "Запрещён JDK"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Фиксированное время не равно условию готовности.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Explicit wait visibility",
+      "description": "Дано:\n- класс / артефакт: WaitLab\n- режим selenium-fake (in-memory FakeDriver)\n- DOM fixture уже подготовлен тренажёром\n\nЗадание:\nСм. теорию «К практике» (Explicit wait visibility).\nwait for visibilityOfElementLocated(by) using WebDriverWait; if not visible within timeout, test should fail.\n\nРезультат:\n- verifier проверяет действия на FakeDriver",
+      "difficulty": "easy",
+      "mode": "selenium-fake",
+      "className": "WaitLab",
+      "timeoutMs": 8000,
+      "fixtureJson": "{\"elements\":[{\"tag\":\"div\",\"id\":\"ready\",\"text\":\"Ready\",\"displayed\":true,\"appearAfterMs\":400}]}",
+      "starterCode": "import org.openqa.selenium.*;\nimport org.openqa.selenium.support.ui.*;\nimport java.time.Duration;\n\npublic class WaitLab {\n    public WebElement waitVisible(WebDriver driver, By by, long seconds) {\n        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(seconds));\n        // TODO: until + ExpectedConditions.visibilityOfElementLocated\n        return null;\n    }\n}\n",
+      "solutionCode": "import org.openqa.selenium.*;\nimport org.openqa.selenium.support.ui.*;\nimport java.time.Duration;\n\npublic class WaitLab {\n    public WebElement waitVisible(WebDriver driver, By by, long seconds) {\n        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(seconds));\n        return wait.until(ExpectedConditions.visibilityOfElementLocated(by));\n    }\n}\n",
+      "hints": [
+        "Build WebDriverWait with Duration.ofSeconds(seconds)",
+        "Use ExpectedConditions.visibilityOfElementLocated(by)",
+        "Return wait.until(...) result"
+      ],
+      "verifierCode": "import java.util.*;\nimport org.openqa.selenium.*;\nimport com.qatrainer.lab.selenium.FakeDriver;\n\npublic class ExerciseVerifier {\n  public List<String> verify(Class<?> cls, WebDriver driver) throws Exception {\n    List<String> fails = new ArrayList<>();\n    Object lab = cls.getDeclaredConstructor().newInstance();\n    WebElement el = (WebElement) cls.getMethod(\"waitVisible\", WebDriver.class, By.class, long.class)\n        .invoke(lab, driver, By.id(\"ready\"), 3L);\n    if (el == null || !\"Ready\".equals(el.getText())) fails.add(\"Не дождались элемента Ready\");\n    return fails;\n  }\n}",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "junior",
+  "moduleId": "selenium"
+}

@@ -1,0 +1,69 @@
+{
+  "id": "j-records-fixtures",
+  "title": "Java records как test data",
+  "summary": "Record — компактные неизменяемые фикстуры для тестов.",
+  "theoryMarkdown": "# Records (Java 16+) как test data\n\n```java\npublic record UserFixture(String email, int age) {}\nnew UserFixture(\"a@b.c\", 20);\n```\n\n## Зачем в тестах\n\n- Компактные **immutable** фикстуры\n- `equals` / `hashCode` / `toString` из коробки\n- Меньше boilerplate vs class с полями и геттерами\n\n## Ограничения\n\n- Не для stateful page objects\n- Наследование record ограничено (не extends другой class)\n- Для сложной логики — обычный class/builder\n\n## Практика\n\nХрани входные данные сценария в record; helper-методы (`isAdult`) — рядом в тесте или util.\n\n## К практике\n\nRecord объявляют так:\n\n```java\nrecord UserFixture(String email, int age) {}\n```\n\nДоступ к полям — **методы** `email()`, `age()` (не `u.age` как поле):\n\n```java\nstatic boolean isAdult(UserFixture u) {\n    return u.age() >= 18;\n}\n```\n\nВ тесте: `assertTrue(Fixtures.isAdult(new UserFixture(\"a@b.c\", 20)));`\n",
+  "keyPoints": [
+    "record = data carrier",
+    "immutable",
+    "меньше boilerplate"
+  ],
+  "interviewTips": [
+    "Record vs class для DTO",
+    "Можно ли наследовать record?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "record по умолчанию:",
+      "options": [
+        "mutable bean",
+        "immutable data carrier",
+        "abstract class",
+        "enum"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Компоненты final.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Record лучше подходит для:",
+      "options": [
+        "WebDriver holder с mutable state",
+        "Неизменяемой тестовой фикстуры/DTO",
+        "Замены JUnit",
+        "CI pipeline"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Data carrier, не сервис с состоянием.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "UserFixture record",
+      "description": "Дано:\n- класс / артефакт: UserFixtureTest\n- режим junit (класс с @Test)\n\nЗадание:\nСм. теорию «К практике» (record accessors).\nОбъяви record UserFixture(String email, int age) и тесты: adult если age>=18 через helper isAdult(fixture).\n\nРезультат:\n- все @Test в классе зелёные",
+      "difficulty": "medium",
+      "mode": "junit",
+      "className": "UserFixtureTest",
+      "starterCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\n// TODO: public record UserFixture(String email, int age) {}\n\nclass Fixtures {\n    static boolean isAdult(UserFixture u) {\n        return u.age() >= 18;\n    }\n}\n\npublic class UserFixtureTest {\n    @Test\n    void adult() {\n        // TODO assertTrue Fixtures.isAdult(new UserFixture(\"a@b.c\", 20))\n    }\n    @Test\n    void teen() {\n        // TODO assertFalse for age 16\n    }\n}\n",
+      "solutionCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nrecord UserFixture(String email, int age) {}\n\nclass Fixtures {\n    static boolean isAdult(UserFixture u) {\n        return u.age() >= 18;\n    }\n}\n\npublic class UserFixtureTest {\n    @Test\n    void adult() {\n        assertTrue(Fixtures.isAdult(new UserFixture(\"a@b.c\", 20)));\n    }\n    @Test\n    void teen() {\n        assertFalse(Fixtures.isAdult(new UserFixture(\"t@b.c\", 16)));\n    }\n}\n",
+      "hints": [
+        "record UserFixture(String email, int age) {}",
+        "u.age() >= 18",
+        "Доведи до детерминированного результата из раздела «Результат»."
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "junior",
+  "moduleId": "java-basics"
+}

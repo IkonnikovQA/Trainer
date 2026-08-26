@@ -1,0 +1,55 @@
+﻿{
+  "id": "s-contract",
+  "title": "Контрактное тестирование",
+  "summary": "Ловим ломающие API-изменения раньше полного E2E.",
+  "theoryMarkdown": "# Contract testing\n\nConsumer задаёт ожидания к API provider. Проверяется совместимость контракта (Pact и др.).\n\n## Ценность\n\n- Быстрее полного стенда\n- Чёткие соглашения команд\n- Меньше сюрпризов на интеграции\n\n## Не заменяет\n\nE2E на критических потоках всё равно нужны.\n\n\n\n## В работе vs лаба\n\nВ лабе — **MockWebServer**. В работе — стенд/demo API; контракты и негативы гоняй против живого baseUrl (jsonplaceholder в портфолио).\n## К практике\n\nКлиентская проверка версии:\n\n```java\nString version = given().when().get(baseUrl + \"/contract\")\n    .then().statusCode(200).extract().path(\"version\");\nreturn version != null && version.startsWith(\"2.\");\n```\n",
+  "keyPoints": [
+    "Consumer/provider",
+    "Ранний сигнал совместимости",
+    "Дополнение пирамиды"
+  ],
+  "interviewTips": [
+    "Pact flow",
+    "Чем отличается от schema validation?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Контрактные тесты в первую очередь проверяют:",
+      "options": [
+        "Пиксели UI",
+        "Совместимость ожиданий consumer и API provider",
+        "Скорость CSS",
+        "Jenkins UI"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Соглашение сторон API.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "API contract version check",
+      "description": "Дано:\n- класс / артефакт: ContractClient\n- режим http (RestAssured + MockWebServer)\n- HTTP stub уже подготовлен тренажёром\n\nЗадание:\nСм. теорию «К практике» (version startsWith 2.).\nContractClient.check(baseUrl): GET /contract, status 200, body.version major == 2 (path \"version\" like \"2.1.0\"). Верни true.\n\nРезультат:\n- verifier проверяет ответы через MockWebServer",
+      "difficulty": "hard",
+      "mode": "http",
+      "className": "ContractClient",
+      "httpStubJson": "{\"stubs\":[{\"status\":200,\"body\":\"{\\\"version\\\":\\\"2.1.0\\\",\\\"endpoints\\\":[\\\"/login\\\"]}\",\"headers\":{\"Content-Type\":\"application/json\"}}]}",
+      "starterCode": "import static io.restassured.RestAssured.*;\n\npublic class ContractClient {\n    public boolean check(String baseUrl) {\n        // TODO GET /contract, assert major version 2\n        return false;\n    }\n}\n",
+      "solutionCode": "import static io.restassured.RestAssured.*;\n\npublic class ContractClient {\n    public boolean check(String baseUrl) {\n        String version = given().when().get(baseUrl + \"/contract\")\n            .then().statusCode(200).extract().path(\"version\");\n        return version != null && version.startsWith(\"2.\");\n    }\n}\n",
+      "hints": [
+        "get(baseUrl + \"/contract\")",
+        "version.startsWith(\"2.\")",
+        "Доведи до детерминированного результата из раздела «Результат»."
+      ],
+      "verifierCode": "import java.util.*;\n\npublic class ExerciseVerifier {\n  public List<String> verify(Class<?> cls, String baseUrl) throws Exception {\n    List<String> fails = new ArrayList<>();\n    Object c = cls.getDeclaredConstructor().newInstance();\n    boolean ok = (Boolean) cls.getMethod(\"check\", String.class).invoke(c, baseUrl);\n    if (!ok) fails.add(\"check must return true for version 2.x\");\n    return fails;\n  }\n}",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "senior",
+  "moduleId": "advanced"
+}

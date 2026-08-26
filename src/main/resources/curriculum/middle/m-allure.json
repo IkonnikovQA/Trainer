@@ -1,0 +1,69 @@
+{
+  "id": "m-allure",
+  "title": "Отчётность Allure и артефакты",
+  "summary": "Без отчётов CI-фейлы разбираются слишком долго.",
+  "theoryMarkdown": "# Allure: отчёты для разбора CI\n\n## Зачем\n\nШаги, вложения (скрин, request/response), история падений. Ускоряет triage.\n\n## База\n\n- Аннотации `@Epic` / `@Feature` / `@Story`\n- `Allure.step` / `@Step`\n- Attachments: не клади секреты (токены, пароли)\n\n## Связь с CI\n\nГенерируй отчёт в post-action; храни артефакты job. Без Allure тоже можно — но единообразие шагов экономит время команды.\n\n## Практика\n\nИмена suite/feature отражай в аннотациях; flaky помечай тегом и ссылкой на тикет в описании теста.\n\n## К практике\n\nМаскировка токена для аттачей:\n\n```java\nstatic String mask(String token) {\n    if (token == null || token.length() <= 4) return \"****\";\n    return token.substring(0, 2) + \"****\" + token.substring(token.length() - 2);\n}\n```\n\nПример: `\"abcdef\"` → `\"ab****ef\"`.\n",
+  "keyPoints": [
+    "Шаги делают отчёт читаемым",
+    "Вложения на fail",
+    "Не логируй секреты"
+  ],
+  "interviewTips": [
+    "Allure vs ExtentReports",
+    "Как храните историю флаков?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Что нельзя прикладывать в отчёт?",
+      "options": [
+        "screenshot",
+        "access token / пароли",
+        "response body без PII",
+        "browser console"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Секреты нельзя.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "В Allure attachment нельзя класть:",
+      "options": [
+        "Скриншрут падения",
+        "Authorization Bearer plaintext",
+        "Текст ошибки assert",
+        "Имя теста"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Секреты маскируй.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "SecretMask JUnit",
+      "description": "Дано:\n- класс / артефакт: SecretMaskTest\n- режим junit (класс с @Test)\n\nЗадание:\nСм. теорию «К практике» (SecretMask.mask).\nreplace secret occurrences with *** while preserving other text.\n\nРезультат:\n- все @Test в классе зелёные",
+      "difficulty": "medium",
+      "mode": "junit",
+      "className": "SecretMaskTest",
+      "starterCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass SecretMask {\n    static String mask(String token) {\n        // TODO\n        return \"\";\n    }\n}\n\npublic class SecretMaskTest {\n    @Test\n    void shortToken() { assertEquals(\"****\", SecretMask.mask(\"abcd\")); }\n\n    @Test\n    void longToken() { assertEquals(\"ab****ef\", SecretMask.mask(\"abcdef\")); }\n}\n",
+      "solutionCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass SecretMask {\n    static String mask(String token) {\n        if (token == null || token.length() <= 4) return \"****\";\n        return token.substring(0, 2) + \"****\" + token.substring(token.length() - 2);\n    }\n}\n\npublic class SecretMaskTest {\n    @Test\n    void shortToken() { assertEquals(\"****\", SecretMask.mask(\"abcd\")); }\n\n    @Test\n    void longToken() { assertEquals(\"ab****ef\", SecretMask.mask(\"abcdef\")); }\n}\n",
+      "hints": [
+        "Do not remove full log line, only sensitive fragment",
+        "Use string replace for known secret value",
+        "Verify masked output still contains non-secret parts"
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "reporting"
+}

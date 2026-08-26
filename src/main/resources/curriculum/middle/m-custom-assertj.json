@@ -1,0 +1,53 @@
+{
+  "id": "m-custom-assertj",
+  "title": "Custom AssertJ asserts",
+  "summary": "Доменные ассерты: читаемые проверки DTO/API без копипасты.",
+  "theoryMarkdown": "# Custom AssertJ\n\n```java\npublic class UserAssert extends AbstractAssert<UserAssert, User> {\n  public UserAssert(User actual) { super(actual, UserAssert.class); }\n  public static UserAssert assertThatUser(User u) { return new UserAssert(u); }\n  public UserAssert hasAdultAge() {\n    isNotNull();\n    if (actual.age() < 18) failWithMessage(\"expected adult, was %s\", actual.age());\n    return this;\n  }\n}\n```\n\nНа собесе часто просят набросать такой assert live.\n\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### UserAssert.hasAdultAge\n```java\nimport org.assertj.core.api.AbstractAssert;\nimport org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nrecord User(int age) {}\n\nclass UserAssert extends AbstractAssert<UserAssert, User> {\n    UserAssert(User actual) { super(actual, UserAssert.class); }\n    static UserAssert assertThatUser(User u) { return new UserAssert(u); }\n\n    UserAssert hasAdultAge() {\n        isNotNull();\n        if (actual.age() < 18) {\n            failWithMessage(\"expected adult age (>=18) but was <%s>\", actual.age());\n        }\n        return this;\n    }\n}\n\npublic class UserAssertTest {\n    @Test\n    void adultOk() {\n        UserAssert.assertThatUser(new User(20)).hasAdultAge();\n    }\n\n    @Test\n    void teenFails() {\n        assertThrows(AssertionError.class,\n            () -> UserAssert.assertThatUser(new User(16)).hasAdultAge());\n    }\n}\n```\n",
+  "keyPoints": [
+    "AbstractAssert",
+    "failWithMessage",
+    "Шаблон к заданию «UserAssert.hasAdultAge» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "Когда custom assert оправдан?",
+    "AssertJ vs своими assertEquals"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Custom assert обычно наследуют от:",
+      "options": [
+        "Object",
+        "AbstractAssert",
+        "WebDriver",
+        "Thread"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "AssertJ AbstractAssert.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "UserAssert.hasAdultAge",
+      "description": "Дано:\n- класс / артефакт: UserAssertTest\n- режим junit (класс с @Test)\n\nЗадание:\nСм. теорию «К практике» (UserAssert.hasAdultAge).\nrecord User(int age); UserAssert extends AbstractAssert с hasAdultAge(); тесты на adult/teen.\n\nРезультат:\n- все @Test в классе зелёные",
+      "difficulty": "hard",
+      "mode": "junit",
+      "className": "UserAssertTest",
+      "starterCode": "import org.assertj.core.api.AbstractAssert;\nimport org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nrecord User(int age) {}\n\nclass UserAssert extends AbstractAssert<UserAssert, User> {\n    UserAssert(User actual) { super(actual, UserAssert.class); }\n    static UserAssert assertThatUser(User u) { return new UserAssert(u); }\n\n    UserAssert hasAdultAge() {\n        // TODO isNotNull(); if age < 18 failWithMessage(...); return this;\n        return this;\n    }\n}\n\npublic class UserAssertTest {\n    @Test\n    void adultOk() {\n        UserAssert.assertThatUser(new User(20)).hasAdultAge();\n    }\n\n    @Test\n    void teenFails() {\n        assertThrows(AssertionError.class,\n            () -> UserAssert.assertThatUser(new User(16)).hasAdultAge());\n    }\n}\n",
+      "solutionCode": "import org.assertj.core.api.AbstractAssert;\nimport org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nrecord User(int age) {}\n\nclass UserAssert extends AbstractAssert<UserAssert, User> {\n    UserAssert(User actual) { super(actual, UserAssert.class); }\n    static UserAssert assertThatUser(User u) { return new UserAssert(u); }\n\n    UserAssert hasAdultAge() {\n        isNotNull();\n        if (actual.age() < 18) {\n            failWithMessage(\"expected adult age (>=18) but was <%s>\", actual.age());\n        }\n        return this;\n    }\n}\n\npublic class UserAssertTest {\n    @Test\n    void adultOk() {\n        UserAssert.assertThatUser(new User(20)).hasAdultAge();\n    }\n\n    @Test\n    void teenFails() {\n        assertThrows(AssertionError.class,\n            () -> UserAssert.assertThatUser(new User(16)).hasAdultAge());\n    }\n}\n",
+      "hints": [
+        "isNotNull(); if (actual.age() < 18) failWithMessage(...)",
+        "return this;",
+        "Доведи до детерминированного результата из раздела «Результат»."
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "quality"
+}

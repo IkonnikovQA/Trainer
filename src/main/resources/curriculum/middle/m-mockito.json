@@ -1,0 +1,58 @@
+{
+  "id": "m-mockito",
+  "title": "Mockito для тестового каркаса",
+  "summary": "Моки полезны в unit-тестах утилит фреймворка и сервисов.",
+  "theoryMarkdown": "# Mockito\n\n```java\nList list = mock(List.class);\nwhen(list.size()).thenReturn(2);\nverify(list).size();\n```\n\n## Когда\n\n- Unit тесты хелперов отчётов, ретраев, клиентов с зависимостями\n- Не мокай всё в E2E — иначе тестируешь мок\n\n## ArgumentCaptor\n\nДостаёт аргументы вызова для проверки.\n\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### Mockito stub + verify\nВспомогательные классы / логика:\n**Gateway**\n```java\npublic interface Gateway { String charge(int amount); }\n```\n**PaymentService**\n```java\npublic class PaymentService {\n  private final Gateway gateway;\n  public PaymentService(Gateway gateway) { this.gateway = gateway; }\n  public String pay(int amount) { return gateway.charge(amount); }\n}\n```\nВ тестах проверь поведение через assert/verify (см. starter).\n\n## Mock и UI E2E\n\nВ **UI E2E** нужен **реальный** браузер/`WebDriver`. Мокать `WebDriver` в E2E бессмысленно: ты перестаёшь проверять настоящий UI. Mockito уместен для сервисов, клиентов API, изоляции юнит-слоя — не для «сквозного» UI.\n",
+  "keyPoints": [
+    "UI E2E: реальный WebDriver, не mock",
+    "Моки для unit, не для E2E",
+    "verify проверяет взаимодействие",
+    "Шаблон к заданию «Mockito stub + verify» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "mock vs spy",
+    "Чем stub отличается от mock в классике?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "В чистом UI E2E мокать WebDriver обычно:",
+      "options": [
+        "Обязательно",
+        "Плохая идея — теряется смысл E2E",
+        "Требование Selenium",
+        "Быстрее Grid"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "E2E проверяет интеграцию с браузером.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Mockito stub + verify",
+      "description": "Дано:\n- класс / артефакт: PaymentServiceTest\n- режим junit (класс с @Test)\n- вспомогательные классы: Gateway, PaymentService\n\nЗадание:\nСм. теорию «К практике» (Mockito stub + verify).\nВ PaymentServiceTest замокай Gateway.charge(amount) → \"OK\", вызови service.pay(10), verify gateway.charge(10).\n\nРезультат:\n- все @Test в классе зелёные",
+      "difficulty": "medium",
+      "mode": "junit",
+      "className": "PaymentServiceTest",
+      "supportSources": {
+        "Gateway": "public interface Gateway { String charge(int amount); }",
+        "PaymentService": "public class PaymentService {\n  private final Gateway gateway;\n  public PaymentService(Gateway gateway) { this.gateway = gateway; }\n  public String pay(int amount) { return gateway.charge(amount); }\n}"
+      },
+      "starterCode": "import org.junit.jupiter.api.Test;\nimport org.mockito.Mockito;\nimport static org.junit.jupiter.api.Assertions.*;\nimport static org.mockito.Mockito.*;\n\npublic class PaymentServiceTest {\n    @Test\n    void payDelegatesToGateway() {\n        // TODO mock Gateway, stub charge, call pay, assert + verify\n    }\n}\n",
+      "solutionCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\nimport static org.mockito.Mockito.*;\n\npublic class PaymentServiceTest {\n    @Test\n    void payDelegatesToGateway() {\n        Gateway gateway = mock(Gateway.class);\n        when(gateway.charge(10)).thenReturn(\"OK\");\n        PaymentService service = new PaymentService(gateway);\n        assertEquals(\"OK\", service.pay(10));\n        verify(gateway).charge(10);\n    }\n}\n",
+      "hints": [
+        "Gateway g = mock(Gateway.class);",
+        "when(g.charge(10)).thenReturn(\"OK\"); verify(g).charge(10);",
+        "Доведи до детерминированного результата из раздела «Результат»."
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "quality"
+}

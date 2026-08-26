@@ -1,0 +1,54 @@
+{
+  "id": "m-invocation-interceptor",
+  "title": "InvocationInterceptor vs BeforeEachCallback",
+  "summary": "Когда нужно обернуть сам вызов теста — interceptor, не beforeEach.",
+  "theoryMarkdown": "# InvocationInterceptor\n\n## BeforeEachCallback\n\nВыполняется **до** тестового метода. Не оборачивает `invoke`.\n\n## InvocationInterceptor\n\n```java\npublic void interceptTestMethod(Invocation<Void> invocation,\n    ReflectiveInvocationContext<Method> ctx,\n    ExtensionContext extensionContext) throws Throwable {\n  // до\n  invocation.proceed(); // сам тест\n  // после\n}\n```\n\nНужен для: timing вокруг метода, retry/wrap, подмена аргументов, security check.\n\n## Почему не BeforeEach\n\nBeforeEach не видит «внутри» вызова и не может решить, вызывать ли тест (`proceed`).\n\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### CountingInterceptor\n```java\nimport java.lang.reflect.Method;\nimport java.util.concurrent.atomic.AtomicInteger;\nimport org.junit.jupiter.api.Test;\nimport org.junit.jupiter.api.extension.*;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass CountingInterceptor implements InvocationInterceptor {\n    static final AtomicInteger CALLS = new AtomicInteger();\n\n    @Override\n    public void interceptTestMethod(Invocation<Void> invocation,\n                                    ReflectiveInvocationContext<Method> invocationContext,\n                                    ExtensionContext extensionContext) throws Throwable {\n        CALLS.incrementAndGet();\n        invocation.proceed();\n    }\n}\n\n@ExtendWith(CountingInterceptor.class)\npublic class CountingInterceptorTest {\n    @Test\n    void countsProceed() {\n        assertEquals(1, CountingInterceptor.CALLS.get());\n    }\n}\n```\n",
+  "keyPoints": [
+    "proceed() — сердце interceptor",
+    "BeforeEach ≠ wrap",
+    "Шаблон к заданию «CountingInterceptor» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "Почему InvocationInterceptor, а не BeforeEachCallback?",
+    "Что будет если не вызвать proceed()?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Чтобы обернуть сам вызов @Test, используй:",
+      "options": [
+        "BeforeEachCallback",
+        "InvocationInterceptor",
+        "Only @BeforeAll",
+        "Thread.sleep"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Нужен wrap через proceed().",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "CountingInterceptor",
+      "description": "Дано:\n- класс / артефакт: CountingInterceptorTest\n- режим junit (класс с @Test)\n\nЗадание:\nСм. теорию «К практике» (CountingInterceptor).\nincrement counter then call invocation.proceed() exactly once.\n\nРезультат:\n- все @Test в классе зелёные",
+      "difficulty": "medium",
+      "mode": "junit",
+      "className": "CountingInterceptorTest",
+      "timeoutMs": 15000,
+      "revealAfterFails": 2,
+      "starterCode": "import java.lang.reflect.Method;\nimport java.util.concurrent.atomic.AtomicInteger;\nimport org.junit.jupiter.api.Test;\nimport org.junit.jupiter.api.extension.*;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass CountingInterceptor implements InvocationInterceptor {\n    static final AtomicInteger CALLS = new AtomicInteger();\n\n    @Override\n    public void interceptTestMethod(Invocation<Void> invocation,\n                                    ReflectiveInvocationContext<Method> invocationContext,\n                                    ExtensionContext extensionContext) throws Throwable {\n        // TODO: CALLS.incrementAndGet();\n        // TODO: invocation.proceed();\n    }\n}\n\n@ExtendWith(CountingInterceptor.class)\npublic class CountingInterceptorTest {\n    @Test\n    void countsProceed() {\n        assertEquals(1, CountingInterceptor.CALLS.get());\n    }\n}\n",
+      "solutionCode": "import java.lang.reflect.Method;\nimport java.util.concurrent.atomic.AtomicInteger;\nimport org.junit.jupiter.api.Test;\nimport org.junit.jupiter.api.extension.*;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass CountingInterceptor implements InvocationInterceptor {\n    static final AtomicInteger CALLS = new AtomicInteger();\n\n    @Override\n    public void interceptTestMethod(Invocation<Void> invocation,\n                                    ReflectiveInvocationContext<Method> invocationContext,\n                                    ExtensionContext extensionContext) throws Throwable {\n        CALLS.incrementAndGet();\n        invocation.proceed();\n    }\n}\n\n@ExtendWith(CountingInterceptor.class)\npublic class CountingInterceptorTest {\n    @Test\n    void countsProceed() {\n        assertEquals(1, CountingInterceptor.CALLS.get());\n    }\n}\n",
+      "hints": [
+        "Interceptor wraps actual test invocation",
+        "Increment counter before proceed",
+        "Proceed must always be called for test to run"
+      ]
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "quality"
+}

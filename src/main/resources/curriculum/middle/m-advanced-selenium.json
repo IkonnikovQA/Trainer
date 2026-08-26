@@ -1,0 +1,55 @@
+{
+  "id": "m-advanced-selenium",
+  "title": "Advanced Selenium: окна, фреймы, алерты, JS",
+  "summary": "Реальные приложения: iframe, новые вкладки, shadow-близко, JS executor.",
+  "theoryMarkdown": "# Advanced Selenium\n\n## Windows / Tabs\n\n```java\nString parent = driver.getWindowHandle();\nfor (String h : driver.getWindowHandles()) {\n  driver.switchTo().window(h);\n}\ndriver.switchTo().window(parent);\n```\n\n## Frames\n\n`driver.switchTo().frame(el)` → работа внутри → `defaultContent()`.\n\n## Alerts\n\n`switchTo().alert().accept()/dismiss()/sendKeys`\n\n## JavascriptExecutor\n\n```java\n((JavascriptExecutor) driver).executeScript(\"arguments[0].click();\", el);\n```\n\nИспользуй JS-клик осторожно — может маскировать баг UX.\n\n\n\n## В работе vs лаба\n\nВ лабе — **FakeDriver** (быстрый DOM в памяти). В работе и в `examples/portfolio-starter` — **реальный Chrome** + явные waits.\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### Frame + defaultContent\n```java\nimport org.openqa.selenium.*;\n\npublic class FrameLab {\n    public String readFrameText(WebDriver driver, String frameId, By by) {\n        driver.switchTo().frame(frameId);\n        String text = driver.findElement(by).getText();\n        driver.switchTo().defaultContent();\n        return text;\n    }\n}\n```\n",
+  "keyPoints": [
+    "Всегда возвращайся из frame",
+    "Храни parent handle",
+    "Шаблон к заданию «Frame + defaultContent» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "Как тестировать файл download?",
+    "Как обойти stale element?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "После работы в iframe нужно:",
+      "options": [
+        "Ничего",
+        "switchTo().defaultContent()",
+        "quit()",
+        "refresh только"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Вернуться в главный документ.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Frame + defaultContent",
+      "description": "Дано:\n- класс / артефакт: FrameLab\n- режим selenium-fake (in-memory FakeDriver)\n- DOM fixture уже подготовлен тренажёром\n\nЗадание:\nСм. теорию «К практике» (Frame + defaultContent).\nreadFrameText(driver, frameId, by): switchTo frame, getText, defaultContent, верни текст.\n\nРезультат:\n- verifier проверяет действия на FakeDriver",
+      "difficulty": "medium",
+      "mode": "selenium-fake",
+      "className": "FrameLab",
+      "fixtureJson": "{\"elements\":[{\"tag\":\"iframe\",\"id\":\"pay\",\"text\":\"\"},{\"tag\":\"span\",\"id\":\"amount\",\"text\":\"100\",\"frameId\":\"pay\",\"displayed\":true}]}",
+      "starterCode": "import org.openqa.selenium.*;\n\npublic class FrameLab {\n    public String readFrameText(WebDriver driver, String frameId, By by) {\n        // TODO switchTo().frame / getText / defaultContent\n        return null;\n    }\n}\n",
+      "solutionCode": "import org.openqa.selenium.*;\n\npublic class FrameLab {\n    public String readFrameText(WebDriver driver, String frameId, By by) {\n        driver.switchTo().frame(frameId);\n        String text = driver.findElement(by).getText();\n        driver.switchTo().defaultContent();\n        return text;\n    }\n}\n",
+      "hints": [
+        "switchTo().frame(frameId)",
+        "не забудь defaultContent()",
+        "Доведи до детерминированного результата из раздела «Результат»."
+      ],
+      "verifierCode": "import java.util.*;\nimport org.openqa.selenium.*;\nimport com.qatrainer.lab.selenium.FakeDriver;\n\npublic class ExerciseVerifier {\n  public List<String> verify(Class<?> cls, WebDriver driver) throws Exception {\n    List<String> fails = new ArrayList<>();\n    Object lab = cls.getDeclaredConstructor().newInstance();\n    String t = (String) cls.getMethod(\"readFrameText\", WebDriver.class, String.class, By.class)\n        .invoke(lab, driver, \"pay\", By.id(\"amount\"));\n    if (!\"100\".equals(t)) fails.add(\"expected 100, got \" + t);\n    FakeDriver fake = (FakeDriver) driver;\n    if (!fake.getActionsLog().contains(\"defaultContent\")) fails.add(\"defaultContent не вызван\");\n    return fails;\n  }\n}",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "selenium-adv"
+}

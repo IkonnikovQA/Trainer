@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Урок · QA Forge</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+    <script src="/vendor/monaco/vs/loader.js"></script>
+</head>
+<body class="lesson-page" th:attr="data-lesson-id=${lessonId}">
+<div class="sidebar-backdrop" id="sidebarBackdrop" hidden></div>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+        <a class="brand" href="/">QA Forge</a>
+        <button type="button" class="btn ghost sidebar-close" id="sidebarClose" aria-label="Закрыть меню">✕</button>
+    </div>
+    <p class="sidebar-hint">Навигация по курсу · ★ закладка</p>
+    <button type="button" class="btn ghost bookmark-btn" id="bookmarkBtn">☆ В закладки</button>
+    <div class="sidebar-scroll" id="sidebarTree"></div>
+</aside>
+
+<main class="lesson-main">
+    <div class="lesson-mobile-bar">
+        <button type="button" class="btn ghost" id="sidebarOpen">Курс</button>
+        <span class="muted" style="font-size:0.8rem">Клавиши 1/2/3 — шаги · ? — подсказка</span>
+    </div>
+    <header class="lesson-top">
+        <div>
+            <p class="eyebrow" id="lessonMeta">Урок</p>
+            <h1 id="lessonTitle">Загрузка…</h1>
+            <p class="lead" id="lessonSummary"></p>
+        </div>
+        <div>
+            <div class="nav-btns">
+                <a class="btn ghost" id="prevBtn" href="#">← Назад</a>
+                <a class="btn ghost" id="nextBtn" href="#">Далее →</a>
+                <button class="btn primary" id="completeBtn" type="button">Завершить урок</button>
+            </div>
+            <p class="complete-hint" id="completeHint">Нужны: квиз + все задания практики</p>
+        </div>
+    </header>
+
+    <nav class="lesson-path" id="lessonPath" aria-label="Шаги урока">
+        <button type="button" data-tab="theory" class="active">
+            <span class="path-n">Шаг 1</span>
+            <span class="path-title">Теория</span>
+            <span class="path-state">Читай и смотри примеры</span>
+        </button>
+        <button type="button" data-tab="quiz">
+            <span class="path-n">Шаг 2</span>
+            <span class="path-title">Проверка</span>
+            <span class="path-state" id="pathQuizState">Квиз</span>
+        </button>
+        <button type="button" data-tab="practice">
+            <span class="path-n">Шаг 3</span>
+            <span class="path-title">Практика</span>
+            <span class="path-state" id="pathPracticeState">Код с автопроверкой</span>
+        </button>
+    </nav>
+
+    <!-- path drives panels; interview tips live under theory -->
+    <div class="tabs" hidden aria-hidden="true"></div>
+
+    <section class="panel active" id="tab-theory">
+        <p class="panel-intro">Сначала разбери идею и примеры. Ключевые тезисы — внизу. Потом переходи к проверке.</p>
+        <article class="theory prose" id="theoryHtml"></article>
+        <div class="keypoints" id="keyPoints"></div>
+        <p class="panel-intro" style="margin-top:18px">
+            <button type="button" class="btn primary" id="toQuizBtn">Дальше: проверка теории →</button>
+        </p>
+        <div style="margin-top:20px">
+            <p class="section-label">К собеседованию</p>
+            <ul class="tips" id="interviewTips"></ul>
+        </div>
+    </section>
+
+    <section class="panel" id="tab-quiz">
+        <p class="panel-intro">Ответь на вопросы по теории. Можно ошибаться — после ответа увидишь пояснение.</p>
+        <div class="quiz-status-bar">
+            <span class="quiz-status-text" id="quizStatus">Квиз: 0/0</span>
+            <div class="meter"><div class="meter-fill" id="quizMeter" style="width:0%"></div></div>
+        </div>
+        <div id="quizBox"></div>
+        <p class="panel-intro" style="margin-top:8px">
+            <button type="button" class="btn primary" id="toPracticeBtn">Дальше: практика →</button>
+        </p>
+    </section>
+
+    <section class="panel" id="tab-practice">
+        <p class="panel-intro">Пиши код как на работе. Слева — задание и контекст lab (DOM / HTTP / артефакт). Справа — редактор. Проверка: кнопка или Ctrl+Enter.</p>
+        <div class="mode-legend" id="modeLegend"></div>
+        <p class="section-label">Задания урока</p>
+        <div id="exerciseList" class="exercise-picker"></div>
+        <div class="practice-layout" id="practiceArea" hidden>
+            <div class="practice-info">
+                <p class="section-label">Задание</p>
+                <h2 id="exTitle"></h2>
+                <p class="ex-desc" id="exDesc"></p>
+                <span class="mode-badge" id="exDiff"></span>
+                <div class="lab-panel" id="labPanel" hidden>
+                    <p class="section-label">Контекст lab</p>
+                    <p class="lab-explain" id="labExplain"></p>
+                    <pre class="lab-context" id="labContext"></pre>
+                </div>
+                <div class="actions">
+                    <button class="btn primary" id="runBtn" type="button">Проверить</button>
+                    <button class="btn ghost" id="hintBtn" type="button">Подсказка</button>
+                    <button class="btn ghost" id="solutionBtn" type="button" hidden>Показать решение</button>
+                    <button class="btn ghost" id="resetCodeBtn" type="button">Сбросить</button>
+                </div>
+                <p class="shortcut-hint">Ctrl+Enter — проверить · код сохраняется сам · подсказка после первой ошибки</p>
+                <p class="section-label">Результат</p>
+                <div id="resultBox" class="result-box" role="status" aria-live="polite"></div>
+                <div id="hintsBox" class="hints-box" aria-live="polite"></div>
+            </div>
+            <div class="editor-wrap">
+                <span class="editor-label" id="editorLangLabel">Java</span>
+                <div id="editor"></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel" id="tab-interview" hidden aria-hidden="true"></section>
+</main>
+
+<script th:inline="javascript">
+  window.__CURRICULUM__ = /*[[${curriculum}]]*/ {};
+  window.__PROGRESS__ = /*[[${progress}]]*/ {};
+  window.__LESSON_ID__ = /*[[${lessonId}]]*/ '';
+</script>
+<script th:src="@{/js/lesson.js}"></script>
+</body>
+</html>

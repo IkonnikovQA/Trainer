@@ -1,0 +1,53 @@
+{
+  "id": "s-metrics",
+  "title": "Метрики качества автоматизации",
+  "summary": "Управляй автоматизацией цифрами: сигнал, скорость, flake, ROI.",
+  "theoryMarkdown": "# Метрики\n\n- **Time to feedback** — сколько ждём результат PR\n- **Flake rate**\n- **Pass rate критичного набора**\n- **MTTR** разбора падений\n- **% green builds** (осторожно с gaming)\n- **Автоматизированные риск-области**, не просто число тестов\n\n## Ловушка\n\n«У нас 5000 UI тестов» ≠ зрелость.\n\n## К практике\n\nQuality gate (порядок проверок важен):\n\n```java\nif (flakeRate > 5) return \"RED:flake\";\nif (feedbackMin > 15) return \"RED:feedback\";\nif (passRate < 95) return \"RED:passrate\";\nreturn \"GREEN\";\n```\n\nGREEN только если flakeRate ≤ 5, feedbackMin ≤ 15, passRate ≥ 95.\n\n## Метрика для PR-гейта\n\nСамая полезная — быстрый и стабильный сигнал (pass rate / flake), а не «красивый» дашборд без действия.\n",
+  "keyPoints": [
+    "Скорость фидбека",
+    "Flake rate",
+    "Риск-покрытие"
+  ],
+  "interviewTips": [
+    "Какие метрики показываешь менеджеру?",
+    "Как защищаешь ROI автоматизации?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Самая полезная метрика для PR-гейта:",
+      "options": [
+        "Число Thread.sleep",
+        "Время feedback + стабильность smoke",
+        "LOC тестов",
+        "Число PageObject"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Быстрый и стабильный сигнал.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Quality gate verdict",
+      "description": "Дано:\n- класс / артефакт: QualityGateTest\n- режим junit (класс с @Test)\n\nЗадание:\nСм. теорию «К практике» (QualityGate.verdict).\nGREEN only if flakeRate<=5, feedbackMin<=15, passRate>=95; otherwise first violated reason in order flake, feedback, passrate.\n\nРезультат:\n- все @Test в классе зелёные",
+      "difficulty": "hard",
+      "mode": "junit",
+      "className": "QualityGateTest",
+      "starterCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass QualityGate {\n    static String verdict(int flakeRate, int feedbackMin, int passRate) {\n        // TODO ordered checks: flake -> feedback -> passrate\n        return \"\";\n    }\n}\n\npublic class QualityGateTest {\n    @Test\n    void green() { assertEquals(\"GREEN\", QualityGate.verdict(3, 12, 98)); }\n    @Test\n    void redFlake() { assertEquals(\"RED:flake\", QualityGate.verdict(9, 12, 98)); }\n    @Test\n    void redFeedback() { assertEquals(\"RED:feedback\", QualityGate.verdict(2, 40, 99)); }\n    @Test\n    void redPassrate() { assertEquals(\"RED:passrate\", QualityGate.verdict(2, 12, 90)); }\n}\n",
+      "solutionCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass QualityGate {\n    static String verdict(int flakeRate, int feedbackMin, int passRate) {\n        if (flakeRate > 5) return \"RED:flake\";\n        if (feedbackMin > 15) return \"RED:feedback\";\n        if (passRate < 95) return \"RED:passrate\";\n        return \"GREEN\";\n    }\n}\n\npublic class QualityGateTest {\n    @Test\n    void green() { assertEquals(\"GREEN\", QualityGate.verdict(3, 12, 98)); }\n    @Test\n    void redFlake() { assertEquals(\"RED:flake\", QualityGate.verdict(9, 12, 98)); }\n    @Test\n    void redFeedback() { assertEquals(\"RED:feedback\", QualityGate.verdict(2, 40, 99)); }\n    @Test\n    void redPassrate() { assertEquals(\"RED:passrate\", QualityGate.verdict(2, 12, 90)); }\n}\n",
+      "hints": [
+        "Apply checks in fixed order to keep deterministic reason",
+        "First failed threshold should stop evaluation",
+        "Only full pass returns GREEN"
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "senior",
+  "moduleId": "process"
+}

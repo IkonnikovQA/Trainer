@@ -1,0 +1,71 @@
+﻿{
+  "id": "m-jwt-auth",
+  "title": "API auth: Bearer и 401/403",
+  "summary": "Различай authentication и authorization на HTTP-уровне.",
+  "theoryMarkdown": "# JWT / Bearer в API-тестах\n\n## Как слать токен\n\n```java\ngiven()\n  .header(\"Authorization\", \"Bearer \" + token)\n  .when().get(\"/secure\");\n```\n\n## Негативы (обязательны)\n\n- Без токена / пустой → обычно **401**\n- Протухший / чужая подпись → **401**\n- Валидный токен, нет роли → **403**\n\n## Практика\n\nВыноси получение токена в `AuthClient` / spec; не копируй header в каждый тест. В параллели — токен на поток или короткоживущий per-test.\n\n## JWT и коды\n\nВалидный JWT, но роль без доступа → **403 Forbidden** (AuthN ок, AuthZ нет). Без/с битым токеном чаще 401.\n\n## В работе vs лаба\n\nВ лабе — **MockWebServer**. В работе — стенд/demo API; контракты и негативы гоняй против живого baseUrl (jsonplaceholder в портфолио).\n",
+  "keyPoints": [
+    "Bearer header",
+    "401 vs 403",
+    "Не светить токены в отчётах"
+  ],
+  "interviewTips": [
+    "Как тестируешь refresh token?",
+    "Negative cases auth"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Клиент отправил валидный JWT, но роль без доступа. Ожидаемый код?",
+      "options": [
+        "401",
+        "403",
+        "404",
+        "204"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Authenticated but forbidden.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Валидный JWT без нужной роли чаще даёт:",
+      "options": [
+        "200 OK",
+        "403 Forbidden",
+        "301 Redirect",
+        "204 No Content"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "AuthN ок, AuthZ нет → 403.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "SecureClient with Bearer",
+      "description": "Дано:\n- класс / артефакт: SecureClient\n- режим http (RestAssured + MockWebServer)\n- HTTP stub уже подготовлен тренажёром\n\nЗадание:\nfetchSecure(baseUrl, token): GET /secure с Authorization Bearer. Верни status code. Stub: с токеном secret → 200, иначе 401.\n\nРезультат:\n- verifier проверяет ответы через MockWebServer",
+      "difficulty": "medium",
+      "mode": "http",
+      "className": "SecureClient",
+      "httpStubJson": "{\"stubs\":[{\"status\":401,\"body\":\"{\\\"error\\\":\\\"unauthorized\\\"}\",\"headers\":{\"Content-Type\":\"application/json\"}},{\"status\":200,\"body\":\"{\\\"ok\\\":true}\",\"headers\":{\"Content-Type\":\"application/json\"}}]}",
+      "starterCode": "import static io.restassured.RestAssured.*;\n\npublic class SecureClient {\n    public int fetchSecure(String baseUrl, String token) {\n        // TODO GET baseUrl+\"/secure\" with Bearer token, return status\n        return 0;\n    }\n}\n",
+      "solutionCode": "import static io.restassured.RestAssured.*;\n\npublic class SecureClient {\n    public int fetchSecure(String baseUrl, String token) {\n        return given()\n            .header(\"Authorization\", \"Bearer \" + token)\n            .when()\n            .get(baseUrl + \"/secure\")\n            .then()\n            .extract().statusCode();\n    }\n}\n",
+      "hints": [
+        "header(\"Authorization\", \"Bearer \" + token)",
+        "get(baseUrl + \"/secure\").extract().statusCode()",
+        "Доведи до детерминированного результата из раздела «Результат»."
+      ],
+      "verifierCode": "import java.util.*;\n\npublic class ExerciseVerifier {\n  public List<String> verify(Class<?> cls, String baseUrl) throws Exception {\n    List<String> fails = new ArrayList<>();\n    Object c = cls.getDeclaredConstructor().newInstance();\n    // first stub 401 for bad/empty — MockWebServer is sequential; call with secret then without\n    // Our stubs are queued: first response then second. So call bad first then good.\n    int bad = (Integer) cls.getMethod(\"fetchSecure\", String.class, String.class).invoke(c, baseUrl, \"bad\");\n    int ok = (Integer) cls.getMethod(\"fetchSecure\", String.class, String.class).invoke(c, baseUrl, \"secret\");\n    if (bad != 401) fails.add(\"expected 401 for bad token, got \" + bad);\n    if (ok != 200) fails.add(\"expected 200 for secret token, got \" + ok);\n    return fails;\n  }\n}",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "api"
+}

@@ -1,0 +1,77 @@
+{
+  "id": "s-openapi-pitfalls",
+  "title": "OpenAPI Generator: польза и боли",
+  "summary": "Codegen ускоряет старт, но ломается на drift и кривых схемах.",
+  "theoryMarkdown": "# OpenAPI Generator: грабли\n\n## Типичные проблемы\n\n- **Drift**: спека в git ≠ реальный API\n- Кривые `oneOf` / nullable модели\n- Шумный review огромных generated diff\n- Коммит generated без политики → вечный merge hell\n\n## Политика\n\n1. `codegen_policy` — когда и как генерим\n2. `regenerate_on_ci` — проверка актуальности\n3. `wrapper_layer` — свои клиенты поверх generated\n\nНе тащи сырой generated в бизнес-тесты без обёртки.\n\n\n\n## В работе vs лаба\n\nВ лабе проверяется **текст артефакта** (структура YAML/Jenkinsfile). В работе pipeline должен **реально выполняться** в CI (см. портфолио GHA).\n\nУрок учит **решению/политике**. Мышцы автоматизации наращивай в портфолио и на реальном проекте.\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### Codegen policy YAML\nЗаполни артефакт по образцу:\n```text\ncodegen_policy: generate-into-build-dir\nregenerate_on_ci: true\nwrapper_layer: hand-written clients over generated models\n```\n",
+  "keyPoints": [
+    "Drift спеки",
+    "Wrapper над generated",
+    "Шаблон к заданию «Codegen policy YAML» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "Как ловишь рассинхрон контракта?",
+    "Когда лучше hand-written RestAssured?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "multiple",
+      "question": "Типичные боли OpenAPI Generator:",
+      "options": [
+        "Спека и код разъезжаются",
+        "Всегда быстрее UI E2E",
+        "Сложные схемы → кривые модели",
+        "Не нужен CI"
+      ],
+      "correctIndexes": [
+        0,
+        2
+      ],
+      "explanation": "Drift и сложные схемы.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Generated клиенты лучше:",
+      "options": [
+        "Править руками в каждом PR",
+        "Обернуть тонким wrapper и регенерировать по политике",
+        "Хранить только локально у одного разработчика",
+        "Удалить OpenAPI"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Wrapper + CI policy.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Codegen policy YAML",
+      "description": "Дано:\n- класс / артефакт: CodegenPolicy\n- режим artifact (текст файла / YAML / Jenkinsfile)\n\nЗадание:\nСм. теорию «К практике» (Codegen policy YAML).\nYAML: codegen_policy, regenerate_on_ci, wrapper_layer (строки/bool). Без password.\n\nРезультат:\n- в тексте есть: codegen_policy\n- в тексте есть: regenerate_on_ci\n- в тексте есть: wrapper_layer",
+      "difficulty": "medium",
+      "mode": "artifact",
+      "artifactKind": "gha",
+      "artifactRules": [
+        "contains:codegen_policy",
+        "contains:regenerate_on_ci",
+        "contains:wrapper_layer",
+        "noSecret:password"
+      ],
+      "className": "CodegenPolicy",
+      "starterCode": "# OpenAPI codegen policy\n# TODO\n",
+      "solutionCode": "codegen_policy: generate-into-build-dir\nregenerate_on_ci: true\nwrapper_layer: hand-written clients over generated models\n",
+      "hints": [
+        "codegen_policy:",
+        "regenerate_on_ci: true",
+        "wrapper_layer:"
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "senior",
+  "moduleId": "advanced"
+}

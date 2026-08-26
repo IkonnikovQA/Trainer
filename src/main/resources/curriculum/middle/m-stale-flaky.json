@@ -1,0 +1,72 @@
+{
+  "id": "m-stale-flaky",
+  "levelId": "middle",
+  "moduleId": "quality",
+  "title": "StaleElement и flaky postmortem",
+  "summary": "Разбор типичных причин StaleElementReferenceException и процесс борьбы с flaky.",
+  "theoryMarkdown": "# StaleElementReferenceException\n\nЭлемент найден, DOM обновился, ссылка протухла.\n\n## Фикс\n\n1. Не храни WebElement долго\n2. Повторный find перед действием\n3. Жди стабильности (invisibility old / visibility new)\n4. Не кликай во время анимации/перерисовки\n\n## Flaky postmortem\n\n1. Воспроизвести\n2. Классифицировать (wait/data/race/env)\n3. Корневой фикс\n4. Ретрай — временная мера\n\n## К практике\n\nПравило рефетча после StaleElement:\n\n```java\nstatic boolean shouldRefetch(boolean domChanged, boolean elementCached) {\n    return domChanged && elementCached;\n}\n```\n\nПеречитывать элемент нужно только если DOM изменился **и** у тебя ещё старая ссылка.\n\n## Антифлейк-практики\n\n- **Изоляция данных**: каждый тест готовит свои данные и не зависит от чужого порядка.\n- **Quarantine с тикетом**: флакающий тест временно в quarantine только вместе с заведённым тикетом на починку — иначе «тихо умер» навсегда.\n\n## Retries\n\nRetries без фикса корневой причины — плохо: маскируют флейк. Сначала стабилизируй тест/продукт.\n",
+  "keyPoints": [
+    "Антифлейк: изоляция данных и quarantine с тикетом",
+    "Stale = DOM изменился",
+    "Не кэшируй элементы без нужды",
+    "Postmortem > слепой retry"
+  ],
+  "interviewTips": [
+    "Расскажи реальный flaky кейс",
+    "Когда допустим retry?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "StaleElementReferenceException значит:",
+      "options": [
+        "Неверный CSS всегда",
+        "Ссылка на элемент устарела после обновления DOM",
+        "JUnit сломан",
+        "Нет интернета"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Протухший элемент.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "multiple",
+      "question": "Выбери правильные антифлейк практики (несколько):",
+      "options": [
+        "Явные waits по условию",
+        "Увеличить retries до 50 навсегда",
+        "Изоляция данных",
+        "Карантин с тикетом"
+      ],
+      "correctIndexes": [
+        0,
+        2,
+        3
+      ],
+      "explanation": "Retries без фикса — плохо.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "shouldRefetch decision",
+      "description": "Дано:\n- класс / артефакт: StalePolicyTest\n- режим junit (класс с @Test)\n\nЗадание:\nStalePolicy.shouldRefetch(domChanged, elementCached): true если элемент кэширован И DOM изменился.\n\nРезультат:\n- все @Test в классе зелёные",
+      "difficulty": "medium",
+      "mode": "junit",
+      "className": "StalePolicyTest",
+      "starterCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass StalePolicy {\n    static boolean shouldRefetch(boolean domChanged, boolean elementCached) {\n        // TODO\n        return false;\n    }\n}\n\npublic class StalePolicyTest {\n    @Test\n    void needsRefetch() { assertTrue(StalePolicy.shouldRefetch(true, true)); }\n    @Test\n    void freshOk() { assertFalse(StalePolicy.shouldRefetch(true, false)); }\n    @Test\n    void unchanged() { assertFalse(StalePolicy.shouldRefetch(false, true)); }\n}\n",
+      "solutionCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass StalePolicy {\n    static boolean shouldRefetch(boolean domChanged, boolean elementCached) {\n        return domChanged && elementCached;\n    }\n}\n\npublic class StalePolicyTest {\n    @Test\n    void needsRefetch() { assertTrue(StalePolicy.shouldRefetch(true, true)); }\n    @Test\n    void freshOk() { assertFalse(StalePolicy.shouldRefetch(true, false)); }\n    @Test\n    void unchanged() { assertFalse(StalePolicy.shouldRefetch(false, true)); }\n}\n",
+      "hints": [
+        "Start from the concept and contract before coding exact statements.",
+        "return domChanged && elementCached;",
+        "Доведи до детерминированного результата из раздела «Результат»."
+      ],
+      "revealAfterFails": 2
+    }
+  ]
+}

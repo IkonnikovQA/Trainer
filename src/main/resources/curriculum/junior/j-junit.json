@@ -1,0 +1,73 @@
+{
+  "id": "j-junit",
+  "title": "JUnit 5: аннотации и жизненный цикл теста",
+  "summary": "JUnit 5 — основной движок тестов. Аннотации, assertions, вложенность.",
+  "theoryMarkdown": "# JUnit 5\n\n## Аннотации\n\n- `@Test` — тест\n- `@BeforeEach` / `@AfterEach`\n- `@BeforeAll` / `@AfterAll` (обычно static)\n- `@DisplayName`, `@Tag`, `@Disabled`\n- `@ParameterizedTest` + `@ValueSource` / `@CsvSource` / `@MethodSource`\n\n## Пример\n\n```java\n@BeforeEach\nvoid setUp() { driver = new ChromeDriver(); }\n\n@Test\n@DisplayName(\"Login with valid user\")\nvoid loginOk() { /* ... */ }\n\n@AfterEach\nvoid tearDown() { driver.quit(); }\n```\n\n## Assertions\n\n`Assertions.assertEquals`, `assertTrue`, `assertThrows`.\nЛучше AssertJ: `assertThat(x).isEqualTo(y)`.\n\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### Напиши @Test для PasswordRule\nВспомогательные классы / логика:\n**PasswordRule**\n```java\npublic class PasswordRule {\n  public boolean isValidPassword(String p) {\n    if (p == null || p.length() < 8) return false;\n    boolean digit = false;\n    for (int i = 0; i < p.length(); i++) if (Character.isDigit(p.charAt(i))) digit = true;\n    return digit;\n  }\n}\n```\nВ тестах проверь поведение через assert/verify (см. starter).\n\n## Параметризация\n\nДля набора входных данных лучше `@ParameterizedTest` / `@CsvSource` — параметризация убирает дубли тестовых методов.\n",
+  "keyPoints": [
+    "@BeforeEach перед каждым тестом",
+    "Один тест — одна идея",
+    "Шаблон к заданию «Напиши @Test для PasswordRule» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "JUnit 4 vs 5",
+    "Как параметризовать тест?",
+    "@TestInstance(PER_CLASS)"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "@BeforeAll по умолчанию требует метод:",
+      "options": [
+        "instance",
+        "static",
+        "private only",
+        "async"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Без PER_CLASS метод @BeforeAll static.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Для набора входных данных лучше:",
+      "options": [
+        "Скопировать 10 @Test",
+        "@ParameterizedTest",
+        "main()",
+        "while(true)"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Параметризация убирает дубли.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Напиши @Test для PasswordRule",
+      "description": "Дано:\n- класс / артефакт: PasswordRuleTest\n- режим junit (класс с @Test)\n- вспомогательные классы: PasswordRule\n\nЗадание:\nСм. теорию «К практике» (Напиши @Test для PasswordRule).\nКласс PasswordRuleTest: протестируй PasswordRule.isValidPassword — валидный \"secret12\", короткий \"ab1\", без цифры \"longpassword\". Используй assertTrue/assertFalse.\n\nРезультат:\n- все @Test в классе зелёные",
+      "difficulty": "easy",
+      "mode": "junit",
+      "className": "PasswordRuleTest",
+      "supportSources": {
+        "PasswordRule": "public class PasswordRule {\n  public boolean isValidPassword(String p) {\n    if (p == null || p.length() < 8) return false;\n    boolean digit = false;\n    for (int i = 0; i < p.length(); i++) if (Character.isDigit(p.charAt(i))) digit = true;\n    return digit;\n  }\n}"
+      },
+      "starterCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\npublic class PasswordRuleTest {\n    private final PasswordRule rule = new PasswordRule();\n\n    @Test\n    void valid() {\n        // TODO: assertTrue для \"secret12\"\n    }\n\n    @Test\n    void tooShort() {\n        // TODO: assertFalse для \"ab1\"\n    }\n\n    @Test\n    void noDigit() {\n        // TODO: assertFalse для \"longpassword\"\n    }\n}\n",
+      "solutionCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\npublic class PasswordRuleTest {\n    private final PasswordRule rule = new PasswordRule();\n\n    @Test\n    void valid() { assertTrue(rule.isValidPassword(\"secret12\")); }\n\n    @Test\n    void tooShort() { assertFalse(rule.isValidPassword(\"ab1\")); }\n\n    @Test\n    void noDigit() { assertFalse(rule.isValidPassword(\"longpassword\")); }\n}\n",
+      "hints": [
+        "Нужно минимум 3 метода с @Test",
+        "assertTrue / assertFalse из Assertions",
+        "Доведи до детерминированного результата из раздела «Результат»."
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "junior",
+  "moduleId": "maven-junit"
+}

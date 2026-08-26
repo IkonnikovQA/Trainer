@@ -1,0 +1,19 @@
+server:
+  port: 8080
+
+spring:
+  thymeleaf:
+    cache: false
+  web:
+    resources:
+      cache:
+        period: 0
+
+trainer:
+  workspace-dir: ./workspace
+  progress-file: ./workspace/progress.json
+  content-dir: classpath:curriculum
+
+logging:
+  level:
+    com.qatrainer: INFO

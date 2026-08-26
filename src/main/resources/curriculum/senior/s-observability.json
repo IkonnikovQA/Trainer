@@ -1,0 +1,69 @@
+{
+  "id": "s-observability",
+  "title": "Логи, трейсы, стабильность прогонов",
+  "summary": "Senior связывает падения тестов с наблюдаемостью системы.",
+  "theoryMarkdown": "# Observability для QA\n\n## Три столпа\n\n- **Logs** — корреляция request-id\n- **Metrics** — latency, error rate, flake\n- **Traces** — путь запроса по сервисам\n\n## Зачем тестировщику\n\nПадение в CI без trace/log — долгое гадание. В API-тестах прокидывай `X-Request-Id`; в отчётах прикладывай id.\n\n## Связь с автотестами\n\nНе путай «тест зелёный» и «система здорова»: смотри алерты и SLI вместе с регрессом.\n\n## К практике\n\n`TraceIds.requestId(testName, ts)`:\n\n1. Пустое имя или `ts <= 0` → `IllegalArgumentException`\n2. slug = lower-case → заменить не `[a-z0-9]` на `-` → обрезать краевые `-`\n3. обрезать slug до 20 символов\n4. вернуть `\"qa-\" + slug + \"-\" + ts`\n\nПример: `\"Login Checkout\", 100` → `\"qa-login-checkout-100\"`.\n\n## Correlation id\n\nCorrelation / X-Request-Id помогает **связать** действия теста с логами/трейсами backend — сквозная трассировка разбора падений.\n",
+  "keyPoints": [
+    "Correlation id",
+    "Артефакты + логи системы",
+    "MTTR"
+  ],
+  "interviewTips": [
+    "Как расследуешь падение только на CI?",
+    "Что такое distributed tracing?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Correlation id помогает:",
+      "options": [
+        "Ускорить Chrome",
+        "Связать действия теста с логами backend",
+        "Заменить ассерты",
+        "Скрыть флейки"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Сквозная трассировка.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "X-Request-Id в API-тестах помогает:",
+      "options": [
+        "Ускорить Chrome",
+        "Связать падение теста с логами/трейсами сервиса",
+        "Заменить ассерты",
+        "Отключить JWT"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Корреляция разбора.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Trace correlation id policy",
+      "description": "Дано:\n- класс / артефакт: TraceIdsTest\n- режим junit (класс с @Test)\n\nЗадание:\nСм. теорию «К практике» (TraceIds.requestId).\nlower-case slug, replace non [a-z0-9] with '-', trim edge '-', max slug length 20, ts must be >0.\n\nРезультат:\n- все @Test в классе зелёные",
+      "difficulty": "hard",
+      "mode": "junit",
+      "className": "TraceIdsTest",
+      "starterCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass TraceIds {\n    static String requestId(String testName, long ts) {\n        // TODO validate, normalize slug, limit to 20 chars\n        return \"\";\n    }\n}\n\npublic class TraceIdsTest {\n    @Test\n    void normalizes() {\n        assertEquals(\"qa-login-checkout-100\", TraceIds.requestId(\"Login Checkout\", 100L));\n    }\n\n    @Test\n    void stripsNoise() {\n        assertEquals(\"qa-order-pay-v2-42\", TraceIds.requestId(\"Order@Pay v2!\", 42L));\n    }\n\n    @Test\n    void truncatesSlug() {\n        String id = TraceIds.requestId(\"very long scenario name for tracing\", 7L);\n        String slug = id.substring(3, id.lastIndexOf('-'));\n        assertTrue(slug.length() <= 20);\n    }\n\n    @Test\n    void invalidName() {\n        assertThrows(IllegalArgumentException.class, () -> TraceIds.requestId(\" \", 1L));\n    }\n}\n",
+      "solutionCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass TraceIds {\n    static String requestId(String testName, long ts) {\n        if (testName == null || testName.isBlank() || ts <= 0) {\n            throw new IllegalArgumentException(\"invalid input\");\n        }\n        String slug = testName.toLowerCase()\n                .replaceAll(\"[^a-z0-9]+\", \"-\")\n                .replaceAll(\"^-+|-+$\", \"\");\n        if (slug.length() > 20) {\n            slug = slug.substring(0, 20);\n        }\n        if (slug.isBlank()) {\n            throw new IllegalArgumentException(\"invalid input\");\n        }\n        return \"qa-\" + slug + \"-\" + ts;\n    }\n}\n\npublic class TraceIdsTest {\n    @Test\n    void normalizes() {\n        assertEquals(\"qa-login-checkout-100\", TraceIds.requestId(\"Login Checkout\", 100L));\n    }\n\n    @Test\n    void stripsNoise() {\n        assertEquals(\"qa-order-pay-v2-42\", TraceIds.requestId(\"Order@Pay v2!\", 42L));\n    }\n\n    @Test\n    void truncatesSlug() {\n        String id = TraceIds.requestId(\"very long scenario name for tracing\", 7L);\n        String slug = id.substring(3, id.lastIndexOf('-'));\n        assertTrue(slug.length() <= 20);\n    }\n\n    @Test\n    void invalidName() {\n        assertThrows(IllegalArgumentException.class, () -> TraceIds.requestId(\" \", 1L));\n    }\n}\n",
+      "hints": [
+        "Validate early: blank/null testName or ts<=0 -> IllegalArgumentException",
+        "Normalize via lower-case + replaceAll(\"[^a-z0-9]+\", \"-\") + trim edge '-'",
+        "Return format: \"qa-\" + slug(max 20) + \"-\" + ts"
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "senior",
+  "moduleId": "advanced"
+}

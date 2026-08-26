@@ -1,0 +1,34 @@
+{
+  "title": "К офферу",
+  "description": "Must-pass уроки Strong Junior Auto QA. Параллельно копируй examples/portfolio-starter в GitHub.",
+  "lessons": [
+    "j-types",
+    "j-control",
+    "j-collections",
+    "j-junit",
+    "j-assertions",
+    "j-selenium-intro",
+    "j-locators",
+    "j-waits",
+    "j-pom-intro",
+    "j-git",
+    "j-debug",
+    "m-restassured",
+    "m-restassured-deep",
+    "m-jwt-auth",
+    "m-pom-fluent",
+    "m-flaky",
+    "m-stale-flaky",
+    "m-soft-assert",
+    "m-capstone",
+    "m-portfolio",
+    "s-github-actions",
+    "s-interview-soft"
+  ],
+  "badges": [
+    { "id": "junior_core", "label": "Junior core", "lessons": ["j-types", "j-junit", "j-locators", "j-waits", "j-pom-intro"] },
+    { "id": "api_core", "label": "API core", "lessons": ["m-restassured", "m-restassured-deep", "m-jwt-auth"] },
+    { "id": "portfolio", "label": "Portfolio checklist", "lessons": ["m-portfolio"] },
+    { "id": "interview", "label": "Interview soft", "lessons": ["s-interview-soft"] }
+  ]
+}

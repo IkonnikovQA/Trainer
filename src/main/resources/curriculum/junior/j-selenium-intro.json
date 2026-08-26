@@ -1,0 +1,72 @@
+{
+  "id": "j-selenium-intro",
+  "title": "Selenium WebDriver: архитектура и старт",
+  "summary": "WebDriver — интерфейс управления браузером. Драйвер, сессия, команды.",
+  "theoryMarkdown": "# Selenium WebDriver\n\n## Идея\n\nТест → WebDriver API → Driver (chromedriver) → Браузер.\n\n## Минимальный тест\n\n```java\nWebDriver driver = new ChromeDriver();\ndriver.get(\"https://example.com\");\nString title = driver.getTitle();\ndriver.quit();\n```\n\n## Важные методы\n\n- `get`, `getCurrentUrl`, `getTitle`\n- `findElement` / `findElements`\n- `quit` (закрыть сессию) vs `close` (вкладку)\n\n## WebDriverManager / Selenium Manager\n\nСовременный Selenium умеет сам подтягивать драйверы (Selenium Manager).\n\n\n## Практика в тренажёре\n\nЗдесь используется **FakeDriver** — in-memory реализация WebDriver.\nТы пишешь обычный Selenium-код (`get`, `getTitle`, `quit`), без настоящего Chrome.\n\n## В работе vs лаба\n\nВ лабе — **FakeDriver** (быстрый DOM в памяти). В работе и в `examples/portfolio-starter` — **реальный Chrome** + явные waits.\n",
+  "keyPoints": [
+    "quit закрывает сессию полностью",
+    "findElement бросает если нет элемента",
+    "findElements вернёт пустой список"
+  ],
+  "interviewTips": [
+    "Архитектура Selenium 4",
+    "JSON Wire vs W3C WebDriver",
+    "close vs quit"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Что делает driver.quit()?",
+      "options": [
+        "Закрывает одну вкладку",
+        "Завершает сессию WebDriver и процессы",
+        "Только чистит cookies",
+        "Перезапускает ОС"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "quit завершает сессию.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "findElements при отсутствии элементов:",
+      "options": [
+        "кидает NoSuchElement",
+        "возвращает пустой List",
+        "возвращает null",
+        "ждёт вечно"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "findElements → empty list.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Сессия WebDriver",
+      "description": "Дано:\n- класс / артефакт: SessionLab\n- режим selenium-fake (in-memory FakeDriver)\n- DOM fixture уже подготовлен тренажёром\n\nЗадание:\nКласс SessionLab: метод openAndTitle(WebDriver driver, String url) открывает url, возвращает title, затем quit(). Верни title ДО quit.\n\nРезультат:\n- verifier проверяет действия на FakeDriver",
+      "difficulty": "medium",
+      "mode": "selenium-fake",
+      "className": "SessionLab",
+      "fixtureJson": "{\"title\":\"Example Domain\",\"url\":\"about:blank\",\"elements\":[]}",
+      "starterCode": "import org.openqa.selenium.WebDriver;\n\npublic class SessionLab {\n    public String openAndTitle(WebDriver driver, String url) {\n        // TODO: driver.get(url); сохранить title; driver.quit(); вернуть title\n        return null;\n    }\n}\n",
+      "solutionCode": "import org.openqa.selenium.WebDriver;\n\npublic class SessionLab {\n    public String openAndTitle(WebDriver driver, String url) {\n        driver.get(url);\n        String title = driver.getTitle();\n        driver.quit();\n        return title;\n    }\n}\n",
+      "hints": [
+        "Сначала driver.get(url)",
+        "String t = driver.getTitle(); затем driver.quit(); return t;",
+        "Доведи до детерминированного результата из раздела «Результат»."
+      ],
+      "verifierCode": "import java.util.*;\nimport org.openqa.selenium.WebDriver;\nimport com.qatrainer.lab.selenium.FakeDriver;\n\npublic class ExerciseVerifier {\n  public List<String> verify(Class<?> cls, WebDriver driver) throws Exception {\n    List<String> fails = new ArrayList<>();\n    FakeDriver fake = (FakeDriver) driver;\n    fake.setTitle(\"Example Domain\");\n    Object lab = cls.getDeclaredConstructor().newInstance();\n    Object title = cls.getMethod(\"openAndTitle\", WebDriver.class, String.class)\n        .invoke(lab, driver, \"https://example.com\");\n    if (!\"Example Domain\".equals(title)) fails.add(\"title: expected Example Domain, got \" + title);\n    if (!fake.isQuit()) fails.add(\"driver.quit() не вызван\");\n    if (!fake.getActionsLog().contains(\"get:https://example.com\")) fails.add(\"get(url) не вызван\");\n    return fails;\n  }\n}",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "junior",
+  "moduleId": "selenium"
+}

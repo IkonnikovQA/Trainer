@@ -1,0 +1,80 @@
+{
+  "id": "s-jenkinsfile",
+  "title": "Jenkinsfile на практике: параметры и параллель",
+  "summary": "Пишем пайплайн как продукт: параметры, matrix, fail-fast.",
+  "theoryMarkdown": "# Jenkinsfile (Declarative) для тестов\n\n```groovy\npipeline {\n  agent any\n  stages {\n    stage('Test') { steps { sh 'mvn -B test' } }\n  }\n  post {\n    always { junit '**/surefire-reports/*.xml' }\n  }\n}\n```\n\n## Важно\n\n- Credentials через Jenkins credentials, не plaintext\n- `post` — отчёты always\n- Разделяй smoke (PR) и полный регресс (nightly)\n\nLab: собери валидный declarative skeleton с stages/post/junit.\n\n\n\n## В работе vs лаба\n\nВ лабе проверяется **текст артефакта** (структура YAML/Jenkinsfile). В работе pipeline должен **реально выполняться** в CI (см. портфолио GHA).\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### Jenkinsfile with parallel browsers\nЗаполни артефакт по образцу:\n```text\npipeline {\n  agent any\n  stages {\n    stage('Test') {\n      parallel {\n        stage('chrome') { steps { sh 'mvn -B test -Dbrowser=chrome' } }\n        stage('firefox') { steps { sh 'mvn -B test -Dbrowser=firefox' } }\n      }\n    }\n  }\n  post {\n    always { junit '**/surefire-reports/*.xml' }\n  }\n}\n```\n\n## Multibranch Pipeline\n\n**Multibranch Pipeline** автоматически создаёт Jenkins-джобы на каждую ветку/PR по `Jenkinsfile` в репозитории. Не нужно вручную заводить job на каждую feature-ветку.\n",
+  "keyPoints": [
+    "Multibranch Pipeline: джобы на ветку/PR из Jenkinsfile",
+    "Параметры запуска",
+    "parallel stages",
+    "Шаблон к заданию «Jenkinsfile with parallel browsers» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "Как кэшируешь .m2?",
+    "Multibranch pipeline"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Multibranch Pipeline нужен чтобы:",
+      "options": [
+        "Хранить пароли в git",
+        "Автоматически строить jobs для веток",
+        "Заменить Maven",
+        "Отключить тесты"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Job на каждую ветку/PR.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "junit-отчёт в Jenkinsfile обычно в:",
+      "options": [
+        "agent only",
+        "post { always { junit ... } }",
+        "options { skipDefaultCheckout() } только",
+        "tools { nodejs }"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Сбор артефактов после stages.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Jenkinsfile with parallel browsers",
+      "description": "Дано:\n- класс / артефакт: Jenkinsfile\n- режим artifact (текст файла / YAML / Jenkinsfile)\n\nЗадание:\nСм. теорию «К практике» (Jenkinsfile with parallel browsers).\ninclude pipeline, stages, parallel browser runs, post section with junit report, and no plaintext password.\n\nРезультат:\n- в тексте есть: pipeline\n- в тексте есть: stages\n- в тексте есть: parallel\n- в тексте есть: mvn\n- в тексте есть: post\n- в тексте есть: junit",
+      "difficulty": "hard",
+      "mode": "artifact",
+      "artifactKind": "jenkinsfile",
+      "artifactRules": [
+        "contains:pipeline",
+        "contains:stages",
+        "contains:parallel",
+        "contains:mvn",
+        "contains:post",
+        "contains:junit",
+        "noSecret:password"
+      ],
+      "className": "Jenkinsfile",
+      "starterCode": "pipeline {\n  agent any\n  stages {\n    stage('Test') {\n      // TODO parallel chrome / firefox\n    }\n  }\n  post {\n    // TODO junit\n  }\n}\n",
+      "solutionCode": "pipeline {\n  agent any\n  stages {\n    stage('Test') {\n      parallel {\n        stage('chrome') { steps { sh 'mvn -B test -Dbrowser=chrome' } }\n        stage('firefox') { steps { sh 'mvn -B test -Dbrowser=firefox' } }\n      }\n    }\n  }\n  post {\n    always { junit '**/surefire-reports/*.xml' }\n  }\n}\n",
+      "hints": [
+        "Start from declarative skeleton: pipeline -> stages -> stage('Test')",
+        "Add parallel branches for chrome and firefox mvn runs",
+        "Publish junit report in post always block"
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "senior",
+  "moduleId": "ci"
+}

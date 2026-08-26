@@ -1,0 +1,84 @@
+{
+  "id": "j-testng-vs-junit",
+  "levelId": "junior",
+  "moduleId": "maven-junit",
+  "title": "TestNG vs JUnit 5",
+  "summary": "Когда выбирать TestNG или JUnit 5: параллель, data providers, listeners.",
+  "theoryMarkdown": "# TestNG vs JUnit 5\n\n| Тема | JUnit 5 | TestNG |\n|------|---------|--------|\n| Параллель | Surefire / config | встроенная мощная |\n| Data | @ParameterizedTest | @DataProvider |\n| Suite XML | редко | testng.xml |\n| Listeners | Extension | ITestListener |\n\n## Как отвечать на собесе\n\n«Выбираю JUnit 5 по умолчанию в новых Java-проектах (экосистема Spring/AssertJ). TestNG беру, если уже есть suite XML и сложная параллель/зависимости тестов.»\n\nНе говори «TestNG всегда лучше» — это red flag 2026.\n\n## К практике\n\nПолитика выбора раннера:\n\n```java\nstatic String choose(boolean hasTestNgXml) {\n    return hasTestNgXml ? \"testng\" : \"junit5\";\n}\n```\n\nВ тесте проверь оба случая: `true → \"testng\"`, `false → \"junit5\"`.\n",
+  "keyPoints": [
+    "JUnit 5 — дефолт новых проектов",
+    "TestNG силён в suite/parallel legacy",
+    "Решение = контекст команды"
+  ],
+  "interviewTips": [
+    "Сравни @DataProvider и @MethodSource",
+    "Как параллелишь JUnit 5 в Maven?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "В новом Spring Boot проекте чаще стартуют с:",
+      "options": [
+        "Только TestNG",
+        "JUnit 5",
+        "Selenium RC",
+        "Ant"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "JUnit 5 — стандарт экосистемы.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Что сильнее ассоциируется с TestNG?",
+      "options": [
+        "testng.xml suites и DataProvider",
+        "только AssertJ",
+        "только Dockerfile",
+        "только BiDi"
+      ],
+      "correctIndexes": [
+        0
+      ],
+      "explanation": "Suite XML и DataProvider.",
+      "hint": null
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "question": "Когда разумнее оставить TestNG, а не мигрировать на JUnit 5?",
+      "options": [
+        "Всегда в 2026",
+        "Уже есть сложные testng.xml suites и зрелая параллель",
+        "Только если нет Maven",
+        "Никогда"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Контекст legacy suites/parallel важнее моды.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Framework choice policy",
+      "description": "Дано:\n- класс RunnerPolicyTest (режим junit)\n\nЗадание:\nРеализуй choose(hasTestNgXml): если есть TestNG XML — верни \"testng\", иначе \"junit5\". См. «К практике».\n\nРезультат:\n- все @Test зелёные",
+      "difficulty": "easy",
+      "mode": "junit",
+      "className": "RunnerPolicyTest",
+      "starterCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass RunnerPolicy {\n    static String choose(boolean hasTestNgXml) {\n        // TODO\n        return \"\";\n    }\n}\n\npublic class RunnerPolicyTest {\n    @Test\n    void prefersTestNgWhenXml() {\n        assertEquals(\"testng\", RunnerPolicy.choose(true));\n    }\n\n    @Test\n    void defaultJunit5() {\n        assertEquals(\"junit5\", RunnerPolicy.choose(false));\n    }\n}\n",
+      "solutionCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass RunnerPolicy {\n    static String choose(boolean hasTestNgXml) {\n        return hasTestNgXml ? \"testng\" : \"junit5\";\n    }\n}\n\npublic class RunnerPolicyTest {\n    @Test\n    void prefersTestNgWhenXml() {\n        assertEquals(\"testng\", RunnerPolicy.choose(true));\n    }\n\n    @Test\n    void defaultJunit5() {\n        assertEquals(\"junit5\", RunnerPolicy.choose(false));\n    }\n}\n",
+      "hints": [
+        "Это обычный тернарный оператор",
+        "Строки ровно testng и junit5"
+      ],
+      "revealAfterFails": 2
+    }
+  ]
+}

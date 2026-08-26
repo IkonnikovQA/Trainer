@@ -1,0 +1,58 @@
+{
+  "id": "m-cucumber",
+  "title": "Cucumber BDD: когда нужен и как не утонуть",
+  "summary": "BDD полезен при живом сотрудничестве с бизнесом, иначе — оверхед.",
+  "theoryMarkdown": "# Cucumber\n\n## Gherkin\n\n```gherkin\nScenario: Successful login\n  Given user is on login page\n  When user logs in with valid credentials\n  Then home page is shown\n```\n\n## Step definitions\n\nКлеят текст шагов к Java-коду.\n\n## Антипаттерны\n\n- Сценарии с CSS и деталями UI\n- Тысячи дублирующих steps\n- BDD «для галочки» без читателей сценариев\n\n## Альтернатива\n\nЕсли бизнес не читает feature-файлы — обычные Java-тесты с хорошими именами часто лучше.\n\n## К практике\n\nМини-раннер step-определений (префикс строки):\n\n```java\npublic String run(String line, LoginActions actions) {\n    String t = line == null ? \"\" : line.trim();\n    if (t.startsWith(\"Given\")) { actions.open(); return \"OK\"; }\n    if (t.startsWith(\"When\"))  { actions.submit(); return \"OK\"; }\n    if (t.startsWith(\"Then\"))  { actions.assertHome(); return \"OK\"; }\n    return \"UNKNOWN\";\n}\n```\n\nВ тесте: `mock(LoginActions.class)`, `verify(actions).open()`, для неизвестной строки — `verifyNoInteractions(actions)`.\n",
+  "keyPoints": [
+    "Steps-тест: mock / verify / verifyNoInteractions",
+    "Сценарий = бизнес-язык",
+    "Steps тонкие, логика в коде",
+    "BDD нужен процесс, не только инструмент"
+  ],
+  "interviewTips": [
+    "Плюсы/минусы Cucumber",
+    "Как избежать step-adu"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "В Given/When/Then лучше писать:",
+      "options": [
+        "Click css=#btn",
+        "Бизнес-действие пользователя",
+        "Thread.sleep",
+        "xpath"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Бизнес-язык.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Step definition runner",
+      "description": "Дано:\n- класс / артефакт: StepsTest\n- режим junit (класс с @Test)\n- вспомогательные классы: LoginActions, Steps\n\nЗадание:\nSteps.run(line, LoginActions actions): если line startsWith Given/When/Then — вызови actions.open() для Given, actions.submit() для When, actions.assertHome() для Then. Верни \"OK\" или \"UNKNOWN\".\n\nРезультат:\n- все @Test в классе зелёные",
+      "difficulty": "medium",
+      "mode": "junit",
+      "className": "StepsTest",
+      "supportSources": {
+        "LoginActions": "public interface LoginActions {\n  void open();\n  void submit();\n  void assertHome();\n}",
+        "Steps": "public class Steps {\n  public String run(String line, LoginActions actions) {\n    String t = line == null ? \"\" : line.trim();\n    if (t.startsWith(\"Given\")) { actions.open(); return \"OK\"; }\n    if (t.startsWith(\"When\")) { actions.submit(); return \"OK\"; }\n    if (t.startsWith(\"Then\")) { actions.assertHome(); return \"OK\"; }\n    return \"UNKNOWN\";\n  }\n}"
+      },
+      "starterCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\nimport static org.mockito.Mockito.*;\n\npublic class StepsTest {\n    @Test\n    void givenCallsOpen() {\n        // TODO: mock LoginActions, Steps.run(\"Given user opens\", actions), verify open()\n    }\n\n    @Test\n    void unknown() {\n        // TODO: assertEquals(\"UNKNOWN\", ...)\n    }\n}\n",
+      "solutionCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\nimport static org.mockito.Mockito.*;\n\npublic class StepsTest {\n    @Test\n    void givenCallsOpen() {\n        LoginActions actions = mock(LoginActions.class);\n        assertEquals(\"OK\", new Steps().run(\"Given user opens\", actions));\n        verify(actions).open();\n    }\n\n    @Test\n    void unknown() {\n        LoginActions actions = mock(LoginActions.class);\n        assertEquals(\"UNKNOWN\", new Steps().run(\"Maybe later\", actions));\n        verifyNoInteractions(actions);\n    }\n}\n",
+      "hints": [
+        "mock(LoginActions.class)",
+        "verify(actions).open()",
+        "Доведи до детерминированного результата из раздела «Результат»."
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "quality"
+}

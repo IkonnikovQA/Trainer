@@ -1,0 +1,24 @@
+name: Curriculum lint
+
+on:
+  push:
+    paths:
+      - "src/main/resources/curriculum/**"
+      - "scripts/lint-curriculum-*.js"
+      - "scripts/check-curriculum.js"
+  pull_request:
+    paths:
+      - "src/main/resources/curriculum/**"
+      - "scripts/lint-curriculum-*.js"
+      - "scripts/check-curriculum.js"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Curriculum quality gates
+        run: node scripts/check-curriculum.js

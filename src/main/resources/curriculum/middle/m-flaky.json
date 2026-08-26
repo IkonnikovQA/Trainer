@@ -1,0 +1,53 @@
+{
+  "id": "m-flaky",
+  "title": "Flaky tests: поиск причин и стратегия",
+  "summary": "Умение снижать flake rate отличает крепкого Middle.",
+  "theoryMarkdown": "# Flaky\n\n## Причины\n\nWaits, анимации, данные, время/таймзоны, порядок тестов, утечки состояния, сеть, параллель.\n\n## Процесс\n\n1. Пометить и измерить\n2. Карантин / quarantine job\n3. Корневой фикс\n4. Ретраи — временная мера, не стратегия\n\n## Метрики\n\nflake rate = flaky runs / total runs\n\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### Flake rate calculator\n```java\nimport org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass FlakeStats {\n    static int rate(int flaky, int total) {\n        if (total == 0) return 0;\n        return flaky * 100 / total;\n    }\n}\n\npublic class FlakeStatsTest {\n    @Test\n    void percent() { assertEquals(25, FlakeStats.rate(1, 4)); }\n    @Test\n    void zeroTotal() { assertEquals(0, FlakeStats.rate(3, 0)); }\n}\n```\n\n\n## Playbook в портфолио\n\nПолный triage: examples/portfolio-starter/docs/FLAKY_PLAYBOOK.md — reproduce → classify → fix → quarantine+ticket → metric.\n",
+  "keyPoints": [
+    "Ретрай не лечит причину",
+    "Карантин прозрачен",
+    "Шаблон к заданию «Flake rate calculator» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "Как снижал flaky на проекте?",
+    "Когда ретраи допустимы?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Лучший долгосрочный подход к flaky:",
+      "options": [
+        "Увеличить retries до 10",
+        "Найти и устранить причину",
+        "Отключить CI",
+        "Игнорировать"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Root cause fix.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Flake rate calculator",
+      "description": "Дано:\n- класс / артефакт: FlakeStatsTest\n- режим junit (класс с @Test)\n\nЗадание:\nСм. теорию «К практике» (Flake rate calculator).\nFlakeStats.rate(flaky, total): целые проценты flaky*100/total; total==0 → 0. Допиши реализацию — тесты готовы.\n\nРезультат:\n- все @Test в классе зелёные",
+      "difficulty": "medium",
+      "mode": "junit",
+      "className": "FlakeStatsTest",
+      "starterCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass FlakeStats {\n    static int rate(int flaky, int total) {\n        // TODO\n        return -1;\n    }\n}\n\npublic class FlakeStatsTest {\n    @Test\n    void percent() { assertEquals(25, FlakeStats.rate(1, 4)); }\n    @Test\n    void zeroTotal() { assertEquals(0, FlakeStats.rate(3, 0)); }\n}\n",
+      "solutionCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass FlakeStats {\n    static int rate(int flaky, int total) {\n        if (total == 0) return 0;\n        return flaky * 100 / total;\n    }\n}\n\npublic class FlakeStatsTest {\n    @Test\n    void percent() { assertEquals(25, FlakeStats.rate(1, 4)); }\n    @Test\n    void zeroTotal() { assertEquals(0, FlakeStats.rate(3, 0)); }\n}\n",
+      "hints": [
+        "Start from the concept and contract before coding exact statements.",
+        "if (total == 0) return 0;",
+        "return flaky * 100 / total;"
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "quality"
+}

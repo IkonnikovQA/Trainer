@@ -1,0 +1,53 @@
+{
+  "id": "s-framework",
+  "title": "Архитектура тестового фреймворка",
+  "summary": "Слои, границы ответственности, расширяемость и стоимость поддержки.",
+  "theoryMarkdown": "# Архитектура фреймворка\n\n## Слои\n\n1. **Tests** — сценарии, ассерты высокого уровня\n2. **Business / Steps / Flows** — пользовательские действия\n3. **Pages / API clients** — технический доступ\n4. **Core** — driver, http, config, waits, retry\n5. **Infra** — reporting, CI helpers\n\n## BaseTest vs Extensions\n\n- **BaseTest** — наследование: быстро стартовать, легко получить God-parent\n- **JUnit Extension** — композиция (`@ExtendWith`): timing, cleanup, Store/Namespace\n- **InvocationInterceptor** — когда нужно обернуть сам вызов теста (`proceed()`), а не только «до»\n\nПрактика в курсе: уроки `m-junit-extensions`, `m-invocation-interceptor`.\n\n## Принципы\n\n- Зависимости направлены внутрь (tests → core, не наоборот)\n- Конфиг через env/profiles (local/ci/stage)\n- Параллель by design\n- Быстрый feedback: теги smoke/regression\n\n## Anti-patterns\n\n- God class Utils\n- Static state повсюду\n- UI для всего\n- Нет владельца качества тестов\n\n\n\n## В работе vs лаба\n\nУрок учит **решению/политике**. Мышцы автоматизации наращивай в портфолио и на реальном проекте.\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### LayerPolicy.allowed\n```java\nimport org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass LayerPolicy {\n    static int rank(String layer) {\n        return switch (layer) {\n            case \"tests\" -> 0;\n            case \"pages\" -> 1;\n            case \"core\" -> 2;\n            default -> -1;\n        };\n    }\n\n    static boolean allowed(String from, String to) {\n        int a = rank(from);\n        int b = rank(to);\n        if (a < 0 || b < 0) return false;\n        return a < b; // outer may depend on inner\n    }\n}\n\npublic class LayerPolicyTest {\n    @Test\n    void testsToPagesOk() { assertTrue(LayerPolicy.allowed(\"tests\", \"pages\")); }\n\n    @Test\n    void pagesToTestsForbid() { assertFalse(LayerPolicy.allowed(\"pages\", \"tests\")); }\n\n    @Test\n    void pagesToCoreOk() { assertTrue(LayerPolicy.allowed(\"pages\", \"core\")); }\n\n    @Test\n    void coreToTestsForbid() { assertFalse(LayerPolicy.allow\n// ...\n```\n",
+  "keyPoints": [
+    "Слои и границы",
+    "Config/profiles",
+    "Шаблон к заданию «LayerPolicy.allowed» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "Нарисуй архитектуру своего фреймворка",
+    "Как добавляешь новый тип проверок?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Тест-класс должен зависеть от:",
+      "options": [
+        "Jenkins internals напрямую",
+        "Бизнес/page API, не от CSS",
+        "Абсолютных xpath в каждом тесте",
+        "Thread.sleep утилит"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Тесты говорят бизнес-языком.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "LayerPolicy.allowed",
+      "description": "Дано:\n- класс / артефакт: LayerPolicyTest\n- режим junit (класс с @Test)\n\nЗадание:\nСм. теорию «К практике» (LayerPolicy.allowed).\nonly outward-to-inward dependency is allowed: tests->pages->core, reverse is forbidden.\n\nРезультат:\n- все @Test в классе зелёные",
+      "difficulty": "medium",
+      "mode": "junit",
+      "className": "LayerPolicyTest",
+      "starterCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass LayerPolicy {\n    static int rank(String layer) {\n        // TODO: tests=0, pages=1, core=2, else -1\n        return -1;\n    }\n\n    static boolean allowed(String from, String to) {\n        // TODO: allow only if rank(from) < rank(to)\n        return false;\n    }\n}\n\npublic class LayerPolicyTest {\n    @Test\n    void testsToPagesOk() { assertTrue(LayerPolicy.allowed(\"tests\", \"pages\")); }\n\n    @Test\n    void pagesToTestsForbid() { assertFalse(LayerPolicy.allowed(\"pages\", \"tests\")); }\n\n    @Test\n    void pagesToCoreOk() { assertTrue(LayerPolicy.allowed(\"pages\", \"core\")); }\n\n    @Test\n    void coreToTestsForbid() { assertFalse(LayerPolicy.allowed(\"core\", \"tests\")); }\n}\n",
+      "solutionCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass LayerPolicy {\n    static int rank(String layer) {\n        return switch (layer) {\n            case \"tests\" -> 0;\n            case \"pages\" -> 1;\n            case \"core\" -> 2;\n            default -> -1;\n        };\n    }\n\n    static boolean allowed(String from, String to) {\n        int a = rank(from);\n        int b = rank(to);\n        if (a < 0 || b < 0) return false;\n        return a < b; // outer may depend on inner\n    }\n}\n\npublic class LayerPolicyTest {\n    @Test\n    void testsToPagesOk() { assertTrue(LayerPolicy.allowed(\"tests\", \"pages\")); }\n\n    @Test\n    void pagesToTestsForbid() { assertFalse(LayerPolicy.allowed(\"pages\", \"tests\")); }\n\n    @Test\n    void pagesToCoreOk() { assertTrue(LayerPolicy.allowed(\"pages\", \"core\")); }\n\n    @Test\n    void coreToTestsForbid() { assertFalse(LayerPolicy.allowed(\"core\", \"tests\")); }\n}\n",
+      "hints": [
+        "Map each layer to numeric rank",
+        "Reject unknown layer names",
+        "Allow only when rank(from) < rank(to)"
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "senior",
+  "moduleId": "architecture"
+}

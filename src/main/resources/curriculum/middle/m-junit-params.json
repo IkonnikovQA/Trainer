@@ -1,0 +1,72 @@
+{
+  "id": "m-junit-params",
+  "title": "ParameterizedTest и @CsvSource",
+  "summary": "Один тест — много данных без копипасты.",
+  "theoryMarkdown": "# @ParameterizedTest\n\nОдин тест — много входных данных. Меньше копипасты, яснее матрица кейсов.\n\n```java\n@ParameterizedTest\n@CsvSource({\"secret12,true\", \"ab1,false\"})\nvoid password(String p, boolean ok) {\n  assertEquals(ok, rule.isValid(p));\n}\n```\n\n## Источники\n\n- `@ValueSource` — простой список\n- `@CsvSource` / `@CsvFileSource` — таблица\n- `@MethodSource` — фабрика аргументов\n\n## Когда не надо\n\nСложный сценарий с разными шагами — лучше отдельные `@Test` или кумулятивный soft-assert, а не гигантский csv.\n\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### CsvSource password matrix\nВспомогательные классы / логика:\n**PasswordRule**\n```java\npublic class PasswordRule {\n  public boolean isValid(String p) {\n    if (p == null || p.length() < 8) return false;\n    for (int i = 0; i < p.length(); i++) if (Character.isDigit(p.charAt(i))) return true;\n    return false;\n  }\n}\n```\n",
+  "keyPoints": [
+    "@ParameterizedTest",
+    "@CsvSource",
+    "Шаблон к заданию «CsvSource password matrix» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "MethodSource vs CsvSource",
+    "DisplayName generation"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Чтобы прогнать один тест на наборе строк, используй:",
+      "options": [
+        "@RepeatedTest",
+        "@ParameterizedTest",
+        "@Disabled",
+        "@Tag"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "ParameterizedTest.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "@CsvSource удобен когда:",
+      "options": [
+        "Нужен браузер CDP",
+        "Много пар вход→ожидание в одном сценарии проверки",
+        "Пишешь Dockerfile",
+        "Только UI PageFactory"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Таблица данных для одной логики.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "CsvSource password matrix",
+      "description": "Дано:\n- класс / артефакт: PasswordParamsTest\n- режим junit (класс с @Test)\n- вспомогательные классы: PasswordRule\n\nЗадание:\nСм. теорию «К практике» (CsvSource password matrix).\nДопиши @ParameterizedTest с @CsvSource для PasswordRule.isValid: secret12→true, ab1→false, longpassword→false.\n\nРезультат:\n- все @Test в классе зелёные",
+      "difficulty": "medium",
+      "mode": "junit",
+      "className": "PasswordParamsTest",
+      "supportSources": {
+        "PasswordRule": "public class PasswordRule {\n  public boolean isValid(String p) {\n    if (p == null || p.length() < 8) return false;\n    for (int i = 0; i < p.length(); i++) if (Character.isDigit(p.charAt(i))) return true;\n    return false;\n  }\n}"
+      },
+      "starterCode": "import org.junit.jupiter.params.ParameterizedTest;\nimport org.junit.jupiter.params.provider.CsvSource;\nimport static org.junit.jupiter.api.Assertions.*;\n\npublic class PasswordParamsTest {\n    private final PasswordRule rule = new PasswordRule();\n\n    // TODO: @ParameterizedTest + @CsvSource with password,expected\n    @ParameterizedTest\n    @CsvSource({\n        // \"secret12, true\"\n    })\n    void validates(String password, boolean expected) {\n        assertEquals(expected, rule.isValid(password));\n    }\n}\n",
+      "solutionCode": "import org.junit.jupiter.params.ParameterizedTest;\nimport org.junit.jupiter.params.provider.CsvSource;\nimport static org.junit.jupiter.api.Assertions.*;\n\npublic class PasswordParamsTest {\n    private final PasswordRule rule = new PasswordRule();\n\n    @ParameterizedTest\n    @CsvSource({\n        \"secret12, true\",\n        \"ab1, false\",\n        \"longpassword, false\"\n    })\n    void validates(String password, boolean expected) {\n        assertEquals(expected, rule.isValid(password));\n    }\n}\n",
+      "hints": [
+        "@CsvSource({\"secret12, true\", \"ab1, false\", ...})",
+        "assertEquals(expected, rule.isValid(password))",
+        "Доведи до детерминированного результата из раздела «Результат»."
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "quality"
+}

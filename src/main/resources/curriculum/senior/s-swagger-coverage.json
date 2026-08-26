@@ -1,0 +1,70 @@
+{
+  "id": "s-swagger-coverage",
+  "title": "Swagger / OpenAPI coverage",
+  "summary": "Доля покрытых операций спеки — сигнал дыр в API-наборе.",
+  "theoryMarkdown": "# Swagger / OpenAPI coverage\n\n```\ncoverage% = declared == 0 ? 0 : hitOperations * 100 / declaredOperations\n\nЕсли declaredOperations = 0 — возвращаем 0 (без деления на ноль).\n```\n\n## Что даёт\n\nВидишь **непокрытые paths/operationId** — слепые зоны API-набора.\n\n## Чего не даёт\n\nНе заменяет контрактные и бизнес-ассерты. 100% coverage операций ≠ качество продукта.\n\n## Практика\n\nСобирай hit из логов RestAssured / proxy; сравнивай со спекой. Смотри новые endpoints в PR.\n\n## Интервью\n\nCoverage операций — радар дыр. Дальше приоритизируем бизнес-риск, а не гонимся за 100%.\n\n\n## К практике\n\n`java\nstatic int percent(int declared, int hit) {\n    if (declared == 0) return 0;\n    return hit * 100 / declared;\n}\n`\n",
+  "keyPoints": [
+    "coverage: declared == 0 → 0",
+    "hit / declared",
+    "Находит слепые зоны",
+    "Не единственная метрика качества"
+  ],
+  "interviewTips": [
+    "100% coverage API = качество?",
+    "Как считаешь operation id?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Swagger coverage в первую очередь показывает:",
+      "options": [
+        "FPS UI",
+        "какие операции спеки не бились тестами",
+        "цвет кнопки",
+        "heap dump"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Покрытие операций OpenAPI.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "100% OpenAPI operation coverage значит:",
+      "options": [
+        "Продукт без багов",
+        "Все объявленные операции хоть раз дергались тестами — не гарантия бизнес-качества",
+        "UI покрыт",
+        "Можно отключить ассерты"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Метрика дыр, не качества.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Coverage.ratio",
+      "description": "Дано:\n- класс / артефакт: CoverageTest\n- режим junit (класс с @Test)\n\nЗадание:\nreturn hit*100/declared, and 0 when declared is 0.\n\nРезультат:\n- все @Test в классе зелёные",
+      "difficulty": "medium",
+      "mode": "junit",
+      "className": "CoverageTest",
+      "starterCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass Coverage {\n    static int percent(int declared, int hit) {\n        // TODO\n        return -1;\n    }\n}\n\npublic class CoverageTest {\n    @Test\n    void half() { assertEquals(50, Coverage.percent(10, 5)); }\n    @Test\n    void emptySpec() { assertEquals(0, Coverage.percent(0, 0)); }\n    @Test\n    void full() { assertEquals(100, Coverage.percent(4, 4)); }\n}\n",
+      "solutionCode": "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass Coverage {\n    static int percent(int declared, int hit) {\n        if (declared == 0) return 0;\n        return hit * 100 / declared;\n    }\n}\n\npublic class CoverageTest {\n    @Test\n    void half() { assertEquals(50, Coverage.percent(10, 5)); }\n    @Test\n    void emptySpec() { assertEquals(0, Coverage.percent(0, 0)); }\n    @Test\n    void full() { assertEquals(100, Coverage.percent(4, 4)); }\n}\n",
+      "hints": [
+        "Handle zero declared as explicit guard",
+        "Use integer arithmetic for percent",
+        "Formula: hit * 100 / declared"
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "senior",
+  "moduleId": "advanced"
+}

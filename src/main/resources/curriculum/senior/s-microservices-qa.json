@@ -1,0 +1,61 @@
+{
+  "id": "s-microservices-qa",
+  "title": "Тестирование микросервисов",
+  "summary": "Плюсы/минусы для QA: контракты, async, стоимость E2E.",
+  "theoryMarkdown": "# Microservices QA\n\n## Плюсы\n\n- Независимый деплой и контракты на границах\n- Можно глубже тестировать сервис изолированно (MockMvc/RA + stubs)\n\n## Минусы\n\n- Распределённые фейлы, данные across services\n- Async (Kafka) усложняет оркестрацию\n- Полный E2E дорогой и хрупкий\n\n## Стратегия\n\nПирамида: unit → contract → service → мало UI/E2E. См. `s-contract`, `s-async-messaging`, `m-mockmvc`.\n\n\n\n## В работе vs лаба\n\nВ лабе проверяется **текст артефакта** (структура YAML/Jenkinsfile). В работе pipeline должен **реально выполняться** в CI (см. портфолио GHA).\n## К практике\n\nНиже — рабочие шаблоны ровно под задания этого урока. Сначала прочитай пример, потом пиши код.\n\n### Microservice test strategy YAML\nЗаполни артефакт по образцу:\n```text\ncontract_tests: consumer-provider on PRs\nservice_tests: RestAssured against stubs or test env\ne2e_budget: few critical journeys only\n```\n",
+  "keyPoints": [
+    "Contract на границах",
+    "E2E редко и осознанно",
+    "Шаблон к заданию «Microservice test strategy YAML» — в разделе «К практике»"
+  ],
+  "interviewTips": [
+    "Плюсы и минусы микросервиса для тестирования",
+    "Как режешь тестовые контуры?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "multiple",
+      "question": "В микросервисах для QA важно:",
+      "options": [
+        "Только один огромный UI E2E",
+        "Контрактные тесты на API",
+        "Стратегия async/сообщений",
+        "Игнорировать 401/403"
+      ],
+      "correctIndexes": [
+        1,
+        2
+      ],
+      "explanation": "Контракты + async стратегия.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "id": "e1",
+      "title": "Microservice test strategy YAML",
+      "description": "Дано:\n- класс / артефакт: MsStrategy\n- режим artifact (текст файла / YAML / Jenkinsfile)\n\nЗадание:\nСм. теорию «К практике» (Microservice test strategy YAML).\nYAML: contract_tests, service_tests, e2e_budget (строки). Без password.\n\nРезультат:\n- в тексте есть: contract_tests\n- в тексте есть: service_tests\n- в тексте есть: e2e_budget",
+      "difficulty": "medium",
+      "mode": "artifact",
+      "artifactKind": "gha",
+      "artifactRules": [
+        "contains:contract_tests",
+        "contains:service_tests",
+        "contains:e2e_budget",
+        "noSecret:password"
+      ],
+      "className": "MsStrategy",
+      "starterCode": "# microservice QA strategy\n# TODO\n",
+      "solutionCode": "contract_tests: consumer-provider on PRs\nservice_tests: RestAssured against stubs or test env\ne2e_budget: few critical journeys only\n",
+      "hints": [
+        "contract_tests:",
+        "service_tests:",
+        "e2e_budget:"
+      ],
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "senior",
+  "moduleId": "advanced"
+}
