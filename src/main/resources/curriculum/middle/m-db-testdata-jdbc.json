@@ -1,0 +1,106 @@
+{
+  "id": "m-db-testdata-jdbc",
+  "title": "Тестовые данные через JDBC",
+  "summary": "Создание и очистка тестовых данных напрямую в БД — ключ к изоляции тестов.",
+  "theoryMarkdown": "# Тестовые данные через JDBC\n\nСоздание тестовых данных напрямую в БД даёт полный контроль и изоляцию тестов.\n\n## Создание данных\n\n```java\npublic void createUser(Connection conn, String email, String name) throws SQLException {\n    PreparedStatement ps = conn.prepareStatement(\n        \"INSERT INTO users (email, name) VALUES (?, ?)\");\n    ps.setString(1, email);\n    ps.setString(2, name);\n    ps.executeUpdate();\n    ps.close();\n}\n```\n\n## Очистка данных\n\n```java\npublic void cleanupUsers(Connection conn) throws SQLException {\n    Statement stmt = conn.createStatement();\n    stmt.execute(\"DELETE FROM users\");\n    stmt.close();\n}\n```\n\n## Transaction для изоляции\n\n```java\nconn.setAutoCommit(false);\ntry {\n    createUser(conn, \"test@test.com\", \"Test\");\n    // тест...\n    conn.commit();\n} catch (Exception e) {\n    conn.rollback();\n    throw e;\n}\n```\n\n## UUID для уникальности\n\n```java\nString uniqueEmail = \"test_\" + UUID.randomUUID() + \"@test.com\";\n```\n\n## К практике\n\n### createUser\nВставь нового пользователя и верни сгенерированный ID.\n\n```java\nPreparedStatement ps = conn.prepareStatement(\n    \"INSERT INTO users (email, name) VALUES (?, ?)\",\n    Statement.RETURN_GENERATED_KEYS);\nps.setString(1, email);\nps.setString(2, name);\nps.executeUpdate();\nResultSet rs = ps.getGeneratedKeys();\nrs.next();\nint id = rs.getInt(1);\nrs.close();\nps.close();\nreturn id;\n```\n\n### deleteUser\nУдали пользователя по ID.\n\n```java\nPreparedStatement ps = conn.prepareStatement(\"DELETE FROM users WHERE id = ?\");\nps.setInt(1, userId);\nps.executeUpdate();\nps.close();\n```\n\n### cleanupAndCreate\nОчисти таблицу и создай пользователя с уникальным email.\n\n```java\nString email = \"test_\" + UUID.randomUUID() + \"@test.com\";\ncleanup(conn);\nreturn createUser(conn, email, name);\n```", "keyPoints": [
+    "RETURN_GENERATED_KEYS — получение ID после INSERT",
+    "UUID для уникальных тестовых данных",
+    "Transaction rollback для изоляции тестов",
+    "DELETE FROM table — очистка таблицы"
+  ],
+  "interviewTips": [
+    "Как обеспечить изоляцию тестов при работе с БД?",
+    "Зачем нужен rollback в тестах?",
+    "Как генерировать уникальные email для тестов?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Какой параметр нужно передать в prepareStatement для получения сгенерированного ID?",
+      "options": [
+        "Statement.NO_GENERATED_KEYS",
+        "Statement.RETURN_GENERATED_KEYS",
+        "Statement.KEEP_RESULT_SET",
+        "Ничего — ID возвращается автоматически"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "RETURN_GENERATED_KEYS — стандартный константный параметр для getGeneratedKeys().",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Зачем нужен rollback в тестах?",
+      "options": [
+        "Для ускорения выполнения",
+        "Для отмены изменений при ошибке теста",
+        "Для создания новых таблиц",
+        "Для подключения к БД"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Rollback отменяет изменения, если тест упал — данные не засоряются.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "difficulty": "medium",
+      "hints": [
+        "Statement.RETURN_GENERATED_KEYS — для получения ID",
+        "ResultSet rs = ps.getGeneratedKeys(); rs.next(); return rs.getInt(1);",
+        "Не забудь закрыть ResultSet и PreparedStatement"
+      ],
+      "testCases": [
+        {
+          "name": "create user",
+          "callExpression": "createUser(h2Conn, \"new@test.com\", \"New User\")",
+          "expected": "4",
+          "expectedType": "int"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "import java.sql.*;\nimport java.util.UUID;\n\npublic class JdbcTasks {\n    public int createUser(Connection conn, String email, String name) throws SQLException {\n        PreparedStatement ps = conn.prepareStatement(\n            \"INSERT INTO users (email, name) VALUES (?, ?)\",\n            Statement.RETURN_GENERATED_KEYS);\n        ps.setString(1, email);\n        ps.setString(2, name);\n        ps.executeUpdate();\n        ResultSet rs = ps.getGeneratedKeys();\n        rs.next();\n        int id = rs.getInt(1);\n        rs.close();\n        ps.close();\n        return id;\n    }\n    \n    public void deleteUser(Connection conn, int userId) throws SQLException {\n        PreparedStatement ps = conn.prepareStatement(\"DELETE FROM users WHERE id = ?\");\n        ps.setInt(1, userId);\n        ps.executeUpdate();\n        ps.close();\n    }\n    \n    public int cleanupAndCreate(Connection conn, String name) throws SQLException {\n        Statement stmt = conn.createStatement();\n        stmt.execute(\"DELETE FROM users\");\n        stmt.close();\n        String email = \"test_\" + UUID.randomUUID() + \"@test.com\";\n        return createUser(conn, email, name);\n    }\n}\n",
+      "methodName": null,
+      "id": "e1",
+      "title": "createUser",
+      "description": "Дано:\n- класс JdbcTasks\n- метод createUser(Connection conn, String email, String name)\n- Connection уже подключён к H2 in-memory БД с таблицей users\n\nЗадание:\nВставь нового пользователя и верни сгенерированный ID.\n\nРезультат:\n- createUser(conn, \"new@test.com\", \"New User\") → ID (например, 4)",
+      "className": "JdbcTasks",
+      "starterCode": "import java.sql.*;\npublic class JdbcTasks {\n    public int createUser(Connection conn, String email, String name) throws SQLException {\n        // TODO\n        return 0;\n    }\n}\n",
+      "mode": "java",
+      "revealAfterFails": 2
+    },
+    {
+      "difficulty": "hard",
+      "hints": [
+        "stmt.execute(\"DELETE FROM users\") — очистка",
+        "UUID.randomUUID() — уникальный email",
+        "createUser(conn, email, name) — вставка"
+      ],
+      "testCases": [
+        {
+          "name": "cleanup and create",
+          "callExpression": "cleanupAndCreate(h2Conn, \"Fresh User\")",
+          "expected": "1",
+          "expectedType": "int"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "import java.sql.*;\nimport java.util.UUID;\n\npublic class JdbcTasks {\n    public int createUser(Connection conn, String email, String name) throws SQLException {\n        PreparedStatement ps = conn.prepareStatement(\n            \"INSERT INTO users (email, name) VALUES (?, ?)\",\n            Statement.RETURN_GENERATED_KEYS);\n        ps.setString(1, email);\n        ps.setString(2, name);\n        ps.executeUpdate();\n        ResultSet rs = ps.getGeneratedKeys();\n        rs.next();\n        int id = rs.getInt(1);\n        rs.close();\n        ps.close();\n        return id;\n    }\n    \n    public void deleteUser(Connection conn, int userId) throws SQLException {\n        PreparedStatement ps = conn.prepareStatement(\"DELETE FROM users WHERE id = ?\");\n        ps.setInt(1, userId);\n        ps.executeUpdate();\n        ps.close();\n    }\n    \n    public int cleanupAndCreate(Connection conn, String name) throws SQLException {\n        Statement stmt = conn.createStatement();\n        stmt.execute(\"DELETE FROM users\");\n        stmt.close();\n        String email = \"test_\" + UUID.randomUUID() + \"@test.com\";\n        return createUser(conn, email, name);\n    }\n}\n",
+      "methodName": null,
+      "id": "e2",
+      "title": "cleanupAndCreate",
+      "description": "Дано:\n- класс JdbcTasks\n- метод cleanupAndCreate(Connection conn, String name)\n\nЗадание:\n1. Очисти таблицу users\n2. Создай пользователя с уникальным email\n3. Верни ID созданного пользователя\n\nРезультат:\n- cleanupAndCreate(conn, \"Fresh User\") → 1 (первый после очистки)",
+      "className": "JdbcTasks",
+      "starterCode": "import java.sql.*;\nimport java.util.UUID;\n\npublic class JdbcTasks {\n    public int createUser(Connection conn, String email, String name) throws SQLException {\n        PreparedStatement ps = conn.prepareStatement(\n            \"INSERT INTO users (email, name) VALUES (?, ?)\",\n            Statement.RETURN_GENERATED_KEYS);\n        ps.setString(1, email);\n        ps.setString(2, name);\n        ps.executeUpdate();\n        ResultSet rs = ps.getGeneratedKeys();\n        rs.next();\n        int id = rs.getInt(1);\n        rs.close();\n        ps.close();\n        return id;\n    }\n    \n    public void deleteUser(Connection conn, int userId) throws SQLException {\n        PreparedStatement ps = conn.prepareStatement(\"DELETE FROM users WHERE id = ?\");\n        ps.setInt(1, userId);\n        ps.executeUpdate();\n        ps.close();\n    }\n    \n    public int cleanupAndCreate(Connection conn, String name) throws SQLException {\n        // TODO: очистка + создание\n        return 0;\n    }\n}\n",
+      "mode": "java",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "quality"
+}

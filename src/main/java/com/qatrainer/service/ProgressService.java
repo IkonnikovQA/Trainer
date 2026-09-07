@@ -212,8 +212,27 @@ public class ProgressService {
                 }
                 if (incoming.getLastLessonId() != null) progress.setLastLessonId(incoming.getLastLessonId());
             }
+            // Initialize null collections for both replace and merge modes
             if (progress.getBookmarkedLessonIds() == null) {
                 progress.setBookmarkedLessonIds(new java.util.HashSet<>());
+            }
+            if (progress.getCompletedLessons() == null) {
+                progress.setCompletedLessons(new java.util.HashSet<>());
+            }
+            if (progress.getCompletedExercises() == null) {
+                progress.setCompletedExercises(new java.util.HashSet<>());
+            }
+            if (progress.getCompletedQuizzes() == null) {
+                progress.setCompletedQuizzes(new java.util.HashSet<>());
+            }
+            if (progress.getSavedCode() == null) {
+                progress.setSavedCode(new java.util.HashMap<>());
+            }
+            if (progress.getHintUnlocks() == null) {
+                progress.setHintUnlocks(new java.util.HashMap<>());
+            }
+            if (progress.getFailCounts() == null) {
+                progress.setFailCounts(new java.util.HashMap<>());
             }
             progress.setUpdatedAt(System.currentTimeMillis());
             saveNow();

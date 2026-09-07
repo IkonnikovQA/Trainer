@@ -1,0 +1,142 @@
+{
+  "id": "j-generics",
+  "title": "Дженерики: типы, wildcard, type erasure",
+  "summary": "Дженерики делают код безопасным и переиспользуемым — без них невозможно писать фреймворковый код.",
+  "theoryMarkdown": "# Дженерики\n\nДженерики позволяют параметризовать типы: `List<String>`, `Map<String, Integer>`, `Result<T>`.\n\n## Зачем нужны\n\nБез дженериков:\n\n```java\nList list = new ArrayList();\nlist.add(\"hello\");\nlist.add(42); // компилируется!\nString s = (String) list.get(0); // OK\nString s2 = (String) list.get(1); // ClassCastException!\n```\n\nС дженериками:\n\n```java\nList<String> list = new ArrayList<>();\nlist.add(\"hello\");\nlist.add(42); // ошибка компиляции!\nString s = list.get(0); // без приведения\n```\n\n## Wildcards: ? extends и ? super\n\n```java\n// Чтение из коллекции — ? extends T (producer extends)\npublic static <T> T first(List<? extends T> list) {\n    return list.isEmpty() ? null : list.get(0);\n}\n// ? extends T — можно только читать, нельзя добавлять\n\n// Запись в коллекцию — ? super T (consumer super)\npublic static <T> void addAll(List<? super T> dest, List<T> src) {\n    dest.addAll(src);\n}\n// ? super T — можно добавлять, нельзя читать (кроме Object)\n\n// PECS: Producer Extends, Consumer Super\n```\n\n## Type Erasure\n\nКомпилятор удаляет дженерик-параметры на этапе компиляции:\n\n```java\nList<String> list = new ArrayList<>();\n// После эрасуры: List list = new ArrayList();\n// Все String заменяются на Object или bound\n```\n\nПоследствия:\n- Нельзя: `new T()`, `new T[]`, `T.class`\n- Нельзя: `instanceof T` (но `instanceof List` работает)\n- Нельзя: статические поля с дженерик-типом\n\n## Result-обёртка для QA\n\n```java\nclass Result<T> {\n    private final T value;\n    private final String error;\n    \n    private Result(T value, String error) {\n        this.value = value;\n        this.error = error;\n    }\n    \n    static <T> Result<T> ok(T value) {\n        return new Result<>(value, null);\n    }\n    \n    static <T> Result<T> fail(String error) {\n        return new Result<>(null, error);\n    }\n    \n    boolean isSuccess() { return error == null; }\n    T get() {\n        if (error != null) throw new IllegalStateException(error);\n        return value;\n    }\n}\n```\n\n## К практике\n\n### safeFirst\n`List<? extends T>` — верни первый элемент или null.\n\n```java\npublic static <T> T safeFirst(List<? extends T> list) {\n    return list == null || list.isEmpty() ? null : list.get(0);\n}\n```\n\n### createResult\nСтатический метод `Result.ok(value)` — создаёт успешный результат.\n\n### collectErrors\nСобери все ошибки из `List<Result<?>>` в `List<String>`.", "keyPoints": [
+    "Дженерики — безопасность типов на этапе компиляции",
+    "PECS: Producer Extends, Consumer Super",
+    "Type erasure — дженерики удаляются компилятором",
+    "Нельзя: new T(), T.class, instanceof T"
+  ],
+  "interviewTips": [
+    "В чём разница между ? extends T и ? super T?",
+    "Что такое type erasure и какие ограничения она накладывает?",
+    "Как реализовать generic метод для поиска максимума?",
+    "Можно ли создать массив дженерика?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Что произойдёт при компиляции: `List<String> list = new ArrayList<>(); list.add(42);`?",
+      "options": [
+        "Скомпилируется, ClassCastException при выполнении",
+        "Ошибка компиляции",
+        "Скомпилируется, 42 будет в списке",
+        "NullPointerException"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Дженерики проверяются на этапе компиляции — int нельзя добавить в List<String>.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Какой wildcard использовать для метода, который только читает из коллекции (producer)?",
+      "options": [
+        "? super T",
+        "? extends T",
+        "Только T",
+        "Вопрос неверный"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "PECS: Producer Extends — если метод читает (producer), используй ? extends.",
+      "hint": null
+    },
+    {
+      "id": "q3",
+      "type": "multiple",
+      "question": "Что НЕЛЬЗЯ сделать из-за type erasure? (несколько ответов)",
+      "options": [
+        "new T()",
+        "T.class",
+        "instanceof List",
+        "static T value"
+      ],
+      "correctIndexes": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Type erasure удаляет информацию о T — нельзя создавать экземпляры, использовать .class или статические поля с типом-параметром.",
+      "hint": "Информация о T исчезает после компиляции."
+    }
+  ],
+  "exercises": [
+    {
+      "difficulty": "easy",
+      "hints": [
+        "Проверь null и isEmpty",
+        "list.get(0) вернёт T"
+      ],
+      "testCases": [
+        {
+          "name": "непустой список",
+          "callExpression": "safeFirst(Arrays.asList(\"a\", \"b\"))",
+          "expected": "\"a\"",
+          "expectedType": "string"
+        },
+        {
+          "name": "пустой список",
+          "callExpression": "safeFirst(Arrays.asList())",
+          "expected": "null",
+          "expectedType": "null"
+        },
+        {
+          "name": "null список",
+          "callExpression": "safeFirst(null)",
+          "expected": "null",
+          "expectedType": "null"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "import java.util.*;\npublic class GenericTasks {\n    public static <T> T safeFirst(List<? extends T> list) {\n        return list == null || list.isEmpty() ? null : list.get(0);\n    }\n}\n",
+      "methodName": null,
+      "id": "e1",
+      "title": "safeFirst",
+      "description": "Дано:\n- класс GenericTasks\n- метод safeFirst(List<? extends T> list)\n\nЗадание:\nВерни первый элемент списка или null если список null/пустой.\n\nРезультат:\n- safeFirst([\"a\", \"b\"]) → \"a\"\n- safeFirst([]) → null\n- safeFirst(null) → null",
+      "className": "GenericTasks",
+      "starterCode": "import java.util.*;\npublic class GenericTasks {\n    public static <T> T safeFirst(List<? extends T> list) {\n        // TODO\n        return null;\n    }\n}\n",
+      "mode": "java",
+      "revealAfterFails": 2
+    },
+    {
+      "difficulty": "medium",
+      "hints": [
+        "Result.ok(value) → new Result<>(value, null)",
+        "result.isSuccess() && result.get() != null",
+        "result.getError() != null"
+      ],
+      "testCases": [
+        {
+          "name": "успешный результат",
+          "callExpression": "getResultValue(Result.ok(\"hello\"))",
+          "expected": "\"hello\"",
+          "expectedType": "string"
+        },
+        {
+          "name": "ошибка — исключение",
+          "callExpression": "getResultValue(Result.fail(\"oops\"))",
+          "expected": "\"ERROR: oops\"",
+          "expectedType": "string"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "import java.util.*;\npublic class GenericTasks {\n    public static <T> T getResultValue(Result<T> result) {\n        if (result.isSuccess()) return result.get();\n        return \"ERROR: \" + result.getError();\n    }\n    \n    public static <T> List<String> collectErrors(List<Result<?>> results) {\n        List<String> errors = new ArrayList<>();\n        if (results == null) return errors;\n        for (Result<?> r : results) {\n            if (!r.isSuccess()) errors.add(r.getError());\n        }\n        return errors;\n    }\n}\n",
+      "methodName": null,
+      "id": "e2",
+      "title": "Result utility",
+      "description": "Дано:\n- класс GenericTasks\n- класс Result<T> (см. теорию)\n\nЗадание:\n1. getResultValue — верни значение или \"ERROR: <ошибка>\"\n2. collectErrors — собери все ошибки из списка результатов\n\nРезультат:\n- getResultValue(Result.ok(\"hello\")) → \"hello\"\n- getResultValue(Result.fail(\"oops\")) → \"ERROR: oops\"\n- collectErrors([ok(1), fail(\"a\"), fail(\"b\")]) → [\"a\", \"b\"]",
+      "className": "GenericTasks",
+      "starterCode": "import java.util.*;\npublic class GenericTasks {\n    public static <T> T getResultValue(Result<T> result) {\n        // TODO\n        return null;\n    }\n    \n    public static <T> List<String> collectErrors(List<Result<?>> results) {\n        // TODO\n        return List.of();\n    }\n}\n",
+      "mode": "java",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "junior",
+  "moduleId": "java-basics"
+}

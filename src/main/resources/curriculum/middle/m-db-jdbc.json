@@ -1,0 +1,119 @@
+{
+  "id": "m-db-jdbc",
+  "title": "JDBC: работа с базой данных из кода",
+  "summary": "JDBC — прямой доступ к БД из Java. Нужен для верификации данных после тестов.",
+  "theoryMarkdown": "# JDBC Basics\n\nJDBC (Java Database Connectivity) — стандартный API для работы с SQL-базами.\n\n## Основные шаги\n\n```java\n// 1. Подключение\nConnection conn = DriverManager.getConnection(\n    \"jdbc:h2:mem:testdb\", \"sa\", \"\");\n\n// 2. Создание PreparedStatement (безопасно от SQL injection!)\nPreparedStatement ps = conn.prepareStatement(\n    \"SELECT email FROM users WHERE id = ?\");\nps.setInt(1, userId);\n\n// 3. Выполнение\nResultSet rs = ps.executeQuery();\n\n// 4. Обработка результатов\nwhile (rs.next()) {\n    String email = rs.getString(\"email\");\n    System.out.println(email);\n}\n\n// 5. Закрытие (try-with-resources)\nrs.close();\nps.close();\nconn.close();\n```\n\n## PreparedStatement vs Statement\n\n```java\n// ❌ Statement — уязвим к SQL injection!\nStatement stmt = conn.createStatement();\nstmt.executeQuery(\"SELECT * FROM users WHERE name = '\" + name + \"'\");\n\n// ✅ PreparedStatement — безопасно!\nPreparedStatement ps = conn.prepareStatement(\n    \"SELECT * FROM users WHERE name = ?\");\nps.setString(1, name);\n```\n\n## CRUD операции\n\n```java\n// INSERT\nPreparedStatement ps = conn.prepareStatement(\n    \"INSERT INTO users (email, name) VALUES (?, ?)\");\nps.setString(1, \"test@example.com\");\nps.setString(2, \"Test User\");\nps.executeUpdate();\n\n// DELETE\nPreparedStatement ps = conn.prepareStatement(\n    \"DELETE FROM users WHERE id = ?\");\nps.setInt(1, userId);\nps.executeUpdate();\n\n// UPDATE\nPreparedStatement ps = conn.prepareStatement(\n    \"UPDATE users SET email = ? WHERE id = ?\");\nps.setString(1, \"new@example.com\");\nps.setInt(2, userId);\nps.executeUpdate();\n```\n\n## Transaction management\n\n```java\nconn.setAutoCommit(false);\ntry {\n    // несколько операций\n    ps1.executeUpdate();\n    ps2.executeUpdate();\n    conn.commit();\n} catch (SQLException e) {\n    conn.rollback();\n}\n```\n\n## К практике\n\n### countUsers\nПодсчитай количество пользователей в таблице.\n\n```java\nStatement stmt = conn.createStatement();\nResultSet rs = stmt.executeQuery(\"SELECT COUNT(*) FROM users\");\nrs.next();\nreturn rs.getInt(1);\n```\n\n### findUserEmail\nНайди email пользователя по ID.\n\n```java\nPreparedStatement ps = conn.prepareStatement(\n    \"SELECT email FROM users WHERE id = ?\");\nps.setInt(1, userId);\nResultSet rs = ps.executeQuery();\nif (rs.next()) return rs.getString(\"email\");\nreturn null;\n```\n\n### insertUser\nВставь нового пользователя и верни ID.\n\n```java\nPreparedStatement ps = conn.prepareStatement(\n    \"INSERT INTO users (email, name) VALUES (?, ?)\",\n    Statement.RETURN_GENERATED_KEYS);\nps.setString(1, email);\nps.setString(2, name);\nps.executeUpdate();\nResultSet rs = ps.getGeneratedKeys();\nrs.next();\nreturn rs.getInt(1);\n```", "keyPoints": [
+    "PreparedStatement — безопасно от SQL injection",
+    "ResultSet — итерация по результатам запроса",
+    "try-with-resources для автоматического закрытия",
+    "Transaction: setAutoCommit(false), commit(), rollback()"
+  ],
+  "interviewTips": [
+    "PreparedStatement vs Statement — в чём разница?",
+    "Как обрабатывать SQL exceptions?",
+    "Зачем нужен ResultSet?",
+    "Как работает transaction rollback?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Почему PreparedStatement безопаснее Statement?",
+      "options": [
+        "Быстрее выполняется",
+        "Защищает от SQL injection через parameter binding",
+        "Автоматически закрывает соединение",
+        "Не требует подключения к БД"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "PreparedStatement использует parameter binding — SQL-код отделён от данных.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Какой метод выполняется для INSERT/UPDATE/DELETE?",
+      "options": [
+        "executeQuery()",
+        "executeUpdate()",
+        "executeSelect()",
+        "executeBatch()"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "executeUpdate() — для INSERT/UPDATE/DELETE. executeQuery() — только для SELECT.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "difficulty": "medium",
+      "hints": [
+        "Statement stmt = conn.createStatement();",
+        "ResultSet rs = stmt.executeQuery(\"SELECT COUNT(*) FROM users\");",
+        "rs.next(); return rs.getInt(1);"
+      ],
+      "testCases": [
+        {
+          "name": "count 3 users",
+          "callExpression": "countUsers(h2Conn)",
+          "expected": "3",
+          "expectedType": "int"
+        },
+        {
+          "name": "count 0 users",
+          "callExpression": "countUsers(emptyH2Conn)",
+          "expected": "0",
+          "expectedType": "int"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "import java.sql.*;\npublic class JdbcTasks {\n    public int countUsers(Connection conn) throws SQLException {\n        Statement stmt = conn.createStatement();\n        ResultSet rs = stmt.executeQuery(\"SELECT COUNT(*) FROM users\");\n        rs.next();\n        int count = rs.getInt(1);\n        rs.close();\n        stmt.close();\n        return count;\n    }\n}\n",
+      "methodName": null,
+      "id": "e1",
+      "title": "countUsers",
+      "description": "Дано:\n- класс JdbcTasks\n- метод countUsers(Connection conn)\n- Connection уже подключён к H2 in-memory БД с таблицей users\n\nЗадание:\nПодсчитай количество пользователей в таблице users.\n\nРезультат:\n- countUsers(conn с 3 пользователями) → 3\n- countUsers(conn с пустой таблицей) → 0",
+      "className": "JdbcTasks",
+      "starterCode": "import java.sql.*;\npublic class JdbcTasks {\n    public int countUsers(Connection conn) throws SQLException {\n        // TODO\n        return 0;\n    }\n}\n",
+      "mode": "java",
+      "revealAfterFails": 2
+    },
+    {
+      "difficulty": "medium",
+      "hints": [
+        "PreparedStatement ps = conn.prepareStatement(\"SELECT email FROM users WHERE id = ?\");",
+        "ps.setInt(1, userId);",
+        "if (rs.next()) return rs.getString(\"email\");"
+      ],
+      "testCases": [
+        {
+          "name": "find existing",
+          "callExpression": "findUserEmail(h2Conn, 1)",
+          "expected": "\"user1@test.com\"",
+          "expectedType": "string"
+        },
+        {
+          "name": "find missing",
+          "callExpression": "findUserEmail(h2Conn, 999)",
+          "expected": "null",
+          "expectedType": "null"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "import java.sql.*;\npublic class JdbcTasks {\n    public String findUserEmail(Connection conn, int userId) throws SQLException {\n        PreparedStatement ps = conn.prepareStatement(\n            \"SELECT email FROM users WHERE id = ?\");\n        ps.setInt(1, userId);\n        ResultSet rs = ps.executeQuery();\n        if (rs.next()) {\n            String email = rs.getString(\"email\");\n            rs.close();\n            ps.close();\n            return email;\n        }\n        rs.close();\n        ps.close();\n        return null;\n    }\n}\n",
+      "methodName": null,
+      "id": "e2",
+      "title": "findUserEmail",
+      "description": "Дано:\n- класс JdbcTasks\n- метод findUserEmail(Connection conn, int userId)\n- Connection уже подключён к H2 in-memory БД с таблицей users\n\nЗадание:\nНайди email пользователя по ID. Если не найден — верни null.\n\nРезультат:\n- findUserEmail(conn, 1) → \"user1@test.com\"\n- findUserEmail(conn, 999) → null",
+      "className": "JdbcTasks",
+      "starterCode": "import java.sql.*;\npublic class JdbcTasks {\n    public String findUserEmail(Connection conn, int userId) throws SQLException {\n        // TODO\n        return null;\n    }\n}\n",
+      "mode": "java",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "quality"
+}

@@ -20,5 +20,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
+      - name: Install script dependencies
+        run: npm install
       - name: Curriculum quality gates
         run: node scripts/check-curriculum.js

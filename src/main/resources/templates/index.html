@@ -152,7 +152,7 @@ document.getElementById('importProgress')?.addEventListener('change', async (e) 
   try {
     const text = await file.text();
     const progress = JSON.parse(text);
-    const replace = confirm('OK = заменить прогресс целиком\\nCancel = слить (merge) с текущим');
+    const replace = confirm('OK = заменить прогресс целиком\nCancel = слить (merge) с текущим');
     const res = await fetch('/api/progress/import', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

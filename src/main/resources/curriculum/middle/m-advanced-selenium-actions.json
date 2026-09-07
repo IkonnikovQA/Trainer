@@ -1,0 +1,108 @@
+{
+  "id": "m-advanced-selenium-actions",
+  "title": "Selenium Actions API: drag-and-drop, keyboard",
+  "summary": "Actions API для взаимодействия с элементами: drag-and-drop, клавиатура, мышь.",
+  "theoryMarkdown": "# Selenium Actions API\n\nActions API позволяет эмулировать действия пользователя: перетаскивание, нажатия клавиш, контекстное меню.\n\n## Actions класс\n\n```java\nActions actions = new Actions(driver);\n```\n\n## Drag and Drop\n\n```java\nWebElement source = driver.findElement(By.id(\"draggable\"));\nWebElement target = driver.findElement(By.id(\"dropzone\"));\n\nnew Actions(driver)\n    .dragAndDrop(source, target)\n    .perform();\n```\n\n## Keyboard actions\n\n```java\n// Ctrl+A — выделить всё\nnew Actions(driver)\n    .keyDown(Keys.CONTROL)\n    .sendKeys(\"a\")\n    .keyUp(Keys.CONTROL)\n    .perform();\n\n// Tab — переключение между полями\nnew Actions(driver)\n    .tab()\n    .perform();\n\n// Enter — отправка формы\nnew Actions(driver)\n    .sendKeys(Keys.ENTER)\n    .perform();\n```\n\n## Mouse actions\n\n```java\n// Double click\nnew Actions(driver)\n    .doubleClick(element)\n    .perform();\n\n// Right click (context menu)\nnew Actions(driver)\n    .contextClick(element)\n    .perform();\n\n// Hover\nnew Actions(driver)\n    .moveToElement(element)\n    .perform();\n```\n\n## Кастомные последовательности\n\n```java\nnew Actions(driver)\n    .click(element1)\n    .doubleClick(element2)\n    .keyDown(Keys.SHIFT)\n    .click(element3)\n    .keyUp(Keys.SHIFT)\n    .perform();\n```\n\n## К практике\n\n### dragAndDropToTarget\nПеретащи элемент из source в target.\n\n```java\nnew Actions(driver)\n    .dragAndDrop(source, target)\n    .perform();\n```\n\n### fillAndSubmit\nЗаполни поле и нажми Enter.\n\n```java\nWebElement input = driver.findElement(By.id(\"search\"));\ninput.sendKeys(\"test query\");\nnew Actions(driver)\n    .sendKeys(Keys.ENTER)\n    .perform();\n```", "keyPoints": [
+    "Actions — chain of actions, perform() — execute",
+    "dragAndDrop(source, target) — стандартный паттерн",
+    "keyDown/keyup для модификаторов (Ctrl, Shift, Alt)",
+    "tab(), doubleClick(), contextClick() — удобные методы"
+  ],
+  "interviewTips": [
+    "Когда использовать Actions, а когда JavaScriptExecutor?",
+    "Как протестировать drag-and-drop?",
+    "Чем perform() отличается от build()?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Какой метод запускает цепочку действий?",
+      "options": [
+        "execute()",
+        "perform()",
+        "run()",
+        "apply()"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "perform() — терминальный метод, запускающий все накопленные действия.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Как эмулировать нажатие Ctrl+A?",
+      "options": [
+        "driver.findElement(By.id(\"input\")).sendKeys(Keys.CONTROL + \"a\")",
+        "new Actions(driver).keyDown(Keys.CONTROL).sendKeys(\"a\").keyUp(Keys.CONTROL).perform()",
+        "new Actions(driver).click(By.id(\"input\"))",
+        "driver.findElement(By.id(\"input\")).click()"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Actions API: keyDown + sendKeys + keyUp — правильный способ для модификаторов.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "difficulty": "medium",
+      "hints": [
+        "import org.openqa.selenium.interactions.Actions;",
+        "new Actions(driver).dragAndDrop(source, target).perform()",
+        "Найди элементы по By.id"
+      ],
+      "testCases": [
+        {
+          "name": "drag and drop",
+          "callExpression": "dragAndDropToTarget(driver)",
+          "expected": "true",
+          "expectedType": "boolean"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "import org.openqa.selenium.*;\nimport org.openqa.selenium.interactions.Actions;\n\npublic class ActionsLab {\n    public boolean dragAndDropToTarget(WebDriver driver) {\n        WebElement source = driver.findElement(By.id(\"draggable\"));\n        WebElement target = driver.findElement(By.id(\"dropzone\"));\n        new Actions(driver)\n            .dragAndDrop(source, target)\n            .perform();\n        return true;\n    }\n    \n    public void fillAndSubmit(WebDriver driver) {\n        WebElement input = driver.findElement(By.id(\"search\"));\n        input.sendKeys(\"test query\");\n        new Actions(driver)\n            .sendKeys(Keys.ENTER)\n            .perform();\n    }\n}\n",
+      "methodName": null,
+      "id": "e1",
+      "title": "dragAndDropToTarget",
+      "description": "Дано:\n- класс ActionsLab\n- метод dragAndDropToTarget(WebDriver driver)\n- DOM fixture: элементы #draggable и #dropzone\n\nЗадание:\nПеретащи элемент #draggable в #dropzone через Actions API.\n\nРезультат:\n- dragAndDropToTarget(driver) → true (перетаскивание выполнено)",
+      "className": "ActionsLab",
+      "starterCode": "import org.openqa.selenium.*;\nimport org.openqa.selenium.interactions.Actions;\n\npublic class ActionsLab {\n    public boolean dragAndDropToTarget(WebDriver driver) {\n        // TODO: drag-and-drop\n        return false;\n    }\n}\n",
+      "mode": "selenium-fake",
+      "fixtureJson": "{\"elements\":[{\"tag\":\"div\",\"id\":\"draggable\",\"text\":\"Drag me\",\"displayed\":true},{\"tag\":\"div\",\"id\":\"dropzone\",\"text\":\"Drop here\",\"displayed\":true}]}",
+      "revealAfterFails": 2
+    },
+    {
+      "difficulty": "medium",
+      "hints": [
+        "input.sendKeys(\"test query\") — ввод текста",
+        "new Actions(driver).sendKeys(Keys.ENTER).perform() — Enter",
+        "Найди input по By.id(\"search\")"
+      ],
+      "testCases": [
+        {
+          "name": "fill and submit",
+          "callExpression": "fillAndSubmit(driver)",
+          "expected": "true",
+          "expectedType": "boolean"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "import org.openqa.selenium.*;\nimport org.openqa.selenium.interactions.Actions;\n\npublic class ActionsLab {\n    public boolean dragAndDropToTarget(WebDriver driver) {\n        WebElement source = driver.findElement(By.id(\"draggable\"));\n        WebElement target = driver.findElement(By.id(\"dropzone\"));\n        new Actions(driver)\n            .dragAndDrop(source, target)\n            .perform();\n        return true;\n    }\n    \n    public void fillAndSubmit(WebDriver driver) {\n        WebElement input = driver.findElement(By.id(\"search\"));\n        input.sendKeys(\"test query\");\n        new Actions(driver)\n            .sendKeys(Keys.ENTER)\n            .perform();\n    }\n}\n",
+      "methodName": null,
+      "id": "e2",
+      "title": "fillAndSubmit",
+      "description": "Дано:\n- класс ActionsLab\n- метод fillAndSubmit(WebDriver driver)\n- DOM fixture: элемент #search (input)\n\nЗадание:\n1. Заполни поле #search текстом \"test query\"\n2. Нажми Enter\n\nРезультат:\n- fillAndSubmit(driver) → true (ввод и отправка выполнены)",
+      "className": "ActionsLab",
+      "starterCode": "import org.openqa.selenium.*;\nimport org.openqa.selenium.interactions.Actions;\n\npublic class ActionsLab {\n    public boolean dragAndDropToTarget(WebDriver driver) {\n        WebElement source = driver.findElement(By.id(\"draggable\"));\n        WebElement target = driver.findElement(By.id(\"dropzone\"));\n        new Actions(driver)\n            .dragAndDrop(source, target)\n            .perform();\n        return true;\n    }\n    \n    public void fillAndSubmit(WebDriver driver) {\n        // TODO: ввод + Enter\n    }\n}\n",
+      "mode": "selenium-fake",
+      "fixtureJson": "{\"elements\":[{\"tag\":\"input\",\"id\":\"search\",\"value\":\"\",\"displayed\":true}]}",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "selenium-adv"
+}

@@ -1,0 +1,86 @@
+{
+  "id": "s-perf-ci",
+  "title": "Performance Testing in CI/CD",
+  "summary": "Интеграция performance testing в CI/CD pipeline — автоматические perf gates.",
+  "theoryMarkdown": "# Performance Testing in CI\n\nPerformance testing в CI — автоматическая проверка что API не деградирует.\n\n## Jenkins Pipeline\n\n```groovy\npipeline {\n    agent any\n    stages {\n        stage('Build') {\n            steps {\n                sh 'mvn clean package'\n            }\n        }\n        stage('Test') {\n            steps {\n                sh 'mvn test'\n            }\n        }\n        stage('Performance') {\n            steps {\n                sh 'jmeter -n -t perf-test.jmx -l results.jtl'\n                perfGate resultsFile: 'results.jtl', \n                    p95Threshold: 500, \n                    p99Threshold: 1000,\n                    maxThreshold: 3000\n            }\n        }\n    }\n    post {\n        failure {\n            archiveArtifacts artifacts: 'results.jtl'\n        }\n    }\n}\n```\n\n## GitHub Actions\n\n```yaml\n- name: Performance Test\n  run: |\n    jmeter -n -t perf-test.jmx -l results.jtl\n    java -cp perf-checker.jar PerfGateVerifier results.jtl\n```\n\n## Perf Gate Logic\n\n```java\npublic class PerfGateCi {\n    public record PerfResult(double p50, double p95, double p99, double max) {}\n    \n    public static PerfResult calculate(List<Double> responseTimes) {\n        List<Double> sorted = responseTimes.stream().sorted().toList();\n        double p50 = percentile(sorted, 50);\n        double p95 = percentile(sorted, 95);\n        double p99 = percentile(sorted, 99);\n        double max = sorted.get(sorted.size() - 1);\n        return new PerfResult(p50, p95, p99, max);\n    }\n    \n    private static double percentile(List<Double> sorted, double p) {\n        int index = (int) Math.ceil(p / 100.0 * sorted.size()) - 1;\n        return sorted.get(Math.max(0, index));\n    }\n}\n```\n\n## К практике\n\n### calculatePercentiles\nРассчитай percentiles из списка response times.\n\n```java\nList<Double> sorted = times.stream().sorted().toList();\ndouble p95 = percentile(sorted, 95);\ndouble p99 = percentile(sorted, 99);\n```\n\n### perfGateCi\nПроверь что percentiles проходят gate и верни результат.\n\n```java\nPerfResult result = calculate(times);\nboolean passed = result.p95() < 500 && result.p99() < 1000 && result.max() < 3000;\nreturn Map.of(\n    \"p95\", result.p95(),\n    \"p99\", result.p99(),\n    \"max\", result.max(),\n    \"passed\", passed\n);\n```", "keyPoints": [
+    "Jenkins/GHA — интеграция JMeter в CI",
+    "Percentile calculation — p50, p95, p99, max",
+    "Perf Gate — автоматическая проверка порогов",
+    "Archive artifacts — сохранение результатов"
+  ],
+  "interviewTips": [
+    "Как часто запускать performance tests в CI?",
+    "Какие thresholds ставить для p95/p99?",
+    "Как отличить regression от noise?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Что такое p95 percentile?",
+      "options": [
+        "95% запросов заняли меньше этого времени",
+        "Среднее время всех запросов",
+        "Максимальное время запроса",
+        "95% тестов прошли успешно"
+      ],
+      "correctIndexes": [
+        0
+      ],
+      "explanation": "p95 — 95% запросов были быстрее этого значения.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Зачем архивировать .jtl файлы в CI?",
+      "options": [
+        "Для увеличения размера билда",
+        "Для анализа результатов и отладки",
+        "Для компиляции тестов",
+        "Для отправки на сервер"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Архивация результатов — для анализа и отладки perf regressions.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "difficulty": "hard",
+      "hints": [
+        "sorted.stream().toList() — сортировка",
+        "index = ceil(p/100 * size) - 1",
+        "p95 < 500 && p99 < 1000 && max < 3000"
+      ],
+      "testCases": [
+        {
+          "name": "fast responses",
+          "callExpression": "perfGateCi(List.of(50.0, 100.0, 150.0, 200.0, 250.0))",
+          "expected": "{\"passed\": true}",
+          "expectedType": "string"
+        },
+        {
+          "name": "slow p95",
+          "callExpression": "perfGateCi(List.of(100.0, 200.0, 300.0, 400.0, 600.0))",
+          "expected": "{\"passed\": false}",
+          "expectedType": "string"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "import java.util.*;\nimport static java.lang.Math.ceil;\n\npublic class PerfGateCi {\n    public static Map<String, Object> perfGateCi(List<Double> times) {\n        if (times == null || times.isEmpty()) {\n            return Map.of(\"passed\", false, \"error\", \"no data\");\n        }\n        List<Double> sorted = times.stream().sorted().toList();\n        double p95 = percentile(sorted, 95);\n        double p99 = percentile(sorted, 99);\n        double max = sorted.get(sorted.size() - 1);\n        boolean passed = p95 < 500 && p99 < 1000 && max < 3000;\n        return Map.of(\n            \"p95\", p95,\n            \"p99\", p99,\n            \"max\", max,\n            \"passed\", passed\n        );\n    }\n    \n    private static double percentile(List<Double> sorted, double p) {\n        int index = (int) ceil(p / 100.0 * sorted.size()) - 1;\n        return sorted.get(Math.max(0, index));\n    }\n}\n",
+      "methodName": null,
+      "id": "e1",
+      "title": "perfGateCi",
+      "description": "Дано:\n- класс PerfGateCi\n- метод perfGateCi(List<Double> times)\n\nЗадание:\n1. Рассчитай p95, p99, max из списка response times\n2. Проверь что p95 < 500, p99 < 1000, max < 3000\n3. Верни Map с результатами\n\nРезультат:\n- perfGateCi([50, 100, 150, 200, 250]) → {passed: true}\n- perfGateCi([100, 200, 300, 400, 600]) → {passed: false} (p95 > 500)",
+      "className": "PerfGateCi",
+      "starterCode": "import java.util.*;\n\npublic class PerfGateCi {\n    public static Map<String, Object> perfGateCi(List<Double> times) {\n        // TODO: расчёт percentiles + проверка\n        return Map.of(\"passed\", false);\n    }\n}\n",
+      "mode": "java",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "senior",
+  "moduleId": "performance"
+}

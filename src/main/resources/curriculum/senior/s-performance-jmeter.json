@@ -1,0 +1,91 @@
+{
+  "id": "s-performance-jmeter",
+  "title": "JMeter: performance testing basics",
+  "summary": "JMeter — стандартный инструмент для performance testing. Написание JMX скриптов для нагрузочных тестов.",
+  "theoryMarkdown": "# JMeter Basics\n\nJMeter — инструмент для нагрузочного тестирования. Скрипты хранятся в JMX (XML).\n\n## Основные компоненты\n\n- **Thread Group** — виртуальные пользователи (количество, ramp-up, iterations)\n- **HTTP Request** — запрос к API\n- **Assertions** — проверки (response code, body, response time)\n- **Listeners** — результаты (View Results Tree, Summary Report)\n\n## JMX структура\n\n```xml\n<ThreadGroup guiclass=\"ThreadGroupGui\" testclass=\"ThreadGroup\" testname=\"Users\">\n  <stringProp name=\"ThreadGroup.on_sample_error\">continue</stringProp>\n  <elementProp name=\"ThreadGroup.main_controller\">\n    <LogicController guiclass=\"LoopControllerGui\" testclass=\"LoopController\" testname=\"Loop\">\n      <boolProp name=\"LoopController.continue_forever\">false</boolProp>\n      <stringProp name=\"LoopController.iterations\">100</stringProp>\n    </LogicController>\n  </elementProp>\n  <stringProp name=\"ThreadGroup.num_threads\">10</stringProp>\n  <stringProp name=\"ThreadGroup.ramp_time\">5</stringProp>\n</ThreadGroup>\n```\n\n## Performance Assertions\n\n```java\n// Проверка percentiles в коде\npublic class PerfGate {\n    public static boolean check(double p95Ms, double p99Ms, double maxMs) {\n        return p95Ms < 500 && p99Ms < 1000 && maxMs < 3000;\n    }\n}\n```\n\n## JMeter + CI\n\n```bash\n# Non-GUI режим\njmeter -n -t test.jmx -l results.jtl -j jmeter.log\n\n# Генерация отчёта\njmeter -g results.jtl -o report/\n```\n\n## К практике\n\n### perfGate\nПроверь что performance metrics проходят gate.\n\n```java\npublic static boolean check(double p95Ms, double p99Ms, double maxMs) {\n    return p95Ms < 500 && p99Ms < 1000 && maxMs < 3000;\n}\n```", "keyPoints": [
+    "Thread Group — виртуальные пользователи",
+    "JMX — XML формат скриптов JMeter",
+    "Non-GUI режим: jmeter -n -t test.jmx -l results.jtl",
+    "Performance gate — p95 < 500ms, p99 < 1000ms, max < 3000ms"
+  ],
+  "interviewTips": [
+    "Как нагрузочное тестирование отличается от функционального?",
+    "Что такое p95 и p99 percentiles?",
+    "Как интегрировать JMeter в CI/CD?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Что такое Thread Group в JMeter?",
+      "options": [
+        "Группа тестовых методов",
+        "Виртуальные пользователи",
+        "Группа assertion'ов",
+        "Группа результатов"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Thread Group — виртуальные пользователи, эмулирующие нагрузку.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Какой режим JMeter используется для CI?",
+      "options": [
+        "GUI режим",
+        "Non-GUI режим (-n)",
+        "Только через веб-интерфейс",
+        "Режим recorder"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Non-GUI режим (jmeter -n) — для CI/CD, без графического интерфейса.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "difficulty": "easy",
+      "hints": [
+        "p95Ms < 500 && p99Ms < 1000 && maxMs < 3000",
+        "Все три условия должны быть true"
+      ],
+      "testCases": [
+        {
+          "name": "pass",
+          "callExpression": "PerfGate.check(200, 400, 1500)",
+          "expected": "true",
+          "expectedType": "boolean"
+        },
+        {
+          "name": "fail p95",
+          "callExpression": "PerfGate.check(600, 400, 1500)",
+          "expected": "false",
+          "expectedType": "boolean"
+        },
+        {
+          "name": "fail max",
+          "callExpression": "PerfGate.check(200, 400, 5000)",
+          "expected": "false",
+          "expectedType": "boolean"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "public class PerfGate {\n    public static boolean check(double p95Ms, double p99Ms, double maxMs) {\n        return p95Ms < 500 && p99Ms < 1000 && maxMs < 3000;\n    }\n}\n",
+      "methodName": null,
+      "id": "e1",
+      "title": "perfGate",
+      "description": "Дано:\n- класс PerfGate\n- метод check(double p95Ms, double p99Ms, double maxMs)\n\nЗадание:\nПроверь что performance metrics проходят gate:\n- p95 < 500ms\n- p99 < 1000ms\n- max < 3000ms\n\nРезультат:\n- check(200, 400, 1500) → true\n- check(600, 400, 1500) → false (p95 > 500)",
+      "className": "PerfGate",
+      "starterCode": "public class PerfGate {\n    public static boolean check(double p95Ms, double p99Ms, double maxMs) {\n        // TODO\n        return false;\n    }\n}\n",
+      "mode": "java",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "senior",
+  "moduleId": "performance"
+}

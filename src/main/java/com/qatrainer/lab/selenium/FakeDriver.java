@@ -268,12 +268,9 @@ public class FakeDriver implements WebDriver {
 
     @Override
     public void close() {
-        if (windowHandles.size() <= 1) {
-            quit();
-        } else {
-            windowHandles.remove(currentHandle);
-            currentHandle = windowHandles.get(0);
-        }
+        windowHandles.remove(currentHandle);
+        currentHandle = windowHandles.isEmpty() ? null : windowHandles.get(0);
+        log("close");
     }
 
     @Override

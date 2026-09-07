@@ -1,0 +1,106 @@
+{
+  "id": "j-file-io",
+  "title": "File I/O и NIO: работа с файлами",
+  "summary": "Чтение и запись файлов — базовая задача QA: загрузка CSV/JSON fixtures, лог-файлы, отчёты.",
+  "theoryMarkdown": "# File I/O и NIO\n\nJava NIO (`java.nio.file`) — современный API для работы с файлами.\n\n## Основные классы\n\n- `Path` — путь к файлу/каталогу\n- `Files` — статические методы для операций\n- `Paths` — фабрика для создания Path\n\n## Чтение файлов\n\n```java\n// Все строки в List<String>\nList<String> lines = Files.readAllLines(Path.of(\"data.csv\"));\n\n// Весь контент как строка\nString content = Files.readString(Path.of(\"config.json\"));\n\n// По строкам с BufferedReader\ntry (BufferedReader reader = Files.newBufferedReader(Path.of(\"data.csv\"))) {\n    String line;\n    while ((line = reader.readLine()) != null) {\n        // обработка\n    }\n}\n```\n\n## Запись файлов\n\n```java\n// Одна строка\nFiles.writeString(Path.of(\"output.txt\"), \"hello\");\n\n// Множество строк\nFiles.write(Path.of(\"output.txt\"), lines, StandardOpenOption.CREATE);\n\n// Append (добавление в конец)\nFiles.writeString(Path.of(\"log.txt\"), \"error: ...\", StandardOpenOption.APPEND);\n```\n\n## Проверка файлов\n\n```java\nboolean exists = Files.exists(path);\nboolean isFile = Files.isRegularFile(path);\nlong size = Files.size(path);\nString mime = Files.probeContentType(path);\n```\n\n## Парсин CSV для тестовых данных\n\n```java\nrecord TestCase(String email, String password, String name) {}\n\nList<TestCase> loadCsv(Path csv) throws IOException {\n    List<TestCase> cases = new ArrayList<>();\n    List<String> lines = Files.readAllLines(csv);\n    for (int i = 1; i < lines.size(); i++) { // пропускаем заголовок\n        String[] parts = lines.get(i).split(\",\", -1);\n        cases.add(new TestCase(parts[0], parts[1], parts[2]));\n    }\n    return cases;\n}\n```\n\n## Копирование и удаление\n\n```java\nFiles.copy(src, dest, StandardCopyOption.REPLACE_EXISTING);\nFiles.deleteIfExists(path);\nFiles.createDirectories(Path.of(\"new/dir\"));\n```\n\n## К практике\n\n### readLines\nПрочитай файл и верни список строк. Если файл не существует — верни пустой список.\n\n```java\nif (!Files.exists(path)) return List.of();\nreturn Files.readAllLines(path);\n```\n\n### countWords\nПодсчитай общее количество слов в файле.\n\n```java\nString content = Files.readString(path);\nreturn content.isBlank() ? 0 : content.split(\"\\\\s+\").length;\n```\n\n### appendLog\nДобавь строку в конец файла (с новой строки). Создай файл если не существует.\n\n```java\nFiles.writeString(path, message + \"\\n\", StandardOpenOption.CREATE, StandardOpenOption.APPEND);\n```", "keyPoints": [
+    "Files.readString / Files.readAllLines — чтение",
+    "Files.writeString — запись",
+    "StandardOpenOption.CREATE, APPEND",
+    "try-with-resources для больших файлов"
+  ],
+  "interviewTips": [
+    "Files.readAllLines vs BufferedReader — когда что выбрать?",
+    "Что делает StandardCopyOption.REPLACE_EXISTING?",
+    "Как прочитать большой файл (1 ГБ) эффективно?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Какой метод прочитает весь файл как одну строку?",
+      "options": [
+        "Files.readAllLines()",
+        "Files.readString()",
+        "Files.readChar()",
+        "Files.getContent()"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Files.readString(Path) возвращает String со всем контентом.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Какой вариант открывает файл для добавления в конец (append)?",
+      "options": [
+        "StandardOpenOption.WRITE",
+        "StandardOpenOption.APPEND",
+        "StandardOpenOption.CREATE_NEW",
+        "StandardOpenOption.TRUNCATE_EXISTING"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "APPEND — добавление в конец файла без очистки.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "difficulty": "easy",
+      "hints": [
+        "Files.exists(path) — проверь существование",
+        "Files.readAllLines(path) — чтение",
+        "try-catch для IOException"
+      ],
+      "testCases": [
+        {
+          "name": "существующий файл",
+          "callExpression": "readLines(Path.of(\"test.txt\"))",
+          "expected": "[\"line1\", \"line2\"]",
+          "expectedType": "string"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "import java.nio.file.*;\nimport java.io.IOException;\nimport java.util.List;\n\npublic class FileTasks {\n    public List<String> readLines(Path path) {\n        try {\n            if (!Files.exists(path)) return List.of();\n            return Files.readAllLines(path);\n        } catch (IOException e) {\n            return List.of();\n        }\n    }\n}\n",
+      "methodName": null,
+      "id": "e1",
+      "title": "readLines",
+      "description": "Дано:\n- класс FileTasks\n- метод readLines(Path path)\n\nЗадание:\nПрочитай файл и верни список строк. Если файл не существует — верни пустой список.\n\nРезультат:\n- readLines(Path.of(\"test.txt\")) → [\"line1\", \"line2\"]\n- readLines(Path.of(\"missing.txt\")) → []",
+      "className": "FileTasks",
+      "starterCode": "import java.nio.file.*;\nimport java.io.IOException;\nimport java.util.List;\n\npublic class FileTasks {\n    public List<String> readLines(Path path) {\n        // TODO\n        return List.of();\n    }\n}\n",
+      "mode": "java",
+      "revealAfterFails": 2
+    },
+    {
+      "difficulty": "medium",
+      "hints": [
+        "Files.writeString(path, msg + \"\\n\", CREATE, APPEND)",
+        "StandardOpenOption.CREATE создаст файл если нет",
+        "StandardOpenOption.APPEND добавит в конец"
+      ],
+      "testCases": [
+        {
+          "name": "файл существует",
+          "callExpression": "readAfterAppend(Path.of(\"log.txt\"), \"error: test\")",
+          "expected": "\"error: test\\n\"",
+          "expectedType": "string"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "import java.nio.file.*;\nimport java.io.IOException;\n\npublic class FileTasks {\n    public String appendLog(Path path, String message) {\n        try {\n            Files.writeString(path, message + \"\\n\", StandardOpenOption.CREATE, StandardOpenOption.APPEND);\n            return Files.readString(path);\n        } catch (IOException e) {\n            return \"\";\n        }\n    }\n}\n",
+      "methodName": null,
+      "id": "e2",
+      "title": "appendLog",
+      "description": "Дано:\n- класс FileTasks\n- метод appendLog(Path path, String message)\n\nЗадание:\nДобавь сообщение в конец файла (с новой строки). Создай файл если не существует. Верни содержимое файла после добавления.\n\nРезультат:\n- appendLog(Path.of(\"log.txt\"), \"error: test\") → \"error: test\\n\" (если файл пуст)",
+      "className": "FileTasks",
+      "starterCode": "import java.nio.file.*;\nimport java.io.IOException;\n\npublic class FileTasks {\n    public String appendLog(Path path, String message) {\n        // TODO\n        return \"\";\n    }\n}\n",
+      "mode": "java",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "junior",
+  "moduleId": "java-basics"
+}

@@ -1,0 +1,108 @@
+{
+  "id": "m-advanced-selenium-shadow",
+  "title": "Shadow DOM в Selenium",
+  "summary": "Shadow DOM — стандарт для React/Vue/Angular. Нужно уметь искать элементы внутри shadow root.",
+  "theoryMarkdown": "# Shadow DOM\n\nShadow DOM — изолированное DOM-дерево внутри элемента. Используется в React, Vue, Angular.\n\n## Shadow Root\n\n```java\nWebElement host = driver.findElement(By.id(\"my-element\"));\nWebElement shadowRoot = (WebElement) ((JavascriptExecutor) driver)\n    .executeScript(\"return arguments[0].shadowRoot\", host);\nWebElement inner = shadowRoot.findElement(By.id(\"inner-button\"));\n```\n\n## Чередование light и shadow DOM\n\n```java\n// host → shadow → shadow → element\nWebElement level1 = (WebElement) ((JavascriptExecutor) driver)\n    .executeScript(\"return arguments[0].shadowRoot\", host);\nWebElement level2 = (WebElement) ((JavascriptExecutor) driver)\n    .executeScript(\"return arguments[0].shadowRoot\", level1);\nWebElement target = level2.findElement(By.cssSelector(\"button\"));\n```\n\n## Кастомный locator для Shadow DOM\n\n```java\npublic WebElement findShadowElement(WebDriver driver, String hostSelector, String innerSelector) {\n    WebElement host = driver.findElement(By.cssSelector(hostSelector));\n    WebElement shadow = (WebElement) ((JavascriptExecutor) driver)\n        .executeScript(\"return arguments[0].shadowRoot\", host);\n    return shadow.findElement(By.cssSelector(innerSelector));\n}\n```\n\n## К практике\n\n### findShadowElement\nНайди элемент внутри shadow DOM.\n\n```java\nWebElement host = driver.findElement(By.id(\"host\"));\nWebElement shadow = (WebElement) ((JavascriptExecutor) driver)\n    .executeScript(\"return arguments[0].shadowRoot\", host);\nreturn shadow.findElement(By.id(\"inner\")).getText();\n```\n\n### clickShadowButton\nНайди и кликни кнопку внутри shadow DOM.\n\n```java\nWebElement host = driver.findElement(By.id(\"host\"));\nWebElement shadow = (WebElement) ((JavascriptExecutor) driver)\n    .executeScript(\"return arguments[0].shadowRoot\", host);\nshadow.findElement(By.cssSelector(\"button.primary\")).click();\n```", "keyPoints": [
+    "Shadow DOM — изолированное дерево, нельзя найти через обычный findElement",
+    "JavascriptExecutor + shadowRoot — способ доступа",
+    "Может быть несколько уровней shadow DOM",
+    "Кастомный хелпер для поиска в shadow DOM"
+  ],
+  "interviewTips": [
+    "Как найти элемент внутри shadow DOM?",
+    "Чем shadow DOM отличается от iframe?",
+    "Можно ли использовать CSS-селекторы для shadow DOM?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Почему нельзя найти элемент внутри shadow DOM через обычный findElement?",
+      "options": [
+        "Потому что элемент скрыт (display: none)",
+        "Потому что shadow DOM — изолированное дерево, не видно из light DOM",
+        "Потому что Selenium не поддерживает shadow DOM",
+        "Потому что нужен специальный WebDriver"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Shadow DOM — изолированное дерево, элементы не видны из родительского light DOM.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Как получить shadow root?",
+      "options": [
+        "driver.findElement(By.cssSelector(\"#host\").shadowRoot)",
+        "((JavascriptExecutor) driver).executeScript(\"return arguments[0].shadowRoot\", host)",
+        "driver.switchTo().shadow(\"#host\")",
+        "new Actions(driver).openShadowRoot(host)"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "JavascriptExecutor — стандартный способ получить shadow root в Selenium.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "difficulty": "medium",
+      "hints": [
+        "JavascriptExecutor js = (JavascriptExecutor) driver;",
+        "WebElement shadow = (WebElement) js.executeScript(\"return arguments[0].shadowRoot\", host);",
+        "shadow.findElement(By.id(\"inner\")).getText()"
+      ],
+      "testCases": [
+        {
+          "name": "find inner",
+          "callExpression": "findShadowText(driver)",
+          "expected": "\"Hello Shadow\"",
+          "expectedType": "string"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "import org.openqa.selenium.*;\n\npublic class ShadowDomLab {\n    public String findShadowText(WebDriver driver) {\n        WebElement host = driver.findElement(By.id(\"host\"));\n        WebElement shadow = (WebElement) ((JavascriptExecutor) driver)\n            .executeScript(\"return arguments[0].shadowRoot\", host);\n        return shadow.findElement(By.id(\"inner\")).getText();\n    }\n    \n    public void clickShadowButton(WebDriver driver) {\n        WebElement host = driver.findElement(By.id(\"host\"));\n        WebElement shadow = (WebElement) ((JavascriptExecutor) driver)\n            .executeScript(\"return arguments[0].shadowRoot\", host);\n        shadow.findElement(By.cssSelector(\"button.primary\")).click();\n    }\n}\n",
+      "methodName": null,
+      "id": "e1",
+      "title": "findShadowText",
+      "description": "Дано:\n- класс ShadowDomLab\n- метод findShadowText(WebDriver driver)\n- DOM fixture: #host (shadow host) → shadow root → #inner (text: \"Hello Shadow\")\n\nЗадание:\nНайди текст элемента #inner внутри shadow DOM.\n\nРезультат:\n- findShadowText(driver) → \"Hello Shadow\"",
+      "className": "ShadowDomLab",
+      "starterCode": "import org.openqa.selenium.*;\n\npublic class ShadowDomLab {\n    public String findShadowText(WebDriver driver) {\n        // TODO: найди элемент внутри shadow DOM\n        return \"\";\n    }\n}\n",
+      "mode": "selenium-fake",
+      "fixtureJson": "{\"elements\":[{\"tag\":\"div\",\"id\":\"host\",\"text\":\"\",\"displayed\":true}]}",
+      "revealAfterFails": 2
+    },
+    {
+      "difficulty": "medium",
+      "hints": [
+        "host.findElement(By.id(\"host\")) — найди хост",
+        "js.executeScript(\"return arguments[0].shadowRoot\", host) — shadow root",
+        "shadow.findElement(By.cssSelector(\"button.primary\")).click() — клик"
+      ],
+      "testCases": [
+        {
+          "name": "click button",
+          "callExpression": "clickShadowButton(driver)",
+          "expected": "true",
+          "expectedType": "boolean"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "import org.openqa.selenium.*;\n\npublic class ShadowDomLab {\n    public String findShadowText(WebDriver driver) {\n        WebElement host = driver.findElement(By.id(\"host\"));\n        WebElement shadow = (WebElement) ((JavascriptExecutor) driver)\n            .executeScript(\"return arguments[0].shadowRoot\", host);\n        return shadow.findElement(By.id(\"inner\")).getText();\n    }\n    \n    public void clickShadowButton(WebDriver driver) {\n        WebElement host = driver.findElement(By.id(\"host\"));\n        WebElement shadow = (WebElement) ((JavascriptExecutor) driver)\n            .executeScript(\"return arguments[0].shadowRoot\", host);\n        shadow.findElement(By.cssSelector(\"button.primary\")).click();\n    }\n}\n",
+      "methodName": null,
+      "id": "e2",
+      "title": "clickShadowButton",
+      "description": "Дано:\n- класс ShadowDomLab\n- метод clickShadowButton(WebDriver driver)\n- DOM fixture: #host → shadow root → button.primary\n\nЗадание:\nНайди и кликни кнопку button.primary внутри shadow DOM.\n\nРезультат:\n- clickShadowButton(driver) → true (клик выполнен)",
+      "className": "ShadowDomLab",
+      "starterCode": "import org.openqa.selenium.*;\n\npublic class ShadowDomLab {\n    public String findShadowText(WebDriver driver) {\n        WebElement host = driver.findElement(By.id(\"host\"));\n        WebElement shadow = (WebElement) ((JavascriptExecutor) driver)\n            .executeScript(\"return arguments[0].shadowRoot\", host);\n        return shadow.findElement(By.id(\"inner\")).getText();\n    }\n    \n    public void clickShadowButton(WebDriver driver) {\n        // TODO: найди и кликни кнопку в shadow DOM\n    }\n}\n",
+      "mode": "selenium-fake",
+      "fixtureJson": "{\"elements\":[{\"tag\":\"div\",\"id\":\"host\",\"text\":\"\",\"displayed\":true},{\"tag\":\"button\",\"id\":\"primaryBtn\",\"text\":\"Click me\",\"displayed\":true}]}",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "selenium-adv"
+}

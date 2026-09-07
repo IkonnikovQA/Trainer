@@ -1,0 +1,80 @@
+{
+  "id": "j-debug-enhanced",
+  "title": "Screenshots и отладка автотестов",
+  "summary": "Скриншоты на падение теста — стандартная практика отладки автотестов.",
+  "theoryMarkdown": "# Screenshots и отладка\n\n## TakesScreenshot\n\n```java\n// Скриншот всей страницы\nFile screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);\nFiles.copy(screenshot.toPath(), Paths.get(\"screenshot.png\"));\n\n// Скриншот конкретного элемента\nFile screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);\nBufferedImage full = ImageIO.read(screenshot);\nRectangle rect = element.getLocation().getSize();\nBufferedImage crop = full.getRect(rect);\nImageIO.write(crop, \"png\", new File(\"element.png\"));\n```\n\n## Скриншот на падение теста\n\n```java\n@AfterEach\nvoid takeScreenshotOnFailure(AssertionError error) {\n    if (error != null) {\n        try {\n            File src = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);\n            Files.copy(src.toPath(), Paths.get(\"screenshots/failure.png\"));\n        } catch (IOException e) {\n            // ignore\n        }\n    }\n}\n```\n\n## Allure attachments\n\n```java\n@Attachment(value = \"Screenshot on failure\")\npublic byte[] screenshotAsBytes() {\n    return ((TakesScreenshot) driver)\n        .getScreenshotAs(OutputType.BYTES);\n}\n```\n\n## К практике\n\n### takeScreenshot\nСделай скриншот и верни base64-строку.\n\n```java\nFile screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);\nbyte[] bytes = Files.readAllBytes(screenshot.toPath());\nreturn Base64.getEncoder().encodeToString(bytes);\n```", "keyPoints": [
+    "TakesScreenshot — интерфейс для скриншотов",
+    "OutputType.FILE, BYTES, BASE64",
+    "Скриншот на падение — стандартная практика",
+    "Allure attachments для скриншотов"
+  ],
+  "interviewTips": [
+    "Как автоматизировать скриншоты на падение?",
+    "Как прикрепить скриншот к Allure отчёту?",
+    "Скриншот всей страницы vs элемента — что лучше?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Какой интерфейс используется для скриншотов?",
+      "options": [
+        "WebDriver",
+        "TakesScreenshot",
+        "WebElement",
+        "JavascriptExecutor"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "TakesScreenshot — стандартный интерфейс Selenium для скриншотов.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "OutputType.BYTES возвращает:",
+      "options": [
+        "File объект",
+        "byte[] массив",
+        "String (путь к файлу)",
+        "BufferedImage"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "OutputType.BYTES — byte[], OutputType.FILE — File, OutputType.BASE64 — String.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "difficulty": "easy",
+      "hints": [
+        "((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE)",
+        "Base64.getEncoder().encodeToString(bytes)",
+        "import java.util.Base64;"
+      ],
+      "testCases": [
+        {
+          "name": "screenshot",
+          "callExpression": "takeScreenshot(driver)",
+          "expected": "\"base64string...\"",
+          "expectedType": "string"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "import java.util.Base64;\nimport org.openqa.selenium.OutputType;\nimport org.openqa.selenium.TakesScreenshot;\n\npublic class DebugLab {\n    public String takeScreenshot(org.openqa.selenium.WebDriver driver) {\n        byte[] bytes = ((TakesScreenshot) driver)\n            .getScreenshotAs(OutputType.BYTES);\n        return Base64.getEncoder().encodeToString(bytes);\n    }\n}\n",
+      "methodName": null,
+      "id": "e1",
+      "title": "takeScreenshot",
+      "description": "Дано:\n- класс DebugLab\n- метод takeScreenshot(WebDriver driver)\n\nЗадание:\nСделай скриншот и верни base64-строку.\n\nРезультат:\n- takeScreenshot(driver) → \"base64string...\"",
+      "className": "DebugLab",
+      "starterCode": "import java.util.Base64;\nimport org.openqa.selenium.OutputType;\nimport org.openqa.selenium.TakesScreenshot;\n\npublic class DebugLab {\n    public String takeScreenshot(org.openqa.selenium.WebDriver driver) {\n        // TODO\n        return \"\";\n    }\n}\n",
+      "mode": "selenium-fake",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "junior",
+  "moduleId": "selenium-basics"
+}

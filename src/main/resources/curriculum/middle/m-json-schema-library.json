@@ -1,0 +1,118 @@
+{
+  "id": "m-json-schema-library",
+  "title": "JSON Schema Validation",
+  "summary": "Автоматическая валидация JSON response по схеме — стандарт для API testing.",
+  "theoryMarkdown": "# JSON Schema Validation\n\nJSON Schema — стандарт описания структуры JSON. Валидация по схеме — быстрее и надёжнее ручных проверок.\n\n## Основы JSON Schema\n\n```json\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"id\": { \"type\": \"integer\" },\n    \"name\": { \"type\": \"string\" },\n    \"email\": { \"type\": \"string\", \"format\": \"email\" },\n    \"role\": {\n      \"type\": \"string\",\n      \"enum\": [\"admin\", \"user\", \"guest\"]\n    }\n  },\n  \"required\": [\"id\", \"name\", \"email\"]\n}\n```\n\n## RestAssured + JSON Schema\n\n```java\nimport static io.restassured.module.jsv.JsonSchemaValidator.*;\n\ngiven()\n    .baseUri(\"https://api.example.com\")\n    .when()\n    .get(\"/users/1\")\n    .then()\n    .body(matchesJsonSchemaInClasspath(\"user-schema.json\"));\n```\n\n## Кастомная валидация\n\n```java\nResponse response = given().get(\"/users/1\").then().extract().response();\nJsonPath json = response.jsonPath();\n\njson.int(\"id\").isGreaterThan(0);\njson.string(\"name\").isNotEmpty();\njson.string(\"email\").matches(\"^[^@]+@[^@]+\\\\.[^@]+$\");\n```\n\n## К практике\n\n### validateUserSchema\nПроверь что response соответствует схеме: id > 0, name не пустой, email содержит @.\n\n### validateUserList\nПроверь что список пользователей не пустой и каждый имеет id и name.", "keyPoints": [
+    "matchesJsonSchemaInClasspath — валидация по JSON Schema файлу",
+    "JsonPath — извлечение и проверка полей",
+    "enum, format, required — ограничения в схеме",
+    "everyItem — валидация элементов массива"
+  ],
+  "interviewTips": [
+    "JSON Schema vs ручная валидация — что лучше?",
+    "Как валидировать массив объектов?",
+    "Что такое format: email в JSON Schema?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Какой метод RestAssured валидирует по JSON Schema?",
+      "options": [
+        "body(matchesJsonSchemaInClasspath(\"schema.json\"))",
+        "body(isValidJson())",
+        "body(checkJsonSchema(\"schema.json\"))",
+        "body(schema(\"schema.json\"))"
+      ],
+      "correctIndexes": [
+        0
+      ],
+      "explanation": "matchesJsonSchemaInClasspath — стандартный валидатор RestAssured.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Что делает required в JSON Schema?",
+      "options": [
+        "Делает поле обязательным",
+        "Удаляет поле",
+        "Делает поле nullable",
+        "Устанавливает значение по умолчанию"
+      ],
+      "correctIndexes": [
+        0
+      ],
+      "explanation": "required — список обязательных полей, которых должен иметь объект.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "difficulty": "medium",
+      "hints": [
+        "new JsonPath(json).getInt(\"id\") — извлечение поля",
+        "!jsonPath.getString(\"name\").isBlank() — проверка не пустой",
+        "jsonPath.getString(\"email\").contains(\"@\") — проверка email"
+      ],
+      "testCases": [
+        {
+          "name": "valid user",
+          "callExpression": "validateUserSchema(validUserJson)",
+          "expected": "true",
+          "expectedType": "boolean"
+        },
+        {
+          "name": "invalid user",
+          "callExpression": "validateUserSchema(invalidUserJson)",
+          "expected": "false",
+          "expectedType": "boolean"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "import io.restassured.path.json.JsonPath;\n\npublic class SchemaLab {\n    public boolean validateUserSchema(String json) {\n        JsonPath jsonPath = new JsonPath(json);\n        return jsonPath.getInt(\"id\") > 0\n            && !jsonPath.getString(\"name\").isBlank()\n            && jsonPath.getString(\"email\").contains(\"@\");\n    }\n    \n    public boolean validateUserList(String json) {\n        JsonPath jsonPath = new JsonPath(json);\n        int size = jsonPath.getInt(\"size()\");\n        if (size == 0) return false;\n        for (int i = 0; i < size; i++) {\n            String name = jsonPath.getString(\"[\" + i + \"].name\");\n            Integer id = jsonPath.getInt(\"[\" + i + \"].id\");\n            if (name == null || name.isBlank() || id == null) return false;\n        }\n        return true;\n    }\n}\n",
+      "methodName": null,
+      "id": "e1",
+      "title": "validateUserSchema",
+      "description": "Дано:\n- класс SchemaLab\n- метод validateUserSchema(String json)\n\nЗадание:\nПроверь что JSON соответствует схеме пользователя: id > 0, name не пустой, email содержит @.\n\nРезультат:\n- validateUserSchema({id:1,name:Alice,email:a@b.com}) -> true\n- validateUserSchema({id:0,name:,email:invalid}) -> false",
+      "className": "SchemaLab",
+      "starterCode": "import io.restassured.path.json.JsonPath;\n\npublic class SchemaLab {\n    public boolean validateUserSchema(String json) {\n        // TODO: валидация п�� схеме\n        return false;\n    }\n}\n",
+      "mode": "java",
+      "revealAfterFails": 2
+    },
+    {
+      "difficulty": "medium",
+      "hints": [
+        "jsonPath.getInt(\"size()\") — размер массива",
+        "jsonPath.getString(\"[i].name\") — доступ по индексу",
+        "for (int i = 0; i < size; i++) — перебор"
+      ],
+      "testCases": [
+        {
+          "name": "valid list",
+          "callExpression": "validateUserList(validListJson)",
+          "expected": "true",
+          "expectedType": "boolean"
+        },
+        {
+          "name": "empty list",
+          "callExpression": "validateUserList(emptyListJson)",
+          "expected": "false",
+          "expectedType": "boolean"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "import io.restassured.path.json.JsonPath;\n\npublic class SchemaLab {\n    public boolean validateUserSchema(String json) {\n        JsonPath jsonPath = new JsonPath(json);\n        return jsonPath.getInt(\"id\") > 0\n            && !jsonPath.getString(\"name\").isBlank()\n            && jsonPath.getString(\"email\").contains(\"@\");\n    }\n    \n    public boolean validateUserList(String json) {\n        JsonPath jsonPath = new JsonPath(json);\n        int size = jsonPath.getInt(\"size()\");\n        if (size == 0) return false;\n        for (int i = 0; i < size; i++) {\n            String name = jsonPath.getString(\"[\" + i + \"].name\");\n            Integer id = jsonPath.getInt(\"[\" + i + \"].id\");\n            if (name == null || name.isBlank() || id == null) return false;\n        }\n        return true;\n    }\n}\n",
+      "methodName": null,
+      "id": "e2",
+      "title": "validateUserList",
+      "description": "Дано:\n- класс SchemaLab\n- метод validateUserList(String json)\n\nЗадание:\nПроверь что JSON-массив пользователей не пустой и каждый элемент имеет id и name.\n\nРезультат:\n- validateUserList([{id:1,name:A},{id:2,name:B}]) -> true\n- validateUserList([]) -> false",
+      "className": "SchemaLab",
+      "starterCode": "import io.restassured.path.json.JsonPath;\n\npublic class SchemaLab {\n    public boolean validateUserSchema(String json) {\n        JsonPath jsonPath = new JsonPath(json);\n        return jsonPath.getInt(\"id\") > 0\n            && !jsonPath.getString(\"name\").isBlank()\n            && jsonPath.getString(\"email\").contains(\"@\");\n    }\n    \n    public boolean validateUserList(String json) {\n        // TODO: валидация списка\n        return false;\n    }\n}\n",
+      "mode": "java",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "api-testing"
+}

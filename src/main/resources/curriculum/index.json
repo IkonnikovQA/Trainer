@@ -57,6 +57,24 @@
               "estimatedMinutes": 25
             },
             {
+              "id": "j-generics",
+              "title": "Дженерики: типы, wildcard, type erasure",
+              "file": "junior/j-generics.json",
+              "estimatedMinutes": 30
+            },
+            {
+              "id": "j-lambdas",
+              "title": "Лямбды и функциональные интерфейсы",
+              "file": "junior/j-lambdas.json",
+              "estimatedMinutes": 25
+            },
+            {
+              "id": "j-file-io",
+              "title": "File I/O и NIO: работа с файлами",
+              "file": "junior/j-file-io.json",
+              "estimatedMinutes": 25
+            },
+            {
               "id": "j-records-fixtures",
               "title": "Java records как test data",
               "file": "junior/j-records-fixtures.json",
@@ -148,6 +166,12 @@
               "title": "Отладка тестов",
               "file": "junior/j-debug.json",
               "estimatedMinutes": 25
+            },
+            {
+              "id": "j-debug-enhanced",
+              "title": "Screenshots и отладка автотестов",
+              "file": "junior/j-debug-enhanced.json",
+              "estimatedMinutes": 20
             }
           ]
         }
@@ -170,6 +194,24 @@
               "title": "Advanced Selenium",
               "file": "middle/m-advanced-selenium.json",
               "estimatedMinutes": 35
+            },
+            {
+              "id": "m-advanced-selenium-actions",
+              "title": "Selenium Actions API",
+              "file": "middle/m-advanced-selenium-actions.json",
+              "estimatedMinutes": 30
+            },
+            {
+              "id": "m-advanced-selenium-upload",
+              "title": "File Upload и Download",
+              "file": "middle/m-advanced-selenium-upload.json",
+              "estimatedMinutes": 25
+            },
+            {
+              "id": "m-advanced-selenium-shadow",
+              "title": "Shadow DOM в Selenium",
+              "file": "middle/m-advanced-selenium-shadow.json",
+              "estimatedMinutes": 25
             },
             {
               "id": "m-pom-fluent",
@@ -206,6 +248,12 @@
               "id": "m-json-schema",
               "title": "JSON contract checks",
               "file": "middle/m-json-schema.json",
+              "estimatedMinutes": 30
+            },
+            {
+              "id": "m-json-schema-library",
+              "title": "JSON Schema Validation",
+              "file": "middle/m-json-schema-library.json",
               "estimatedMinutes": 30
             },
             {
@@ -283,10 +331,28 @@
               "estimatedMinutes": 30
             },
             {
+              "id": "m-cucumber-real",
+              "title": "Реальный Cucumber: .feature файлы",
+              "file": "middle/m-cucumber-real.json",
+              "estimatedMinutes": 35
+            },
+            {
               "id": "m-db",
               "title": "Проверки БД",
               "file": "middle/m-db.json",
               "estimatedMinutes": 25
+            },
+            {
+              "id": "m-db-jdbc",
+              "title": "JDBC: работа с базой данных",
+              "file": "middle/m-db-jdbc.json",
+              "estimatedMinutes": 30
+            },
+            {
+              "id": "m-db-testdata-jdbc",
+              "title": "Тестовые данные через JDBC",
+              "file": "middle/m-db-testdata-jdbc.json",
+              "estimatedMinutes": 30
             },
             {
               "id": "m-selenide",
@@ -505,6 +571,18 @@
               "title": "Performance basics",
               "file": "senior/s-performance-basics.json",
               "estimatedMinutes": 25
+            },
+            {
+              "id": "s-performance-jmeter",
+              "title": "JMeter: performance testing basics",
+              "file": "senior/s-performance-jmeter.json",
+              "estimatedMinutes": 30
+            },
+            {
+              "id": "s-perf-ci",
+              "title": "Performance Testing in CI/CD",
+              "file": "senior/s-perf-ci.json",
+              "estimatedMinutes": 30
             },
             {
               "id": "s-security-qa",

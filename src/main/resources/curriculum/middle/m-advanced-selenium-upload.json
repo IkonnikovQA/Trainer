@@ -1,0 +1,81 @@
+{
+  "id": "m-advanced-selenium-upload",
+  "title": "File Upload и Download в Selenium",
+  "summary": "Обработка загрузки и скачивания файлов — один из самых частых UI-сценариев.",
+  "theoryMarkdown": "# File Upload и Download\n\n## File Upload\n\n### Простой upload (input type=\"file\")\n\n```java\nWebElement fileInput = driver.findElement(By.id(\"fileUpload\"));\nfileInput.sendKeys(\"/path/to/file.txt\");\n```\n\nsendKeys() на `<input type=\"file\">` автоматически устанавливает путь к файлу.\n\n### Сложный upload (кастомный UI)\n\n```java\n// Клик по кнопке «Upload» → открывается диалог\nWebElement uploadBtn = driver.findElement(By.id(\"uploadBtn\"));\nuploadBtn.click();\n\n// Диалог выбора файла — нужно через AutoIt или Robot (Windows)\n// Или через JS:\n((JavascriptExecutor) driver).executeScript(\n    \"arguments[0].style.display = 'block';\",\n    hiddenInput);\nhiddenInput.sendKeys(\"/path/to/file.txt\");\n```\n\n## File Download\n\n### Обработка download через ChromeOptions\n\n```java\nHashMap<String, Object> prefs = new HashMap<>();\nprefs.put(\"download.default_directory\", \"/path/to/download\");\nprefs.put(\"download.prompt_for_download\", false);\n\nChromeOptions options = new ChromeOptions();\noptions.setExperimentalOption(\"prefs\", prefs);\n```\n\n### Ожидание файла\n\n```java\nPath downloadDir = Paths.get(\"/path/to/download\");\nint timeout = 30;\nwhile (!Files.exists(downloadDir.resolve(\"filename.pdf\")) && timeout > 0) {\n    Thread.sleep(500);\n    timeout--;\n}\n```\n\n## К практике\n\n### uploadFile\nЗагрузи файл через input type=\"file\".\n\n```java\nWebElement input = driver.findElement(By.id(\"fileInput\"));\ninput.sendKeys(\"/path/to/test.txt\");\nreturn driver.findElement(By.id(\"fileName\")).getText();\n```\n\n### getFileCount\nПодсчитай количество файлов в директории download.\n\n```java\nreturn Files.list(dir).filter(Files::isRegularFile).count();\n```", "keyPoints": [
+    "sendKeys() на input[type=file] — стандартный upload",
+    "ChromeOptions prefs для download",
+    "Ожидание файла через Files.exists + цикл",
+    "Кастомный upload через JS"
+  ],
+  "interviewTips": [
+    "Как протестировать upload файла?",
+    "Как ждать скачивания файла?",
+    "Как обработать кастомный upload UI?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Как загрузить файл через стандартный input type=\"file\"?",
+      "options": [
+        "driver.findElement(By.id(\"file\")).click()",
+        "driver.findElement(By.id(\"file\")).sendKeys(\"/path/to/file.txt\")",
+        "driver.findElement(By.id(\"file\")).submit()",
+        "new Actions(driver).upload(\"/path/to/file.txt\")"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "sendKeys() на input[type=file] автоматически устанавливает путь.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Как настроить Chrome для автоматического скачивания файлов?",
+      "options": [
+        "Через DesiredCapabilities",
+        "Через ChromeOptions prefs: download.default_directory",
+        "Через WebDriverWait",
+        "Нельзя настроить автоматически"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "ChromeOptions.setExperimentalOption(\"prefs\", ...) — стандартный способ.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "difficulty": "medium",
+      "hints": [
+        "input.sendKeys(\"/path/to/test.txt\") — upload файла",
+        "Найди элемент #fileName и верни текст",
+        "import org.openqa.selenium.*;"
+      ],
+      "testCases": [
+        {
+          "name": "upload file",
+          "callExpression": "uploadFile(driver)",
+          "expected": "\"test.txt\"",
+          "expectedType": "string"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "import org.openqa.selenium.*;\n\npublic class UploadLab {\n    public String uploadFile(WebDriver driver) {\n        WebElement input = driver.findElement(By.id(\"fileInput\"));\n        input.sendKeys(\"/path/to/test.txt\");\n        return driver.findElement(By.id(\"fileName\")).getText();\n    }\n}\n",
+      "methodName": null,
+      "id": "e1",
+      "title": "uploadFile",
+      "description": "Дано:\n- класс UploadLab\n- метод uploadFile(WebDriver driver)\n- DOM fixture: #fileInput (input type=\"file\"), #fileName\n\nЗадание:\n1. Загрузи файл через input#fileInput\n2. Верни текст из элемента #fileName (имя загруженного файла)\n\nРезультат:\n- uploadFile(driver) → \"test.txt\"",
+      "className": "UploadLab",
+      "starterCode": "import org.openqa.selenium.*;\n\npublic class UploadLab {\n    public String uploadFile(WebDriver driver) {\n        // TODO: upload файла\n        return \"\";\n    }\n}\n",
+      "mode": "selenium-fake",
+      "fixtureJson": "{\"elements\":[{\"tag\":\"input\",\"id\":\"fileInput\",\"type\":\"file\",\"displayed\":true},{\"tag\":\"span\",\"id\":\"fileName\",\"text\":\"test.txt\",\"displayed\":true}]}",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "selenium-adv"
+}

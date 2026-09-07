@@ -1,0 +1,117 @@
+{
+  "id": "j-lambdas",
+  "title": "Лямбды и функциональные интерфейсы",
+  "summary": "Лямбды — основа современного Java. Predicate, Function, Consumer, Supplier — без них не обойтись.",
+  "theoryMarkdown": "# Лямбды и функциональные интерфейсы\n\nЛямбда — это анонимный метод, переданный как данные.\n\n## Functional Interfaces\n\n| Интерфейс | Метод | Пример |\n|-----------|-------|--------|\n| `Predicate<T>` | `boolean test(T)` | `s -> s.length() > 5` |\n| `Function<T,R>` | `R apply(T)` | `s -> s.toUpperCase()` |\n| `Consumer<T>` | `void accept(T)` | `s -> System.out.println(s)` |\n| `Supplier<T>` | `T get()` | `() -> new ArrayList<>()` |\n| `Comparator<T>` | `int compare(T,T)` | `(a,b) -> a.length() - b.length()` |\n\n## Синтаксис\n\n```java\n// Без лямбды\nComparator<String> c = new Comparator<String>() {\n    public int compare(String a, String b) {\n        return a.length() - b.length();\n    }\n};\n\n// С лямбдой\nComparator<String> c = (a, b) -> a.length() - b.length();\n\n// Method reference\nList<String> sorted = list.stream().sorted(String::compareToIgnoreCase);\n```\n\n## Практика в тестах\n\n```java\n// Фильтрация элементов с лямбдой\nList<WebElement> visible = elements.stream()\n    .filter(WebElement::isDisplayed)\n    .collect(Collectors.toList());\n\n// Кастомный Comparator\nusers.sort(Comparator.comparing(User::getName).thenComparing(User::getAge));\n\n// Predicate для валидации\nPredicate<String> isEmail = s -> s.contains(\"@\") && s.contains(\".\");\n```\n\n## К практике\n\n### filterLongStrings\nВерни только строки длиннее N символов.\n\n```java\nreturn list.stream()\n    .filter(s -> s.length() > n)\n    .toList();\n```\n\n### toUpperCaseList\nМаппинг списка строк в верхний регистр.\n\n```java\nreturn list.stream()\n    .map(String::toUpperCase)\n    .toList();\n```\n\n### sumLengths\nСумма длин всех строк.\n\n```java\nreturn list.stream()\n    .mapToInt(String::length)\n    .sum();\n```", "keyPoints": [
+    "Predicate — фильтр, Function — маппинг, Consumer — действие, Supplier — поставщик",
+    "Method reference — сокращение лямбды: String::length",
+    "Comparator — сортировка с лямбдами",
+    "Лямбды работают только с функциональными интерфейсами (@FunctionalInterface)"
+  ],
+  "interviewTips": [
+    "В чём разница между Predicate и Function?",
+    "Что такое method reference и когда использовать?",
+    "Как написать кастомный Comparator через лямбду?",
+    "Можно ли использовать лямбду вместо любого интерфейса?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Какой функциональный интерфейс принимает аргумент и возвращает boolean?",
+      "options": [
+        "Function<T, R>",
+        "Predicate<T>",
+        "Consumer<T>",
+        "Supplier<T>"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "Predicate<T> имеет метод boolean test(T t).",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Что делает String::toUpperCase?",
+      "options": [
+        "Создаёт Predicate",
+        "Создаёт Consumer",
+        "Создаёт Function<String, String>",
+        "Ошибка компиляции"
+      ],
+      "correctIndexes": [
+        2
+      ],
+      "explanation": "String::toUpperCase — method reference для Function<String, String>.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "difficulty": "easy",
+      "hints": [
+        "list.stream().filter(s -> s.length() > n).toList()",
+        "filter — промежуточная операция"
+      ],
+      "testCases": [
+        {
+          "name": "фильтрация",
+          "callExpression": "filterLongStrings(Arrays.asList(\"hi\", \"hello\", \"hey\", \"a\"), 3)",
+          "expected": "[\"hello\"]",
+          "expectedType": "string"
+        },
+        {
+          "name": "пустой результат",
+          "callExpression": "filterLongStrings(Arrays.asList(\"a\", \"b\"), 5)",
+          "expected": "[]",
+          "expectedType": "string"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "import java.util.*;\nimport java.util.stream.Collectors;\npublic class LambdaTasks {\n    public List<String> filterLongStrings(List<String> list, int n) {\n        return list.stream()\n            .filter(s -> s.length() > n)\n            .toList();\n    }\n}\n",
+      "methodName": null,
+      "id": "e1",
+      "title": "filterLongStrings",
+      "description": "Дано:\n- класс LambdaTasks\n- метод filterLongStrings(List<String> list, int n)\n\nЗадание:\nВерни список только тех строк, длина которых больше n.\n\nРезультат:\n- filterLongStrings([\"hi\", \"hello\", \"hey\", \"a\"], 3) → [\"hello\"]\n- filterLongStrings([\"a\", \"b\"], 5) → []",
+      "className": "LambdaTasks",
+      "starterCode": "import java.util.*;\npublic class LambdaTasks {\n    public List<String> filterLongStrings(List<String> list, int n) {\n        // TODO\n        return List.of();\n    }\n}\n",
+      "mode": "java",
+      "revealAfterFails": 2
+    },
+    {
+      "difficulty": "medium",
+      "hints": [
+        "list.stream().map(String::toUpperCase).toList()",
+        "mapToInt(String::length).sum() для суммы длин"
+      ],
+      "testCases": [
+        {
+          "name": "верхний регистр",
+          "callExpression": "toUpperCaseList(Arrays.asList(\"a\", \"b\", \"c\"))",
+          "expected": "[\"A\", \"B\", \"C\"]",
+          "expectedType": "string"
+        },
+        {
+          "name": "сумма длин",
+          "callExpression": "sumLengths(Arrays.asList(\"hi\", \"hello\"))",
+          "expected": "7",
+          "expectedType": "int"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "import java.util.*;\npublic class LambdaTasks {\n    public List<String> toUpperCaseList(List<String> list) {\n        return list.stream()\n            .map(String::toUpperCase)\n            .toList();\n    }\n    \n    public int sumLengths(List<String> list) {\n        return list.stream()\n            .mapToInt(String::length)\n            .sum();\n    }\n}\n",
+      "methodName": null,
+      "id": "e2",
+      "title": "map и sumLengths",
+      "description": "Дано:\n- класс LambdaTasks\n- два метода\n\nЗадание:\n1. toUpperCaseList — маппинг в верхний регистр\n2. sumLengths — сумма длин всех строк\n\nРезультат:\n- toUpperCaseList([\"a\", \"b\", \"c\"]) → [\"A\", \"B\", \"C\"]\n- sumLengths([\"hi\", \"hello\"]) → 7",
+      "className": "LambdaTasks",
+      "starterCode": "import java.util.*;\npublic class LambdaTasks {\n    public List<String> toUpperCaseList(List<String> list) {\n        // TODO\n        return List.of();\n    }\n    \n    public int sumLengths(List<String> list) {\n        // TODO\n        return 0;\n    }\n}\n",
+      "mode": "java",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "junior",
+  "moduleId": "java-basics"
+}

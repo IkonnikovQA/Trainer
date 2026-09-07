@@ -1,0 +1,86 @@
+{
+  "id": "m-cucumber-real",
+  "title": "Реальный Cucumber: .feature файлы и step definitions",
+  "summary": "BDD с Cucumber-JVM — реальные .feature файлы, step definitions, hooks, tag-based execution.",
+  "theoryMarkdown": "# Реальный Cucumber\n\nCucumber — стандарт BDD. `.feature` файлы описывают поведение на языке Given-When-Then.\n\n## Структура .feature файла\n\n```gherkin\nFeature: User Login\n  As a registered user\n  I want to log in with email and password\n  So that I can access my account\n\n  Scenario: Successful login\n    Given I am on the login page\n    When I enter \"user@test.com\" as email and \"secret\" as password\n    And I click the login button\n    Then I should see the dashboard\n    And my status should be \"authenticated\"\n\n  Scenario: Invalid password\n    Given I am on the login page\n    When I enter \"user@test.com\" as email and \"wrong\" as password\n    And I click the login button\n    Then I should see an error message\n    And my status should be \"unauthenticated\"\n```\n\n## Step Definitions\n\n```java\nimport io.cucumber.java.en.Given;\nimport io.cucumber.java.en.When;\nimport io.cucumber.java.en.Then;\nimport static org.junit.jupiter.api.Assertions.*;\n\npublic class LoginSteps {\n    private LoginService service;\n    private String status;\n    private String errorMessage;\n    \n    @Given(\"I am on the login page\")\n    public void givenLoginPage() {\n        service = new LoginService();\n    }\n    \n    @When(\"I enter {string} as email and {string} as password\")\n    public void whenEnterCredentials(String email, String password) {\n        status = service.login(email, password);\n    }\n    \n    @Then(\"I should see the dashboard\")\n    public void thenSeeDashboard() {\n        assertEquals(\"authenticated\", status);\n    }\n    \n    @Then(\"I should see an error message\")\n    public void thenSeeError() {\n        assertEquals(\"unauthenticated\", status);\n    }\n}\n```\n\n## Hooks\n\n```java\nimport io.cucumber.java.After;\nimport io.cucumber.java.Before;\n\n@Before\npublic void setup() {\n    System.out.println(\"Test starting...\");\n}\n\n@After\npublic void teardown() {\n    System.out.println(\"Test finished.\");\n}\n```\n\n## Tag-based Execution\n\n```gherkin\n@smoke\nScenario: Successful login\n  ...\n\n@regression\nScenario: Invalid password\n  ...\n```\n\n```java\n@CucumberOptions(\n    features = \"src/test/resources/features\",\n    glue = \"steps\",\n    tags = \"@smoke\"\n)\npublic class RunSmokeTests {}\n```\n\n## Data Tables\n\n```gherkin\nScenario: Multiple users\n  Given I have the following users:\n    | email           | password | role   |\n    | user@test.com   | pass     | user   |\n    | admin@test.com  | admin    | admin  |\n  When I login with email {string} and password {string}\n  Then I should see role {string}\n```\n\n```java\n@Given(\"I have the following users\")\npublic void givenUsers(DataTable table) {\n    List<List<String>> rows = table.asLists();\n    // rows.get(0) = headers, rows.get(1+) = data\n}\n```\n\n## К практике\n\n### loginSteps\nНапиши step definitions для сценария логина.\n\n```java\n@When(\"I enter {string} as email and {string} as password\")\npublic void whenEnterCredentials(String email, String password) {\n    this.status = service.login(email, password);\n}\n\n@Then(\"my status should be {string}\")\npublic void thenStatusIs(String expected) {\n    assertEquals(expected, status);\n}\n```", "keyPoints": [
+    ".feature файлы — Gherkin: Feature, Scenario, Given/When/Then",
+    "Step Definitions — @Given, @When, @Then, @Before, @After",
+    "Tag-based execution — @smoke, @regression",
+    "DataTable — табличные данные в сценариях"
+  ],
+  "interviewTips": [
+    "Когда использовать BDD, а когда обычные unit-тесты?",
+    "Как организовать step definitions?",
+    "Что такое glue code в Cucumber?"
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "type": "single",
+      "question": "Какой аннотацией помечается шаг Given?",
+      "options": [
+        "@Given",
+        "@When",
+        "@Then",
+        "@Step"
+      ],
+      "correctIndexes": [
+        0
+      ],
+      "explanation": "@Given — стандартная аннотация Cucumber для шагов Given.",
+      "hint": null
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "question": "Зачем нужны Hooks в Cucumber?",
+      "options": [
+        "Для описания бизнес-сценариев",
+        "Для выполнения кода до/после каждого сценария",
+        "Для парсинга .feature файлов",
+        "Для генерации отчётов"
+      ],
+      "correctIndexes": [
+        1
+      ],
+      "explanation": "@Before и @After — Hooks для setup/teardown.",
+      "hint": null
+    }
+  ],
+  "exercises": [
+    {
+      "difficulty": "medium",
+      "hints": [
+        "@When(\"I enter {string} as email and {string} as password\")",
+        "@Then(\"my status should be {string}\")",
+        "assertEquals(expected, status)"
+      ],
+      "testCases": [
+        {
+          "name": "valid login",
+          "callExpression": "runLoginSteps(\"user@test.com\", \"secret\")",
+          "expected": "\"authenticated\"",
+          "expectedType": "string"
+        },
+        {
+          "name": "invalid login",
+          "callExpression": "runLoginSteps(\"user@test.com\", \"wrong\")",
+          "expected": "\"unauthenticated\"",
+          "expectedType": "string"
+        }
+      ],
+      "verifierCode": null,
+      "solutionCode": "import io.cucumber.java.en.When;\nimport io.cucumber.java.en.Then;\nimport static org.junit.jupiter.api.Assertions.*;\n\npublic class LoginSteps {\n    private LoginService service = new LoginService();\n    private String status;\n    \n    public String runLoginSteps(String email, String password) {\n        whenEnterCredentials(email, password);\n        return status;\n    }\n    \n    @When(\"I enter {string} as email and {string} as password\")\n    public void whenEnterCredentials(String email, String password) {\n        status = service.login(email, password);\n    }\n    \n    @Then(\"my status should be {string}\")\n    public void thenStatusIs(String expected) {\n        assertEquals(expected, status);\n    }\n}\n",
+      "methodName": null,
+      "id": "e1",
+      "title": "loginSteps",
+      "description": "Дано:\n- класс LoginSteps\n- метод runLoginSteps(String email, String password)\n- LoginService.login(email, password) возвращает \"authenticated\" или \"unauthenticated\"\n\nЗадание:\nНапиши step definitions для сценария логина.\n\nРезультат:\n- runLoginSteps(\"user@test.com\", \"secret\") → \"authenticated\"\n- runLoginSteps(\"user@test.com\", \"wrong\") → \"unauthenticated\"",
+      "className": "LoginSteps",
+      "starterCode": "import io.cucumber.java.en.When;\nimport io.cucumber.java.en.Then;\nimport static org.junit.jupiter.api.Assertions.*;\n\npublic class LoginSteps {\n    private LoginService service = new LoginService();\n    private String status;\n    \n    public String runLoginSteps(String email, String password) {\n        // TODO: вызов step definitions\n        return \"\";\n    }\n    \n    // TODO: напиши @When и @Then\n}\n",
+      "mode": "junit",
+      "revealAfterFails": 2
+    }
+  ],
+  "levelId": "middle",
+  "moduleId": "bdd"
+}
